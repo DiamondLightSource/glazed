@@ -1,11 +1,11 @@
 // Auto-generated with JSON to serde tool
 
-use async_graphql::Object;
+use async_graphql::SimpleObject;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     #[serde(rename = "api_version")]
@@ -20,7 +20,7 @@ pub struct Metadata {
     pub meta: Meta,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Formats {
     pub table: Vec<String>,
@@ -32,7 +32,7 @@ pub struct Formats {
     pub xarray_dataset: Vec<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Aliases {
     pub table: Table,
@@ -44,7 +44,7 @@ pub struct Aliases {
     pub xarray_dataset: XarrayDataset,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Table {
     #[serde(rename = "application/vnd.apache.arrow.file")]
@@ -69,7 +69,7 @@ pub struct Table {
     pub text_plain: Vec<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Container {
     #[serde(rename = "application/json")]
@@ -86,7 +86,7 @@ pub struct Container {
     pub text_plain: Vec<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Array {
     #[serde(rename = "application/json")]
@@ -113,7 +113,7 @@ pub struct Array {
     pub text_plain: Vec<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Awkward {
     #[serde(rename = "application/zip")]
@@ -132,7 +132,7 @@ pub struct Awkward {
     pub text_plain: Vec<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Sparse {
     #[serde(rename = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
@@ -155,7 +155,7 @@ pub struct Sparse {
     pub text_plain: Vec<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct XarrayDataset {
     #[serde(rename = "application/x-netcdf")]
@@ -180,7 +180,7 @@ pub struct XarrayDataset {
     pub text_plain: Vec<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Authentication {
     pub required: bool,
@@ -188,7 +188,7 @@ pub struct Authentication {
     pub links: Value,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Links {
     #[serde(rename = "self")]
@@ -196,38 +196,9 @@ pub struct Links {
     pub documentation: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Meta {
     #[serde(rename = "root_path")]
     pub root_path: String,
 }
-
-
-#[Object]
-impl Metadata {
-    async fn api_version(&self) -> i64 {
-        self.api_version
-    }
-
-    async fn library_version(&self) -> &String {
-        &self.library_version
-    }
-
-    async fn queries(&self) -> &Vec<String> {
-        &self.queries
-    }
-
-    async fn formats(&self) -> &Formats {
-        &self.formats
-    }
-}
-
-
-#[Object]
-impl Formats{
-    async fn table(&self) -> &Vec<String> {
-        &self.table
-    }
-}
-
