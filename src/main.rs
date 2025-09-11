@@ -1,8 +1,9 @@
 use async_graphql::*;
 
-use crate::metadata::Metadata;
+use crate::schemas::metadata::Metadata;
+use crate::schemas::tiled::TiledSchema;
 
-mod metadata;
+mod schemas;
 
 struct TiledClient;
 
@@ -19,15 +20,7 @@ impl TiledClient{
         md
     }
 }
-struct TiledSchema;
 
-#[Object]
-impl TiledSchema {
-    async fn metadata<'ctx>(&self, ctx: &Context<'ctx>) -> Metadata {
-        let tiled_client = ctx.data::<TiledClient>().unwrap();
-        tiled_client.get_metadata_struct().await
-    }
-}
 
 
 #[tokio::main]
@@ -43,7 +36,7 @@ async fn main() {
         .data(tiled_client)
         .finish();
 
-    let res = schema.execute("{ metadata { apiVersion libraryVersion queries } }").await;
+    let res = schema.execute("{ metadata { apiVersion libraryVersion queries formats { table }  aliases { table {textCsv } } } }").await;
 
     println!("{:?}", res);
 }
