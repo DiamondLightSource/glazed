@@ -1,10 +1,8 @@
-
 // Auto-generated with JSON to serde tool
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
-use async_graphql::Object;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
