@@ -1,5 +1,6 @@
 // Auto-generated with JSON to serde tool
 
+use async_graphql::Object;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
@@ -201,3 +202,32 @@ pub struct Meta {
     #[serde(rename = "root_path")]
     pub root_path: String,
 }
+
+
+#[Object]
+impl Metadata {
+    async fn api_version(&self) -> i64 {
+        self.api_version
+    }
+
+    async fn library_version(&self) -> &String {
+        &self.library_version
+    }
+
+    async fn queries(&self) -> &Vec<String> {
+        &self.queries
+    }
+
+    async fn formats(&self) -> &Formats {
+        &self.formats
+    }
+}
+
+
+#[Object]
+impl Formats{
+    async fn table(&self) -> &Vec<String> {
+        &self.table
+    }
+}
+
