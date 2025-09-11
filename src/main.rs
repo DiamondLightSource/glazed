@@ -10,11 +10,7 @@ async fn main() {
 
     let tiled_client = tiled_client::TiledClient;
 
-    // let schema = Metadata{formats : Formats{}};
-    // let schema = Metadata;
-    let schema = TiledSchema;
-
-    let schema = Schema::build(schema, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(TiledSchema, EmptyMutation, EmptySubscription)
         .data(tiled_client)
         .finish();
 
