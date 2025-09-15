@@ -158,8 +158,8 @@ pub struct Sparse {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct XarrayDataset {
-    #[serde(rename = "application/x-netcdf")]
-    pub application_x_netcdf: Vec<String>,
+    // #[serde(rename = "application/x-netcdf")]
+    // pub application_x_netcdf: Vec<String>,
     #[serde(rename = "application/vnd.apache.arrow.file")]
     pub application_vnd_apache_arrow_file: Vec<String>,
     #[serde(rename = "text/csv")]
