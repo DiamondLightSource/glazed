@@ -1,7 +1,7 @@
 use async_graphql::{Context, Object};
 
 use crate::{schemas::metadata::Metadata};
-use crate::{mock_tiled_client::MockTiledClient};
+use crate::{clients::mock_tiled_client::MockTiledClient};
 
 pub(crate) struct TiledSchema;
 

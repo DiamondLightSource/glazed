@@ -7,11 +7,11 @@ use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use crate::schemas::tiled::TiledSchema;
 
 mod schemas;
-mod mock_tiled_client;
+mod clients;
 
 async fn graphql_handler(req: GraphQLRequest)-> GraphQLResponse{
 
-    let tiled_client = mock_tiled_client::MockTiledClient;
+    let tiled_client = clients::mock_tiled_client::MockTiledClient;
 
     let schema = Schema::build(TiledSchema, EmptyMutation, EmptySubscription)
         .data(tiled_client)
