@@ -1,21 +1,30 @@
 use async_graphql::*;
-use axum::{
-    routing::post, Router
-};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
+use axum::{Router, routing::post};
 
-use crate::schemas::tiled::TiledSchema;
+use crate::{
+    mock_tiled_client::MockTiledClient,
+    schemas::{metadata::Metadata, tiled::TiledSchema},
+    tiled_client::TiledClient,
+};
 
-mod schemas;
 mod mock_tiled_client;
+mod schemas;
+mod tiled_client;
 
-async fn graphql_handler(req: GraphQLRequest)-> GraphQLResponse{
+trait Client {
+    fn get_metadata_struct(&self) -> impl Future<Output = Metadata> + Send;
+}
 
-    let tiled_client = mock_tiled_client::MockTiledClient;
-
-    let schema = Schema::build(TiledSchema, EmptyMutation, EmptySubscription)
-        .data(tiled_client)
-        .finish();
+async fn graphql_handler(req: GraphQLRequest) -> GraphQLResponse {
+    let schema = Schema::build(
+        TiledSchema::<TiledClient>::default(),
+        EmptyMutation,
+        EmptySubscription,
+    )
+    .data(MockTiledClient)
+    .data(TiledClient)
+    .finish();
 
     let query = req.into_inner().query;
 
@@ -24,11 +33,9 @@ async fn graphql_handler(req: GraphQLRequest)-> GraphQLResponse{
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new()
-        .route("/graphql", post(graphql_handler));
+    let app = Router::new().route("/graphql", post(graphql_handler));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
-
 }
