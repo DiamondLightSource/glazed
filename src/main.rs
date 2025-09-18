@@ -13,7 +13,7 @@ use crate::{
 async fn main() {
     let app = Router::new().route("/graphql", post(graphql_handler));
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.expect(&format!("Could not bind to address"));
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app).await.expect(&format!("Failed to serve"));
 }
