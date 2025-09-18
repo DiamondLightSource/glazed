@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::path::Path;
+
 use crate::{clients::client::Client, schemas::tiled_metadata::Metadata};
 
 pub struct MockTiledClient;
@@ -5,13 +8,10 @@ pub struct MockTiledClient;
 impl Client for MockTiledClient {
     async fn get_metadata_struct(&self) -> Metadata {
         println!("Requesting data from mock");
-        use std::fs::File;
-        use std::path::Path;
+
         let path = Path::new("./src/metadata.json");
-        let file = File::open(&path).unwrap();
+        let file = File::open(&path).expect(&format!("File not found {path:?}"));
 
-        let md = serde_json::from_reader(file).unwrap();
-
-        md
+        serde_json::from_reader(file).expect(&format!("Failed to deserealize {path:?}"))
     }
 }
