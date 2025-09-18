@@ -1,5 +1,5 @@
 use crate::schemas::tiled_metadata::Metadata;
 
 pub trait Client {
-    fn get_metadata_struct(&self) -> impl Future<Output = Metadata> + Send;
+    fn metadata(&self) -> impl Future<Output = Metadata> + Send;
 }

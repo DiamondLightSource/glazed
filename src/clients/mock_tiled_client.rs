@@ -6,7 +6,7 @@ use crate::{clients::client::Client, schemas::tiled_metadata::Metadata};
 pub struct MockTiledClient;
 
 impl Client for MockTiledClient {
-    async fn get_metadata_struct(&self) -> Metadata {
+    async fn metadata(&self) -> Metadata {
         println!("Requesting data from mock");
 
         let path = Path::new("./src/metadata.json");

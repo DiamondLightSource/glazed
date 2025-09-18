@@ -9,7 +9,7 @@ impl TiledClient {
     }
 }
 impl Client for TiledClient {
-    async fn get_metadata_struct(&self) -> Metadata {
+    async fn metadata(&self) -> Metadata {
         let metadata_json = self.request().await.json().await.unwrap();
 
         let md: Metadata = serde_json::from_value(metadata_json).unwrap();
