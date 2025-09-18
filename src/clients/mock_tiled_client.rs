@@ -1,9 +1,10 @@
-use crate::schemas::metadata::Metadata;
+use crate::{Client, schemas::metadata::Metadata};
 
 pub struct MockTiledClient;
 
-impl MockTiledClient{
-    pub async fn get_metadata_struct(&self) -> Metadata {
+impl Client for MockTiledClient {
+    async fn get_metadata_struct(&self) -> Metadata {
+        println!("Requesting data from mock");
         use std::fs::File;
         use std::path::Path;
         let path = Path::new("./src/metadata.json");

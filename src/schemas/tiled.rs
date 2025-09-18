@@ -1,14 +1,13 @@
 use async_graphql::{Context, Object};
 
-use crate::{schemas::metadata::Metadata};
-use crate::{clients::mock_tiled_client::MockTiledClient};
+use crate::Client;
+use crate::schemas::metadata::Metadata;
 
-pub(crate) struct TiledSchema;
+pub(crate) struct TiledSchema<T>(pub T);
 
 #[Object]
-impl TiledSchema {
+impl<T: Client + Send + Sync + 'static> TiledSchema<T> {
     async fn metadata<'ctx>(&self, ctx: &Context<'ctx>) -> Metadata {
-        let tiled_client = ctx.data::<MockTiledClient>().unwrap();
-        tiled_client.get_metadata_struct().await
+        self.0.get_metadata_struct().await
     }
 }
