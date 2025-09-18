@@ -1,2 +1,2 @@
 pub(crate) mod tiled;
-pub(crate) mod metadata;
+pub(crate) mod tiled_metadata;
