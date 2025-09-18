@@ -1,4 +1,4 @@
-use crate::{Client, schemas::metadata::Metadata};
+use crate::{clients::client::Client, schemas::metadata::Metadata};
 
 pub struct TiledClient;
 

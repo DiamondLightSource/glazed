@@ -8,12 +8,9 @@ mod schemas;
 use crate::{
     clients::mock_tiled_client::MockTiledClient, 
     clients::tiled_client::TiledClient,
-    schemas::{metadata::Metadata, tiled::TiledSchema}
+    schemas::tiled::TiledSchema,
 };
 
-trait Client {
-    fn get_metadata_struct(&self) -> impl Future<Output = Metadata> + Send;
-}
 
 async fn graphql_handler(req: GraphQLRequest) -> GraphQLResponse {
     let schema = Schema::build(

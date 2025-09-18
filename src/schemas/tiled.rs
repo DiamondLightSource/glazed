@@ -1,7 +1,7 @@
 use async_graphql::{Context, Object};
 
-use crate::Client;
 use crate::schemas::metadata::Metadata;
+use crate::clients::client::Client;
 
 pub(crate) struct TiledSchema<T>(pub T);
 
