@@ -1,9 +1,9 @@
-use crate::{clients::client::{Client, ClientError}, schemas::tiled_metadata::Metadata};
+use crate::{clients::client::{Client, ClientError, ClientResult}, schemas::tiled_metadata::Metadata};
 
 pub struct TiledClient;
 
 impl TiledClient {
-    async fn request<T: serde::de::DeserializeOwned>(&self, endpoint: &str) -> Result<T, ClientError> {
+    async fn request<T: serde::de::DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
         println!("Requesting data from tiled");
 
         let mut path: String = String::from("http://127.0.0.1:8000");
@@ -12,13 +12,11 @@ impl TiledClient {
 
         let req = reqwest::get(path).await?;
         let json = req.json().await?;
-        // serde_json::from_value(json).map_err(|e| ClientError::Serde(e))
         Ok(serde_json::from_value(json)?)
-        // serde_json::from_value(json)?
     }
 }
 impl Client for TiledClient {
-    async fn metadata(&self) -> Result<Metadata, ClientError> {
+    async fn metadata(&self) -> ClientResult<Metadata> {
         self.request::<Metadata>("/api/v1/").await
     }
 }

@@ -1,12 +1,11 @@
 use std::fs::File;
 use std::path::Path;
 
-use crate::{clients::client::{Client, ClientError}, schemas::tiled_metadata::Metadata};
-
+use crate::{clients::client::{Client, ClientError, ClientResult}, schemas::tiled_metadata::Metadata};
 pub struct MockTiledClient;
 
 impl Client for MockTiledClient {
-    async fn metadata(&self) -> Result<Metadata, ClientError> {
+    async fn metadata(&self) -> ClientResult<Metadata> {
         println!("Requesting data from mock");
 
         let path = Path::new("./src/metadata.json");

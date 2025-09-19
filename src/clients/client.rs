@@ -1,11 +1,7 @@
-// use core::fmt;
-// use std::error;
-
-use std::{fmt, result};
+use std::fmt;
 
 use crate::schemas::tiled_metadata::Metadata;
 
-// #[derive(Debug, Clone)]
 #[derive(Debug)]
 pub enum ClientError {
     Parse(url::ParseError),
@@ -44,10 +40,6 @@ impl std::fmt::Display for ClientError {
         }
     }
 }
-
-// impl error::Error for ClientError {
-
-// }
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
