@@ -202,4 +202,3 @@ pub struct Meta {
     #[serde(rename = "root_path")]
     pub root_path: String,
 }
-

@@ -1,7 +1,10 @@
 use std::fs::File;
 use std::path::Path;
 
-use crate::{clients::client::{Client, ClientError, ClientResult}, schemas::tiled_metadata::Metadata};
+use crate::{
+    clients::client::{Client, ClientError, ClientResult},
+    schemas::tiled_metadata::Metadata,
+};
 pub struct MockTiledClient;
 
 impl Client for MockTiledClient {
