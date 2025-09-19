@@ -8,7 +8,7 @@ use crate::{
  
 pub async fn graphql_handler(req: GraphQLRequest) -> GraphQLResponse {
     let schema = Schema::build(
-        TiledSchema(MockTiledClient),
+        TiledSchema(TiledClient),
         EmptyMutation,
         EmptySubscription,
     )
