@@ -1,7 +1,6 @@
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use crate::{
-    clients::mock_tiled_client::MockTiledClient, 
     clients::tiled_client::TiledClient,
     schemas::tiled::TiledSchema,
 };
