@@ -3,15 +3,18 @@ use crate::{
     schemas::tiled_metadata::Metadata,
 };
 
+use reqwest::Url;
+use serde::de::DeserializeOwned;
+
 pub struct TiledClient;
 
 impl TiledClient {
-    async fn request<T: serde::de::DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
+    async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
         println!("Requesting data from tiled");
 
         let mut path: String = String::from("http://127.0.0.1:8000");
         path.push_str(endpoint);
-        let path = reqwest::Url::parse(&path)?;
+        let path = Url::parse(&path)?;
 
         let req = reqwest::get(path).await?;
         let json = req.json().await?;
