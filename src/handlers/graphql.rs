@@ -32,8 +32,8 @@ mod tests {
         let json: serde_json::Value =
             serde_json::from_str("{ \"query\": \"{metadata { apiVersion } }\" }").unwrap();
 
-        let x = client.post("/graphql").json(&json).await;
+        let response = client.post("/graphql").json(&json).await;
 
-        assert!(x.text().await == "{\"data\":{\"metadata\":{\"apiVersion\":0}}}")
+        assert!(response.text().await == "{\"data\":{\"metadata\":{\"apiVersion\":1}}}")
     }
 }
