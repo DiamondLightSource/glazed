@@ -1,9 +1,10 @@
-use crate::{clients::tiled_client::TiledClient, schemas::tiled::TiledSchema};
+use crate::{clients::client::Client, schemas::tiled::TiledSchema};
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 
-pub async fn graphql_handler(req: GraphQLRequest) -> GraphQLResponse {
-    let schema = Schema::build(TiledSchema(TiledClient), EmptyMutation, EmptySubscription).finish();
+pub async fn graphql_handler<T: Client + Send + Sync + 'static>(req: GraphQLRequest) -> GraphQLResponse {
+    let client = T::new();
+    let schema = Schema::build(TiledSchema(client), EmptyMutation, EmptySubscription).finish();
 
     let query = req.into_inner().query;
 
