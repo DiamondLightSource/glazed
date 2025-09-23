@@ -43,6 +43,5 @@ impl std::fmt::Display for ClientError {
 pub type ClientResult<T> = Result<T, ClientError>;
 
 pub trait Client {
-    fn new() -> Self;
     fn metadata(&self) -> impl Future<Output = Result<Metadata, ClientError>> + Send;
 }

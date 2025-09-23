@@ -22,10 +22,6 @@ impl TiledClient {
     }
 }
 impl Client for TiledClient {
-    fn new() -> Self {
-        return TiledClient;
-    }
-
     async fn metadata(&self) -> ClientResult<Metadata> {
         self.request::<Metadata>("/api/v1/").await
     }

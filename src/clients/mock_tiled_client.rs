@@ -8,10 +8,6 @@ use crate::{
 pub struct MockTiledClient;
 
 impl Client for MockTiledClient {
-    fn new() -> Self {
-        return MockTiledClient;
-    }
-
     async fn metadata(&self) -> ClientResult<Metadata> {
         println!("Requesting data from mock");
 
