@@ -1,4 +1,5 @@
 use axum::{Router, routing::post};
+use std::process::exit;
 
 mod clients;
 mod handlers;
@@ -10,11 +11,13 @@ use crate::{clients::mock_tiled_client::MockTiledClient, handlers::graphql::grap
 async fn main() {
     let app = Router::new().route("/graphql", post(graphql_handler::<MockTiledClient>));
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
-        .await
-        .expect(&format!("Could not bind to address"));
+    let Ok(listener) = tokio::net::TcpListener::bind("0.0.0.0:3000").await else {
+        eprintln!("Failed to bind TCP Listener");
+        exit(1);
+        };
 
-    axum::serve(listener, app)
-        .await
-        .expect(&format!("Failed to serve"));
+    let Ok(_) = axum::serve(listener, app).await else {
+        eprintln!("Failed to serve");
+        exit(1);
+        };
 }
