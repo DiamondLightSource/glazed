@@ -7,21 +7,21 @@ mod handlers;
 mod schemas;
 
 use crate::{
-    clients::mock_tiled_client::MockTiledClient, handlers::graphql::graphql_handler,
+    clients::tiled_client::TiledClient, handlers::graphql::graphql_handler,
     schemas::tiled::TiledSchema,
 };
 
 #[tokio::main]
 async fn main() {
     let schema = Schema::build(
-        TiledSchema(MockTiledClient),
+        TiledSchema(TiledClient),
         EmptyMutation,
         EmptySubscription,
     )
     .finish();
 
     let app = Router::new()
-        .route("/graphql", post(graphql_handler::<MockTiledClient>))
+        .route("/graphql", post(graphql_handler::<TiledClient>))
         .layer(Extension(schema));
 
     let Ok(listener) = tokio::net::TcpListener::bind("0.0.0.0:3000").await else {
