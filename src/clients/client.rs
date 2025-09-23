@@ -9,7 +9,6 @@ pub enum ClientError {
     Serde(serde_json::Error),
     Io(std::io::Error),
 }
-
 impl From<url::ParseError> for ClientError {
     fn from(err: url::ParseError) -> ClientError {
         ClientError::Parse(err)
