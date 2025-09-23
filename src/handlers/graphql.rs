@@ -34,6 +34,6 @@ mod tests {
 
         let response = client.post("/graphql").json(&json).await;
 
-        assert!(response.text().await == "{\"data\":{\"metadata\":{\"apiVersion\":1}}}")
+        assert!(response.text().await == "{\"data\":{\"metadata\":{\"apiVersion\":0}}}")
     }
 }
