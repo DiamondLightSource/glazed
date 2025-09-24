@@ -1,0 +1,7 @@
+bind_address = "0.0.0.0:3000"
+
+[tiled_client]
+address = "http://127.0.0.1:8000"
+
+[mock_tiled_client]
+filepath = "./src/mock_tiled_client_json/"
