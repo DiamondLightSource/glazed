@@ -5,6 +5,7 @@ use axum::routing::post;
 use axum::{Extension, Router};
 
 mod clients;
+mod config;
 mod handlers;
 mod schemas;
 
