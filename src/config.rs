@@ -8,8 +8,6 @@ pub struct GlazedConfig {
     pub bind_address: String,
 
     pub tiled_client: TiledClientConfig,
-    pub mock_tiled_client: MockTiledClientConfig,
-
 }
 impl GlazedConfig {
     pub fn from_file(path: &str) -> Result<Self, ConfigError> {
@@ -24,9 +22,4 @@ impl GlazedConfig {
 #[derive(Deserialize, Debug, Clone)]
 pub struct TiledClientConfig {
     pub address: String,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct MockTiledClientConfig {
-    pub dir_path: String,
 }
