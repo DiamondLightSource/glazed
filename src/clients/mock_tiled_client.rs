@@ -22,6 +22,6 @@ impl MockTiledClient {
 }
 impl Client for MockTiledClient {
     async fn metadata(&self) -> ClientResult<Metadata> {
-        self.load_file_into_struct::<Metadata>(&"tiled_metadata.json").await
+        self.load_file_into_struct("tiled_metadata.json").await
     }
 }
