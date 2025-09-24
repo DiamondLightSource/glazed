@@ -1,5 +1,6 @@
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
+use url::Url;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct GlazedConfig {
@@ -19,5 +20,5 @@ impl GlazedConfig {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct TiledClientConfig {
-    pub address: String,
+    pub address: Url,
 }
