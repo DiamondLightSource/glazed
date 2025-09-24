@@ -16,7 +16,7 @@ use crate::schemas::TiledQuery;
 
 #[tokio::main]
 async fn main() {
-    let Ok(config) = GlazedConfig::from_file(&"config.toml") else {
+    let Ok(config) = GlazedConfig::from_file("config.toml") else {
         eprintln!("Failed to load config");
         exit(1);
     };
