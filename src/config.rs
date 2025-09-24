@@ -14,7 +14,7 @@ impl GlazedConfig {
             .add_source(File::with_name(path))
             .build()?;
 
-        config.try_deserialize::<Self>()
+       config.try_deserialize()
     }
 }
 
