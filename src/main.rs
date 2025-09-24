@@ -8,13 +8,13 @@ mod schemas;
 
 use crate::{
     clients::tiled_client::TiledClient, handlers::graphql::graphql_handler,
-    schemas::TiledSchema,
+    schemas::TiledQuery,
 };
 
 #[tokio::main]
 async fn main() {
     let schema = Schema::build(
-        TiledSchema(TiledClient),
+        TiledQuery(TiledClient),
         EmptyMutation,
         EmptySubscription,
     )
