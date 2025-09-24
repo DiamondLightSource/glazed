@@ -16,6 +16,9 @@ pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+    use std::str::FromStr;
+
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 
     use crate::TiledQuery;
@@ -23,8 +26,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_api_version_query() {
+        let path = PathBuf::from_str("./resources/").unwrap();
+
         let schema = Schema::build(
-            TiledQuery(MockTiledClient{dir_path: "./resources/".to_string()}),
+            TiledQuery(MockTiledClient{dir_path: path}),
             EmptyMutation,
             EmptySubscription,
         )
