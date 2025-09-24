@@ -12,7 +12,7 @@ pub struct GlazedConfig {
 
 }
 impl GlazedConfig {
-    fn from_file(path: &str) -> Result<Self, ConfigError> {
+    pub fn from_file(path: &str) -> Result<Self, ConfigError> {
         let config = Config::builder()
             .add_source(File::with_name(path))
             .build()?;
