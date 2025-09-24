@@ -14,25 +14,24 @@ pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
 
 #[cfg(test)]
 mod tests {
-    use axum::test_helpers::TestClient;
+    use async_graphql::{EmptySubscription, EmptyMutation, Schema};
 
-    use crate::handlers::graphql::graphql_handler;
+    use crate::TiledSchema;
+    use crate::clients::mock_tiled_client::MockTiledClient;
 
     #[tokio::test]
-    async fn test_query() {
-        let app = axum::Router::new().route(
-            "/graphql",
-            axum::routing::post(
-                graphql_handler::<crate::clients::mock_tiled_client::MockTiledClient>,
-            ),
-        );
-        let client = TestClient::new(app);
+    async fn test_api_version_query() {
+        let schema = Schema::build(
+            TiledSchema(MockTiledClient),
+            EmptyMutation,
+            EmptySubscription,
+        )
+        .finish();
 
-        let json: serde_json::Value =
-            serde_json::from_str("{ \"query\": \"{metadata { apiVersion } }\" }").unwrap();
+        let response = schema.execute("{metadata { apiVersion } }").await;
 
-        let response = client.post("/graphql").json(&json).await;
+        println!("{:?}", response.data.to_string());
 
-        assert!(response.text().await == "{\"data\":{\"metadata\":{\"apiVersion\":0}}}")
+        assert!(response.data.to_string() == "{metadata: {apiVersion: 0}}")
     }
 }
