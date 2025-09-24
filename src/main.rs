@@ -8,7 +8,7 @@ mod schemas;
 
 use crate::{
     clients::tiled_client::TiledClient, handlers::graphql::graphql_handler,
-    schemas::tiled::TiledSchema,
+    schemas::TiledSchema,
 };
 
 #[tokio::main]

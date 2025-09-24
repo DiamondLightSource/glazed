@@ -1,4 +1,4 @@
-use crate::{clients::client::Client, schemas::tiled::TiledSchema};
+use crate::{clients::client::Client, schemas::TiledSchema};
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::Extension;
