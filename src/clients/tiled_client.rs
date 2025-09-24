@@ -16,8 +16,8 @@ impl TiledClient {
         path.push_str(endpoint);
         let path = Url::parse(&path)?;
 
-        let req = reqwest::get(path).await?;
-        let json = req.json().await?;
+        let response = reqwest::get(path).await?;
+        let json = response.json().await?;
         Ok(serde_json::from_value(json)?)
     }
 }
