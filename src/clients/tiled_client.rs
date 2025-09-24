@@ -5,18 +5,18 @@ use crate::clients::{Client, ClientResult};
 use crate::schemas::tiled_metadata::Metadata;
 
 pub struct TiledClient{
-    pub address: String,
+    pub address: Url,
 }
 
 impl TiledClient {
     async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
         println!("Requesting data from tiled");
 
-        let address = self.address.to_string() + endpoint;
-        let url = Url::parse(&address)?;
+        let url = self.address.join(endpoint)?;
 
         let response = reqwest::get(url).await?;
         let json = response.json().await?;
+
         Ok(serde_json::from_value(json)?)
     }
 }
