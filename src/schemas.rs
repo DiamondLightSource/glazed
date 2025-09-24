@@ -2,7 +2,7 @@ pub(crate) mod tiled_metadata;
 
 use async_graphql::Object;
 
-use crate::clients::client::{Client, ClientError};
+use crate::clients::{Client, ClientError};
 
 pub(crate) struct TiledSchema<T>(pub T);
 

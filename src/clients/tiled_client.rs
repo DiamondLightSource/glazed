@@ -1,5 +1,5 @@
 use crate::{
-    clients::client::{Client, ClientResult},
+    clients::{Client, ClientResult},
     schemas::tiled_metadata::Metadata,
 };
 

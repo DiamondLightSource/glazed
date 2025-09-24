@@ -2,7 +2,7 @@ use std::fs::File;
 use std::path::Path;
 
 use crate::{
-    clients::client::{Client, ClientResult},
+    clients::{Client, ClientResult},
     schemas::tiled_metadata::Metadata,
 };
 pub struct MockTiledClient;
