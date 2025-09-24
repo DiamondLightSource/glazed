@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
 
@@ -14,7 +12,7 @@ impl GlazedConfig {
         let config = Config::builder()
             .add_source(File::with_name(path))
             .build()?;
-        
+
         config.try_deserialize::<Self>()
     }
 }
