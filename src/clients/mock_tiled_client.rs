@@ -10,7 +10,7 @@ pub struct MockTiledClient {
 }
 
 impl MockTiledClient {
-    async fn load_file_into_struct<T: DeserializeOwned>(&self, filename: &str) -> ClientResult<T> {
+    async fn deserialize_from_file<T: DeserializeOwned>(&self, filename: &str) -> ClientResult<T> {
         println!("Requesting data from mock");
 
         let path = self.dir_path.join(filename);
@@ -22,6 +22,6 @@ impl MockTiledClient {
 }
 impl Client for MockTiledClient {
     async fn metadata(&self) -> ClientResult<Metadata> {
-        self.load_file_into_struct("tiled_metadata.json").await
+        self.deserialize_from_file("tiled_metadata.json").await
     }
 }
