@@ -12,11 +12,10 @@ impl TiledClient {
     async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
         println!("Requesting data from tiled");
 
-        let mut path: String = self.address.to_owned();
-        path.push_str(endpoint);
-        let path = Url::parse(&path)?;
+        let address = self.address.to_string() + endpoint;
+        let url = Url::parse(&address)?;
 
-        let response = reqwest::get(path).await?;
+        let response = reqwest::get(url).await?;
         let json = response.json().await?;
         Ok(serde_json::from_value(json)?)
     }
