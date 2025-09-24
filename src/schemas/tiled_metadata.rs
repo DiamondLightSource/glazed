@@ -5,11 +5,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-#[serde(rename_all = "camelCase")]
 pub struct Metadata {
-    #[serde(rename = "api_version")]
     pub api_version: i64,
-    #[serde(rename = "library_version")]
     pub library_version: String,
     pub queries: Vec<String>,
     pub links: Links,
@@ -17,7 +14,6 @@ pub struct Metadata {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-#[serde(rename_all = "camelCase")]
 pub struct Links {
     #[serde(rename = "self")]
     pub self_field: String,
@@ -25,8 +21,6 @@ pub struct Links {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-#[serde(rename_all = "camelCase")]
 pub struct Meta {
-    #[serde(rename = "root_path")]
     pub root_path: String,
 }
