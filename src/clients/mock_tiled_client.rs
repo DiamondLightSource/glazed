@@ -1,20 +1,19 @@
 use std::fs::File;
-use std::path::Path;
+use std::path::PathBuf;
 
 use serde::de::DeserializeOwned;
 
 use crate::clients::{Client, ClientResult};
 use crate::schemas::tiled_metadata::Metadata;
 pub struct MockTiledClient {
-    pub dir_path: String,
+    pub dir_path: PathBuf,
 }
 
 impl MockTiledClient {
-    async fn load_file_into_struct<T: DeserializeOwned>(&self, file: &str) -> ClientResult<T> {
+    async fn load_file_into_struct<T: DeserializeOwned>(&self, filename: &str) -> ClientResult<T> {
         println!("Requesting data from mock");
 
-        let path_str = self.dir_path.to_string() + file;
-        let path = Path::new(&path_str);
+        let path = self.dir_path.join(filename);
         let file = File::open(&path)?;
 
         Ok(serde_json::from_reader(file)?)
