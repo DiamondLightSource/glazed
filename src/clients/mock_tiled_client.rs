@@ -11,7 +11,7 @@ impl Client for MockTiledClient {
     async fn metadata(&self) -> ClientResult<Metadata> {
         println!("Requesting data from mock");
 
-        let path = Path::new("./src/metadata.json");
+        let path = Path::new("./src/resources/tiled_metadata.json");
         let file = File::open(&path)?;
 
         Ok(serde_json::from_reader(file)?)
