@@ -1,0 +1,295 @@
+{
+    "api_version": 0,
+    "library_version": "0.1.1",
+    "formats": {
+        "table": [
+            "application/vnd.apache.arrow.file",
+            "application/x-parquet",
+            "text/csv",
+            "text/x-comma-separated-values",
+            "text/plain",
+            "application/vnd.ms-excel",
+            "text/html",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/json",
+            "application/json-seq",
+            "application/x-hdf5"
+        ],
+        "container": [
+            "application/x-hdf5",
+            "application/json"
+        ],
+        "array": [
+            "application/octet-stream",
+            "application/json",
+            "text/csv",
+            "text/x-comma-separated-values",
+            "text/plain",
+            "application/vnd.ms-excel",
+            "image/png",
+            "image/tiff",
+            "text/html"
+        ],
+        "awkward": [
+            "application/zip",
+            "application/json",
+            "application/vnd.apache.arrow.file",
+            "application/x-parquet"
+        ],
+        "sparse": [
+            "application/x-hdf5",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.apache.arrow.file",
+            "application/x-parquet",
+            "text/csv",
+            "text/plain",
+            "text/html",
+            "application/json"
+        ],
+        "xarray_dataset": [
+            "application/vnd.apache.arrow.file",
+            "application/x-parquet",
+            "text/csv",
+            "text/comma-separated-values",
+            "text/plain",
+            "text/html",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/json",
+            "application/x-hdf5"
+        ]
+    },
+    "aliases": {
+        "table": {
+            "text/csv": [
+                "csv"
+            ],
+            "application/vnd.ms-excel": [
+                "xls",
+                "xlb",
+                "xlm",
+                "xla",
+                "xlc",
+                "xlt",
+                "xlw"
+            ],
+            "text/html": [
+                "html",
+                "htm"
+            ],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+                "xlsx"
+            ],
+            "application/json": [
+                "json"
+            ],
+            "application/x-hdf5": [
+                "h5",
+                "hdf5"
+            ],
+            "application/x-parquet": [
+                "parquet"
+            ],
+            "application/vnd.apache.arrow.file": [
+                "arrow",
+                "feather"
+            ],
+            "application/netcdf": [
+                "nc"
+            ],
+            "text/plain": [
+                "text",
+                "txt"
+            ]
+        },
+        "container": {
+            "application/x-hdf5": [
+                "h5",
+                "hdf5"
+            ],
+            "application/json": [
+                "json"
+            ],
+            "application/x-parquet": [
+                "parquet"
+            ],
+            "application/vnd.apache.arrow.file": [
+                "arrow",
+                "feather"
+            ],
+            "application/netcdf": [
+                "nc"
+            ],
+            "text/plain": [
+                "text",
+                "txt"
+            ]
+        },
+        "array": {
+            "application/json": [
+                "json"
+            ],
+            "text/csv": [
+                "csv"
+            ],
+            "application/vnd.ms-excel": [
+                "xls",
+                "xlb",
+                "xlm",
+                "xla",
+                "xlc",
+                "xlt",
+                "xlw"
+            ],
+            "image/png": [
+                "png"
+            ],
+            "image/tiff": [
+                "tiff",
+                "tif"
+            ],
+            "text/html": [
+                "html",
+                "htm"
+            ],
+            "application/x-hdf5": [
+                "h5",
+                "hdf5"
+            ],
+            "application/x-parquet": [
+                "parquet"
+            ],
+            "application/vnd.apache.arrow.file": [
+                "arrow",
+                "feather"
+            ],
+            "application/netcdf": [
+                "nc"
+            ],
+            "text/plain": [
+                "text",
+                "txt"
+            ]
+        },
+        "awkward": {
+            "application/zip": [
+                "zip"
+            ],
+            "application/json": [
+                "json"
+            ],
+            "application/x-hdf5": [
+                "h5",
+                "hdf5"
+            ],
+            "application/x-parquet": [
+                "parquet"
+            ],
+            "application/vnd.apache.arrow.file": [
+                "arrow",
+                "feather"
+            ],
+            "application/netcdf": [
+                "nc"
+            ],
+            "text/plain": [
+                "text",
+                "txt"
+            ]
+        },
+        "sparse": {
+            "application/x-hdf5": [
+                "h5",
+                "hdf5"
+            ],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+                "xlsx"
+            ],
+            "text/csv": [
+                "csv"
+            ],
+            "text/html": [
+                "html",
+                "htm"
+            ],
+            "application/json": [
+                "json"
+            ],
+            "application/x-parquet": [
+                "parquet"
+            ],
+            "application/vnd.apache.arrow.file": [
+                "arrow",
+                "feather"
+            ],
+            "application/netcdf": [
+                "nc"
+            ],
+            "text/plain": [
+                "text",
+                "txt"
+            ]
+        },
+        "xarray_dataset": {
+            "text/csv": [
+                "csv"
+            ],
+            "text/html": [
+                "html",
+                "htm"
+            ],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+                "xlsx"
+            ],
+            "application/json": [
+                "json"
+            ],
+            "application/x-hdf5": [
+                "h5",
+                "hdf5"
+            ],
+            "application/x-parquet": [
+                "parquet"
+            ],
+            "application/vnd.apache.arrow.file": [
+                "arrow",
+                "feather"
+            ],
+            "application/netcdf": [
+                "nc"
+            ],
+            "text/plain": [
+                "text",
+                "txt"
+            ]
+        }
+    },
+    "queries": [
+        "fulltext",
+        "lookup",
+        "keys_filter",
+        "regex",
+        "eq",
+        "noteq",
+        "comparison",
+        "contains",
+        "in",
+        "notin",
+        "keypresent",
+        "like",
+        "specs",
+        "access_blob_filter",
+        "structure_family"
+    ],
+    "authentication": {
+        "required": false,
+        "providers": [],
+        "links": null
+    },
+    "links": {
+        "self": "http://127.0.0.1:8000/api/v1",
+        "documentation": "http://127.0.0.1:8000/api/v1/docs"
+    },
+    "meta": {
+        "root_path": "/api"
+    }
+}
