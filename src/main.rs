@@ -21,7 +21,7 @@ async fn main() {
         exit(1);
     };
 
-    let schema = Schema::build(TiledQuery(TiledClient), EmptyMutation, EmptySubscription).finish();
+    let schema = Schema::build(TiledQuery(TiledClient{address: config.tiled_client.address.to_owned()}), EmptyMutation, EmptySubscription).finish();
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler::<TiledClient>))
