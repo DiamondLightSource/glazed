@@ -1,7 +1,9 @@
-use crate::{clients::Client, schemas::TiledQuery};
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::Extension;
+
+use crate::clients::Client;
+use crate::schemas::TiledQuery;
 
 pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
     schema: Extension<Schema<TiledQuery<T>, EmptyMutation, EmptySubscription>>,
@@ -14,7 +16,7 @@ pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptySubscription, EmptyMutation, Schema};
+    use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 
     use crate::TiledQuery;
     use crate::clients::mock_tiled_client::MockTiledClient;

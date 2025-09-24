@@ -1,10 +1,8 @@
-use crate::{
-    clients::{Client, ClientResult},
-    schemas::tiled_metadata::Metadata,
-};
-
 use reqwest::Url;
 use serde::de::DeserializeOwned;
+
+use crate::clients::{Client, ClientResult};
+use crate::schemas::tiled_metadata::Metadata;
 
 pub struct TiledClient;
 
