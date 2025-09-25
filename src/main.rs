@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
             address: config.tiled_client.address.to_owned(),
         }),
         EmptyMutation,
-        EmptySubscription,
+        EmptySubscription
     )
     .finish();
 
