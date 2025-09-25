@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
 use url::Url;
@@ -9,12 +11,13 @@ pub struct GlazedConfig {
     pub tiled_client: TiledClientConfig,
 }
 impl GlazedConfig {
-    pub fn from_file(path: &str) -> Result<Self, ConfigError> {
+    pub fn from_file(path: &Path) -> Result<Self, ConfigError> {
         let config = Config::builder()
-            .add_source(File::with_name(path))
+            // .add_source(File::with_name(path))
+            .add_source(File::from(path))
             .build()?;
 
-       config.try_deserialize()
+        config.try_deserialize()
     }
 }
 
