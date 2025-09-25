@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::routing::post;
 use axum::{Extension, Router};
-use clap::Parser;
 
 mod cli;
 mod clients;
@@ -20,7 +19,7 @@ use cli::{Cli, Commands};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn error::Error>> {
-    let cli = Cli::parse();
+    let cli = Cli::init();
 
     let config_filepath = cli.config_filepath.unwrap_or(PathBuf::from("config.toml"));
 

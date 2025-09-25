@@ -13,6 +13,12 @@ pub struct Cli {
     pub command: Commands,
 }
 
+impl Cli {
+    pub fn init() -> Self {
+        Self::parse()
+    }
+}
+
 #[derive(Subcommand)]
 pub enum Commands {
     Serve,
