@@ -13,3 +13,4 @@ axum = "0.8.4"
 async-graphql-axum = "7.0.17"
 url = "2.5.7"
 config = "0.15.16"
+clap = { version = "4.5.48", features = ["derive"] }
