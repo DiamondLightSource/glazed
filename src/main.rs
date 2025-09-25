@@ -21,7 +21,7 @@ use cli::{Cli, Commands};
 async fn main() -> Result<(), Box<dyn error::Error>> {
     let cli = Cli::init();
 
-    let config_filepath = cli.config_filepath.unwrap_or(PathBuf::from("config.toml"));
+    let config_filepath = cli.config_filepath.unwrap_or("config.toml".into());
 
     let config = GlazedConfig::from_file(&config_filepath)?;
 
