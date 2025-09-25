@@ -1,5 +1,4 @@
 use std::error;
-use std::process::exit;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::routing::post;
@@ -36,5 +35,5 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
 
     axum::serve(listener, app).await?;
 
-    exit(0);
+    Ok(())
 }
