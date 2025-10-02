@@ -13,14 +13,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      # - name: Generate Metadata
-      #   id: meta
-      #   uses: docker/metadata-action@v5 
-      #   with:
-      #     images: ghcr.io/${{ github.repository }}
+      - name: Generate Metadata
+        id: meta
+        uses: docker/metadata-action@v5 
+        with:
+          images: ghcr.io/${{ github.repository }}
       
-      # - name: Build image
-      #   uses: docker/build-push-actions@v6
+      - name: Build image
+        uses: docker/build-push-actions@v6
       
       # - name: Log in to GHCR
       #   if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
@@ -37,4 +37,4 @@ jobs:
         with:
           # push: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
           push: true
-          # tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
