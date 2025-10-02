@@ -23,7 +23,11 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
 
     let config_filepath = cli.config_filepath.unwrap_or("config.toml".into());
 
+    println!("Loading config from {config_filepath:?}");
+
     let config = GlazedConfig::from_file(&config_filepath)?;
+
+    println!("Config loaded");
 
     match cli.command {
         Commands::Serve => serve(config).await,
@@ -45,6 +49,8 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
+
+    println!("Serving...");
 
     axum::serve(listener, app).await?;
 
