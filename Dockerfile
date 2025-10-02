@@ -13,4 +13,5 @@ COPY ./config.toml ./config.toml
 
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
-CMD ["glazed serve"]
+ENTRYPOINT ["/build/target/x86_64-unknown-linux-musl/release/glazed"]
+CMD ["serve"]
