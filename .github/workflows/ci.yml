@@ -2,8 +2,8 @@ name: Glazed CI
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
   pull_request:
 
 jobs:
@@ -35,5 +35,6 @@ jobs:
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
-          push: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+          # push: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+          push: true
           # tags: ${{ steps.meta.outputs.tags }}
