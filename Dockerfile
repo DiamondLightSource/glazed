@@ -1,6 +1,7 @@
-FROM rust:1.87.0-slim as build
-
+FROM rust:1.90-slim as build
 WORKDIR /build
+
+RUN rustup target add x86_64-unknown-linux-musl
 
 COPY ./Cargo.toml ./Cargo.toml
 COPY ./Cargo.lock ./Cargo.lock
