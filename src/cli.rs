@@ -4,7 +4,6 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(version)]
-
 pub struct Cli {
     #[arg(short, long)]
     pub config_filepath: Option<PathBuf>,

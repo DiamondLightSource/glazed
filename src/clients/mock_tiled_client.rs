@@ -17,7 +17,6 @@ impl MockTiledClient {
         let file = File::open(&path)?;
 
         Ok(serde_json::from_reader(file)?)
-
     }
 }
 impl Client for MockTiledClient {

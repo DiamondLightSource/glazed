@@ -24,7 +24,9 @@ mod tests {
     #[tokio::test]
     async fn test_api_version_query() {
         let schema = Schema::build(
-            TiledQuery(MockTiledClient{dir_path: "./resources".into()}),
+            TiledQuery(MockTiledClient {
+                dir_path: "./resources".into(),
+            }),
             EmptyMutation,
             EmptySubscription,
         )
