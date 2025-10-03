@@ -8,14 +8,14 @@ mod cli;
 mod clients;
 mod config;
 mod handlers;
-mod schemas;
+mod model;
 
 use cli::{Cli, Commands};
 
 use crate::clients::tiled_client::TiledClient;
 use crate::config::GlazedConfig;
 use crate::handlers::graphql::{graphiql_handler, graphql_handler};
-use crate::schemas::TiledQuery;
+use crate::model::TiledQuery;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn error::Error>> {

@@ -5,7 +5,7 @@ use axum::Extension;
 use axum::response::{Html, IntoResponse};
 
 use crate::clients::Client;
-use crate::schemas::TiledQuery;
+use crate::model::TiledQuery;
 
 pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
     schema: Extension<Schema<TiledQuery<T>, EmptyMutation, EmptySubscription>>,
