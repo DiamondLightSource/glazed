@@ -10,11 +10,12 @@ mod config;
 mod handlers;
 mod schemas;
 
+use cli::{Cli, Commands};
+
 use crate::clients::tiled_client::TiledClient;
 use crate::config::GlazedConfig;
 use crate::handlers::graphql::graphql_handler;
 use crate::schemas::TiledQuery;
-use cli::{Cli, Commands};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn error::Error>> {
@@ -35,7 +36,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
             address: config.tiled_client.address.to_owned(),
         }),
         EmptyMutation,
-        EmptySubscription
+        EmptySubscription,
     )
     .finish();
 
