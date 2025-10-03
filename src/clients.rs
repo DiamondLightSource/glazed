@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::model::metadata::Metadata;
+use crate::model::app_metadata::Metadata;
 
 #[cfg(test)]
 pub(crate) mod mock_tiled_client;
