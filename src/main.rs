@@ -1,5 +1,4 @@
 use std::error;
-use std::path::PathBuf;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::routing::post;
