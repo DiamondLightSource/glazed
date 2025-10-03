@@ -1,4 +1,4 @@
-pub(crate) mod tiled_metadata;
+pub(crate) mod metadata;
 
 use async_graphql::Object;
 
@@ -8,7 +8,7 @@ pub(crate) struct TiledQuery<T>(pub T);
 
 #[Object]
 impl<T: Client + Send + Sync + 'static> TiledQuery<T> {
-    async fn metadata(&self) -> async_graphql::Result<tiled_metadata::Metadata, ClientError> {
+    async fn metadata(&self) -> async_graphql::Result<metadata::Metadata, ClientError> {
         self.0.metadata().await
     }
 }
