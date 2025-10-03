@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use serde::de::DeserializeOwned;
 
 use crate::clients::{Client, ClientResult};
-use crate::model::tiled_metadata::Metadata;
+use crate::model::metadata::Metadata;
 pub struct MockTiledClient {
     pub dir_path: PathBuf,
 }
