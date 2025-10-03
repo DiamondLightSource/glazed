@@ -1,7 +1,7 @@
 use std::error;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-use axum::routing::post;
+use axum::routing::{get, post};
 use axum::{Extension, Router};
 
 mod cli;
@@ -14,7 +14,7 @@ use cli::{Cli, Commands};
 
 use crate::clients::tiled_client::TiledClient;
 use crate::config::GlazedConfig;
-use crate::handlers::graphql::graphql_handler;
+use crate::handlers::graphql::{graphiql_handler, graphql_handler};
 use crate::schemas::TiledQuery;
 
 #[tokio::main]
@@ -42,6 +42,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler::<TiledClient>))
+        .route("/graphiql", get(graphiql_handler))
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
