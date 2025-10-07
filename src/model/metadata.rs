@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
+use crate::model::common::Links;
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Root {
     pub id: Uuid,
@@ -114,13 +116,4 @@ pub struct Structure {
 pub struct Sorting {
     pub key: String,
     pub direction: i64,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Links {
-    #[serde(rename = "self")]
-    #[graphql(name = "self")]
-    pub self_field: String,
-    pub search: String,
-    pub full: String,
 }
