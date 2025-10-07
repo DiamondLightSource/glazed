@@ -1,10 +1,12 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use async_graphql::SimpleObject;
+use uuid::Uuid;
+
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Root {
-    pub id: String,
+    pub id: Uuid,
     pub attributes: Attributes,
     pub links: Links,
     pub meta: Value,
@@ -36,7 +38,7 @@ pub struct Metadata {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Start {
-    pub uid: String,
+    pub uid: Uuid,
     pub time: f64,
     pub versions: Versions,
     pub instrument: String,
@@ -76,9 +78,9 @@ pub struct Hints {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Stop {
-    pub uid: String,
+    pub uid: Uuid,
     pub time: f64,
-    pub run_start: String,
+    pub run_start: Uuid,
     pub exit_status: String,
     pub reason: String,
     pub num_events: NumEvents,
