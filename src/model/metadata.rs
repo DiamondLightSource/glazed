@@ -19,7 +19,6 @@ pub struct Attributes {
     pub specs: Vec<Spec>,
     pub metadata: Metadata,
     pub structure: Structure,
-    pub access_blob: AccessBlob,
     pub sorting: Vec<Sorting>,
     pub data_sources: Value,
 }
@@ -95,10 +94,6 @@ pub struct NumEvents {
 pub struct Structure {
     pub contents: Value,
     pub count: i64,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct AccessBlob {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
