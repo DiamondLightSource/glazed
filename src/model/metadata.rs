@@ -108,6 +108,7 @@ pub struct Sorting {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Links {
     #[serde(rename = "self")]
+    #[graphql(name = "self")]
     pub self_field: String,
     pub search: String,
     pub full: String,
