@@ -3,7 +3,6 @@ use serde_derive::Serialize;
 use serde_json::Value;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Root {
     pub id: String,
     pub attributes: Attributes,
@@ -12,23 +11,18 @@ pub struct Root {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Attributes {
     pub ancestors: Vec<Value>,
-    #[serde(rename = "structure_family")]
     pub structure_family: String,
     pub specs: Vec<Spec>,
     pub metadata: Metadata,
     pub structure: Structure,
-    #[serde(rename = "access_blob")]
     pub access_blob: AccessBlob,
     pub sorting: Vec<Sorting>,
-    #[serde(rename = "data_sources")]
     pub data_sources: Value,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Spec {
     pub name: String,
     pub version: String,
