@@ -1,8 +1,7 @@
+use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use async_graphql::SimpleObject;
 use uuid::Uuid;
-
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Root {
@@ -29,7 +28,7 @@ pub struct Spec {
     pub version: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize,SimpleObject)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Metadata {
     pub start: Start,
     pub stop: Stop,
@@ -71,9 +70,24 @@ pub struct PlanArgs {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Hints {
-    pub dimensions: Vec<(Vec<String>, String)>,
+    pub dimensions: Vec<HintDimension>,
 }
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, SimpleObject)]
+pub struct HintDimension {
+    pub axes: Vec<String>,
+    pub stream: String,
+}
+
+impl<'de> Deserialize<'de> for HintDimension {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let (axes, stream) = <(Vec<String>, String)>::deserialize(deserializer)?;
+        Ok(Self { axes, stream })
+    }
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Stop {
