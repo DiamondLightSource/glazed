@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use serde::de::DeserializeOwned;
 
 use crate::clients::{Client, ClientResult};
-use crate::model::app_metadata::Metadata;
+use crate::model::app_metadata::AppMetadata;
 pub struct MockTiledClient {
     pub dir_path: PathBuf,
 }
@@ -20,7 +20,7 @@ impl MockTiledClient {
     }
 }
 impl Client for MockTiledClient {
-    async fn metadata(&self) -> ClientResult<Metadata> {
+    async fn app_metadata(&self) -> ClientResult<AppMetadata> {
         self.deserialize_from_file("tiled_metadata.json").await
     }
 }

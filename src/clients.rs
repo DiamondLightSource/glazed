@@ -1,13 +1,13 @@
 use std::fmt;
 
-use crate::model::app_metadata::Metadata;
+use crate::model::app_metadata::AppMetadata;
 
 #[cfg(test)]
 pub(crate) mod mock_tiled_client;
 pub(crate) mod tiled_client;
 
 pub trait Client {
-    fn metadata(&self) -> impl Future<Output = Result<Metadata, ClientError>> + Send;
+    fn app_metadata(&self) -> impl Future<Output = Result<AppMetadata, ClientError>> + Send;
 }
 
 pub type ClientResult<T> = Result<T, ClientError>;

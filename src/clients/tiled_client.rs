@@ -2,7 +2,7 @@ use reqwest::Url;
 use serde::de::DeserializeOwned;
 
 use crate::clients::{Client, ClientResult};
-use crate::model::app_metadata::Metadata;
+use crate::model::app_metadata::AppMetadata;
 
 pub struct TiledClient {
     pub address: Url,
@@ -21,7 +21,7 @@ impl TiledClient {
     }
 }
 impl Client for TiledClient {
-    async fn metadata(&self) -> ClientResult<Metadata> {
-        self.request::<Metadata>("/api/v1/").await
+    async fn app_metadata(&self) -> ClientResult<AppMetadata> {
+        self.request::<AppMetadata>("/api/v1/").await
     }
 }
