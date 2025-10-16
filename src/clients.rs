@@ -1,6 +1,9 @@
 use std::fmt;
 
+use uuid::Uuid;
+
 use crate::model::app_metadata::AppMetadata;
+use crate::model::metadata::Root;
 
 #[cfg(test)]
 pub(crate) mod mock_tiled_client;
@@ -8,6 +11,7 @@ pub(crate) mod tiled_client;
 
 pub trait Client {
     fn app_metadata(&self) -> impl Future<Output = Result<AppMetadata, ClientError>> + Send;
+    fn run_metadata(&self, id: Uuid) -> impl Future<Output = Result<Root, ClientError>> + Send;
 }
 
 pub type ClientResult<T> = Result<T, ClientError>;
