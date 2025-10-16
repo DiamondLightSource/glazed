@@ -7,9 +7,14 @@ use crate::model::common::Links;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Root {
+    pub data: Data,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct Data {
     pub id: Uuid,
     pub attributes: Attributes,
-    pub links: Links,
+    pub links: Option<Links>,
     pub meta: Value,
 }
 
