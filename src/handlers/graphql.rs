@@ -1,9 +1,11 @@
+use async_graphql::http::GraphiQLSource;
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::Extension;
+use axum::response::{Html, IntoResponse};
 
 use crate::clients::Client;
-use crate::schemas::TiledQuery;
+use crate::model::TiledQuery;
 
 pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
     schema: Extension<Schema<TiledQuery<T>, EmptyMutation, EmptySubscription>>,
@@ -12,6 +14,10 @@ pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
     let query = req.into_inner().query;
 
     schema.execute(query).await.into()
+}
+
+pub async fn graphiql_handler() -> impl IntoResponse {
+    Html(GraphiQLSource::build().endpoint("/graphql").finish())
 }
 
 #[cfg(test)]
@@ -24,7 +30,9 @@ mod tests {
     #[tokio::test]
     async fn test_api_version_query() {
         let schema = Schema::build(
-            TiledQuery(MockTiledClient{dir_path: "./resources".into()}),
+            TiledQuery(MockTiledClient {
+                dir_path: "./resources".into(),
+            }),
             EmptyMutation,
             EmptySubscription,
         )

@@ -2,9 +2,9 @@ use reqwest::Url;
 use serde::de::DeserializeOwned;
 
 use crate::clients::{Client, ClientResult};
-use crate::schemas::tiled_metadata::Metadata;
+use crate::model::metadata::Metadata;
 
-pub struct TiledClient{
+pub struct TiledClient {
     pub address: Url,
 }
 

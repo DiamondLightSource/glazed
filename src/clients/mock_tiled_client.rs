@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use serde::de::DeserializeOwned;
 
 use crate::clients::{Client, ClientResult};
-use crate::schemas::tiled_metadata::Metadata;
+use crate::model::metadata::Metadata;
 pub struct MockTiledClient {
     pub dir_path: PathBuf,
 }
@@ -17,7 +17,6 @@ impl MockTiledClient {
         let file = File::open(&path)?;
 
         Ok(serde_json::from_reader(file)?)
-
     }
 }
 impl Client for MockTiledClient {

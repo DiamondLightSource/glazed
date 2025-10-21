@@ -1,5 +1,5 @@
-use std::path::Path;
 use std::net::SocketAddr;
+use std::path::Path;
 
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
@@ -13,9 +13,7 @@ pub struct GlazedConfig {
 }
 impl GlazedConfig {
     pub fn from_file(path: &Path) -> Result<Self, ConfigError> {
-        let config = Config::builder()
-            .add_source(File::from(path))
-            .build()?;
+        let config = Config::builder().add_source(File::from(path)).build()?;
 
         config.try_deserialize()
     }
