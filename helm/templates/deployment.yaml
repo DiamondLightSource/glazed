@@ -44,6 +44,9 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- if .Values.glazed.config_file }}
+          args: ["--config-filepath", {{ .Values.glazed.config_file }}]
+          {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
