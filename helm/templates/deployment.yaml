@@ -44,8 +44,7 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          command: ["serve"]
-          args: ["--config-filepath", "/etc/glazed_config.toml"]
+          args: ["serve", "--config-filepath", "/etc/glazed/config.toml"]
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -68,7 +67,7 @@ spec:
           name: {{ .Release.Name }}-configmap
           items:
           - key: config.toml
-            path: /etc/glazed_config.toml
+            path: config.toml
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
