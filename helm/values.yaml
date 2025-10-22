@@ -112,8 +112,8 @@ volumes: []
 
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts: []
-# - name: glazed_config
-#   mountPath: "/etc/glazed_config.toml"
+# - name: foo
+#   mountPath: "/etc/foo"
 #   readOnly: true
 
 nodeSelector: {}
@@ -121,6 +121,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-# glazed:
-#   config_file: "/etc/glazed_config.toml"
