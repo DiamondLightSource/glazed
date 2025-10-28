@@ -1,5 +1,7 @@
 use std::fmt;
+#[cfg(test)]
 use std::fs::File;
+#[cfg(test)]
 use std::path::PathBuf;
 
 use reqwest::Url;
