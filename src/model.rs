@@ -25,7 +25,6 @@ mod tests {
     #[tokio::test]
     async fn test_api_version_query() {
         let mock_server = MockServer::start();
-
         let mock = mock_server
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
@@ -46,6 +45,9 @@ mod tests {
         let response = schema.execute("{metadata { apiVersion } }").await;
 
         assert_eq!(response.data.to_string(), "{metadata: {apiVersion: 0}}");
+        assert_eq!(response.errors, &[]);
+        mock.assert();
+    }
 
     #[tokio::test]
     async fn test_server_unavailable() {
