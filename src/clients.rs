@@ -18,13 +18,10 @@ pub struct TiledClient {
 impl TiledClient {
     async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
         println!("Requesting data from tiled");
-
         let url = self.address.join(endpoint)?;
-
-        let response = reqwest::get(url).await?;
-        let json = response.json().await?;
-
-        Ok(serde_json::from_value(json)?)
+        let response = reqwest::get(url).await?.error_for_status()?;
+        let body = response.text().await?;
+        serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
 }
 impl Client for TiledClient {
@@ -35,38 +32,29 @@ impl Client for TiledClient {
 
 #[derive(Debug)]
 pub enum ClientError {
-    Parse(url::ParseError),
-    Reqwest(reqwest::Error),
-    Serde(serde_json::Error),
-    Io(std::io::Error),
+    InvalidPath(url::ParseError),
+    ServerError(reqwest::Error),
+    InvalidResponse(serde_json::Error, String),
 }
 impl From<url::ParseError> for ClientError {
     fn from(err: url::ParseError) -> ClientError {
-        ClientError::Parse(err)
+        ClientError::InvalidPath(err)
     }
 }
 impl From<reqwest::Error> for ClientError {
     fn from(err: reqwest::Error) -> ClientError {
-        ClientError::Reqwest(err)
+        ClientError::ServerError(err)
     }
 }
-impl From<serde_json::Error> for ClientError {
-    fn from(err: serde_json::Error) -> ClientError {
-        ClientError::Serde(err)
-    }
-}
-impl From<std::io::Error> for ClientError {
-    fn from(err: std::io::Error) -> ClientError {
-        ClientError::Io(err)
-    }
-}
+
 impl std::fmt::Display for ClientError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            ClientError::Parse(ref err) => write!(f, "Parse error: {}", err),
-            ClientError::Reqwest(ref err) => write!(f, "Request error: {}", err),
-            ClientError::Serde(ref err) => write!(f, "Serde error: {}", err),
-            ClientError::Io(ref err) => write!(f, "IO Error: {}", err),
+        match self {
+            ClientError::InvalidPath(err) => write!(f, "Invalid URL path: {}", err),
+            ClientError::ServerError(err) => write!(f, "Tiled server error: {}", err),
+            ClientError::InvalidResponse(err, actual) => {
+                write!(f, "Invalid response: {err}, response: {actual}")
+            }
         }
     }
 }
