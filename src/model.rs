@@ -15,7 +15,7 @@ impl TiledQuery {
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value};
     use httpmock::MockServer;
     use url::Url;
 
@@ -46,6 +46,56 @@ mod tests {
         let response = schema.execute("{metadata { apiVersion } }").await;
 
         assert_eq!(response.data.to_string(), "{metadata: {apiVersion: 0}}");
+
+    #[tokio::test]
+    async fn test_server_unavailable() {
+        let schema = Schema::build(
+            TiledQuery(TiledClient {
+                address: Url::parse("http://tiled.example.com").unwrap(),
+            }),
+            EmptyMutation,
+            EmptySubscription,
+        )
+        .finish();
+
+        let response = schema.execute("{metadata { apiVersion } }").await;
+        assert_eq!(response.data, Value::Null);
+        assert_eq!(
+            response.errors[0].message,
+            "Tiled server error: error sending request for url (http://tiled.example.com/api/v1/)"
+        );
+        assert_eq!(response.errors.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn test_internal_tiled_error() {
+        let mock_server = MockServer::start();
+        let mock = mock_server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/");
+                then.status(503);
+            })
+            .await;
+
+        let schema = Schema::build(
+            TiledQuery(TiledClient {
+                address: Url::parse(&mock_server.base_url()).unwrap(),
+            }),
+            EmptyMutation,
+            EmptySubscription,
+        )
+        .finish();
+
+        let response = schema.execute("{metadata { apiVersion } }").await;
+        let actual = &response.errors[0].message;
+        let expected =
+            "Tiled server error: HTTP status server error (503 Service Unavailable) for url";
+        assert_eq!(response.data, Value::Null);
+        assert!(
+            actual.starts_with(expected),
+            "Unexpected error: {actual} \nExpected: {expected} [...]"
+        );
+        assert_eq!(response.errors.len(), 1);
         mock.assert();
     }
 }
