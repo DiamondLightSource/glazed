@@ -12,7 +12,7 @@ mod model;
 
 use cli::{Cli, Commands};
 
-use crate::clients::tiled_client::TiledClient;
+use crate::clients::TiledClient;
 use crate::config::GlazedConfig;
 use crate::handlers::{graphiql_handler, graphql_handler};
 use crate::model::TiledQuery;

@@ -25,7 +25,7 @@ mod tests {
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 
     use crate::TiledQuery;
-    use crate::clients::mock_tiled_client::MockTiledClient;
+    use crate::clients::MockTiledClient;
 
     #[tokio::test]
     async fn test_api_version_query() {
