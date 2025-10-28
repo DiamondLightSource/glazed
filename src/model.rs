@@ -100,4 +100,33 @@ mod tests {
         assert_eq!(response.errors.len(), 1);
         mock.assert();
     }
+
+    #[tokio::test]
+    async fn test_invalid_server_response() {
+        let mock_server = MockServer::start();
+        let mock = mock_server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/");
+                then.status(200).body("{}");
+            })
+            .await;
+
+        let schema = Schema::build(
+            TiledQuery(TiledClient {
+                address: Url::parse(&mock_server.base_url()).unwrap(),
+            }),
+            EmptyMutation,
+            EmptySubscription,
+        )
+        .finish();
+
+        let response = schema.execute("{metadata { apiVersion } }").await;
+        assert_eq!(response.data, Value::Null);
+        assert_eq!(response.errors.len(), 1);
+        assert_eq!(
+            response.errors[0].message,
+            "Invalid response: missing field `api_version` at line 1 column 2, response: {}"
+        );
+        mock.assert();
+    }
 }
