@@ -8,7 +8,7 @@ use crate::clients::Client;
 use crate::model::TiledQuery;
 
 pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
-    schema: Extension<Schema<TiledQuery<T>, EmptyMutation, EmptySubscription>>,
+    schema: Extension<Schema<TiledQuery, EmptyMutation, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let query = req.into_inner().query;
@@ -23,15 +23,27 @@ pub async fn graphiql_handler() -> impl IntoResponse {
 #[cfg(test)]
 mod tests {
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+    use httpmock::MockServer;
+    use url::Url;
 
     use crate::TiledQuery;
-    use crate::clients::MockTiledClient;
+    use crate::clients::TiledClient;
 
     #[tokio::test]
     async fn test_api_version_query() {
+        let mock_server = MockServer::start();
+
+        let mock = mock_server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/");
+                then.status(200)
+                    .body_from_file("resources/tiled_metadata.json");
+            })
+            .await;
+
         let schema = Schema::build(
-            TiledQuery(MockTiledClient {
-                dir_path: "./resources".into(),
+            TiledQuery(TiledClient {
+                address: Url::parse(&mock_server.base_url()).unwrap(),
             }),
             EmptyMutation,
             EmptySubscription,
@@ -40,8 +52,7 @@ mod tests {
 
         let response = schema.execute("{metadata { apiVersion } }").await;
 
-        println!("{:?}", response.data.to_string());
-
-        assert!(response.data.to_string() == "{metadata: {apiVersion: 0}}")
+        assert_eq!(response.data.to_string(), "{metadata: {apiVersion: 0}}");
+        mock.assert();
     }
 }
