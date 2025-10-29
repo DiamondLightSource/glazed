@@ -87,3 +87,10 @@ jobs:
           # push: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+
+      
+      - name: Publish chart
+        run: |
+          helm dependencies update helm
+          helm package helm  --version ${GITHUB_REF##*/} --app-version ${GITHUB_REF##*/} -d /tmp/
+          helm push /tmp/helm-${GITHUB_REF##*/}.tgz oci://ghcr.io/diamondlightsource/charts
