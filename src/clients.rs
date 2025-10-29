@@ -1,16 +1,64 @@
 use std::fmt;
+#[cfg(test)]
+use std::fs::File;
+#[cfg(test)]
+use std::path::PathBuf;
+
+use reqwest::Url;
+use serde::de::DeserializeOwned;
 
 use crate::model::metadata::Metadata;
-
-#[cfg(test)]
-pub(crate) mod mock_tiled_client;
-pub(crate) mod tiled_client;
 
 pub trait Client {
     fn metadata(&self) -> impl Future<Output = Result<Metadata, ClientError>> + Send;
 }
 
 pub type ClientResult<T> = Result<T, ClientError>;
+
+pub struct TiledClient {
+    pub address: Url,
+}
+
+impl TiledClient {
+    async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
+        println!("Requesting data from tiled");
+
+        let url = self.address.join(endpoint)?;
+
+        let response = reqwest::get(url).await?;
+        let json = response.json().await?;
+
+        Ok(serde_json::from_value(json)?)
+    }
+}
+impl Client for TiledClient {
+    async fn metadata(&self) -> ClientResult<Metadata> {
+        self.request::<Metadata>("/api/v1/").await
+    }
+}
+
+#[cfg(test)]
+pub struct MockTiledClient {
+    pub dir_path: PathBuf,
+}
+
+#[cfg(test)]
+impl MockTiledClient {
+    async fn deserialize_from_file<T: DeserializeOwned>(&self, filename: &str) -> ClientResult<T> {
+        println!("Requesting data from mock");
+
+        let path = self.dir_path.join(filename);
+        let file = File::open(&path)?;
+
+        Ok(serde_json::from_reader(file)?)
+    }
+}
+#[cfg(test)]
+impl Client for MockTiledClient {
+    async fn metadata(&self) -> ClientResult<Metadata> {
+        self.deserialize_from_file("tiled_metadata.json").await
+    }
+}
 
 #[derive(Debug)]
 pub enum ClientError {
