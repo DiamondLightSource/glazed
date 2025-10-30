@@ -1,6 +1,9 @@
 pub(crate) mod app_metadata;
+pub(crate) mod common;
+pub(crate) mod metadata;
 
 use async_graphql::Object;
+use uuid::Uuid;
 
 use crate::clients::{Client, ClientError, TiledClient};
 
@@ -11,13 +14,17 @@ impl TiledQuery {
     async fn app_metadata(&self) -> async_graphql::Result<app_metadata::AppMetadata, ClientError> {
         self.0.app_metadata().await
     }
+    async fn run_metadata(&self, id: Uuid) -> async_graphql::Result<metadata::Root, ClientError> {
+        self.0.run_metadata(id).await
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value};
+    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value, value};
     use httpmock::MockServer;
     use url::Url;
+    use uuid::Uuid;
 
     use crate::TiledQuery;
     use crate::clients::TiledClient;
@@ -128,5 +135,39 @@ mod tests {
             "Invalid response: missing field `api_version` at line 1 column 2, response: {}"
         );
         mock.assert();
+    }
+
+    #[tokio::test]
+    async fn test_run_metadata_query() {
+        let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
+        let mock_server = MockServer::start();
+        let mock = mock_server
+            .mock_async(|when, then| {
+                when.method("GET").path(format!("/api/v1/metadata/{id}"));
+                then.status(200)
+                    .body_from_file("resources/run_metadata.json");
+            })
+            .await;
+
+        let schema = Schema::build(
+            TiledQuery(TiledClient {
+                address: Url::parse(&mock_server.base_url()).unwrap(),
+            }),
+            EmptyMutation,
+            EmptySubscription,
+        )
+        .finish();
+
+        let query = r#"{ runMetadata(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
+
+        let response = schema.execute(query).await;
+
+        let exp = value! ({
+            "runMetadata": { "data": {"id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"}}
+        });
+
+        mock.assert();
+        assert_eq!(response.data, exp);
+        assert_eq!(response.errors, &[]);
     }
 }

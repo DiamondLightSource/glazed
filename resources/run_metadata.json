@@ -1,0 +1,91 @@
+{
+  "data": {
+    "id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498",
+    "attributes": {
+      "ancestors": [],
+      "structure_family": "container",
+      "specs": [
+        {
+          "name": "BlueskyRun",
+          "version": "3.0"
+        }
+      ],
+      "metadata": {
+        "start": {
+          "uid": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498",
+          "time": 1761823725.6956885,
+          "versions": {
+            "ophyd": "1.11.0",
+            "ophyd_async": "0.13.5",
+            "bluesky": "1.14.6"
+          },
+          "instrument": "adsim",
+          "instrument_session": "cm12345-1",
+          "data_session_directory": "/tmp",
+          "scan_file": "adsim-49",
+          "scan_id": 49,
+          "plan_type": "generator",
+          "plan_name": "spec_scan",
+          "detectors": [
+            "det"
+          ],
+          "motors": [
+            "stage-x"
+          ],
+          "num_points": 5,
+          "num_intervals": 4,
+          "plan_args": {
+            "detectors": [
+              "det"
+            ],
+            "spec": "Line(axis=<ophyd_async.epics.motor.Motor object at 0x772d3f4ea110>, start=0.0, stop=10.0, num=5)"
+          },
+          "hints": {
+            "dimensions": [
+              [
+                [
+                  "stage-x"
+                ],
+                "primary"
+              ]
+            ]
+          },
+          "shape": [
+            5
+          ]
+        },
+        "stop": {
+          "uid": "a7963d20-8e25-4c8a-bc9f-c2c59eca9c71",
+          "time": 1761823748.31523,
+          "run_start": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498",
+          "exit_status": "success",
+          "reason": "",
+          "num_events": {
+            "primary": 5
+          }
+        }
+      },
+      "structure": {
+        "contents": null,
+        "count": 1
+      },
+      "access_blob": {},
+      "sorting": [
+        {
+          "key": "",
+          "direction": 1
+        }
+      ],
+      "data_sources": null
+    },
+    "links": {
+      "self": "http://127.0.0.1:8000/api/v1/metadata/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498",
+      "search": "http://127.0.0.1:8000/api/v1/search/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498",
+      "full": "http://127.0.0.1:8000/api/v1/container/full/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"
+    },
+    "meta": null
+  },
+  "error": null,
+  "links": null,
+  "meta": {}
+}
