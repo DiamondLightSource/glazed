@@ -1,4 +1,4 @@
-pub(crate) mod metadata;
+pub(crate) mod app_metadata;
 
 use async_graphql::Object;
 
@@ -8,8 +8,8 @@ pub(crate) struct TiledQuery(pub TiledClient);
 
 #[Object]
 impl TiledQuery {
-    async fn metadata(&self) -> async_graphql::Result<metadata::Metadata, ClientError> {
-        self.0.metadata().await
+    async fn app_metadata(&self) -> async_graphql::Result<app_metadata::AppMetadata, ClientError> {
+        self.0.app_metadata().await
     }
 }
 
@@ -42,9 +42,9 @@ mod tests {
         )
         .finish();
 
-        let response = schema.execute("{metadata { apiVersion } }").await;
+        let response = schema.execute("{appMetadata { apiVersion } }").await;
 
-        assert_eq!(response.data.to_string(), "{metadata: {apiVersion: 0}}");
+        assert_eq!(response.data.to_string(), "{appMetadata: {apiVersion: 0}}");
         assert_eq!(response.errors, &[]);
         mock.assert();
     }
@@ -60,7 +60,7 @@ mod tests {
         )
         .finish();
 
-        let response = schema.execute("{metadata { apiVersion } }").await;
+        let response = schema.execute("{appMetadata { apiVersion } }").await;
         assert_eq!(response.data, Value::Null);
         assert_eq!(
             response.errors[0].message,
@@ -88,7 +88,7 @@ mod tests {
         )
         .finish();
 
-        let response = schema.execute("{metadata { apiVersion } }").await;
+        let response = schema.execute("{appMetadata { apiVersion } }").await;
         let actual = &response.errors[0].message;
         let expected =
             "Tiled server error: HTTP status server error (503 Service Unavailable) for url";
@@ -120,7 +120,7 @@ mod tests {
         )
         .finish();
 
-        let response = schema.execute("{metadata { apiVersion } }").await;
+        let response = schema.execute("{appMetadata { apiVersion } }").await;
         assert_eq!(response.data, Value::Null);
         assert_eq!(response.errors.len(), 1);
         assert_eq!(
