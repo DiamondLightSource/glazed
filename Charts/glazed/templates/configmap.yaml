@@ -5,7 +5,7 @@ metadata:
 data:
   config.toml: |-
 {{ if .Values.overrideConfig }}
-{{ .Values.overrideConfig | indent 4 }}
+{{ .Values.customConfig | indent 4 }}
 {{ else }}
 {{ .Files.Get "config.toml" | indent 4 }}
 {{ end }}
