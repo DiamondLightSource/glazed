@@ -9,10 +9,10 @@ on:
 
 jobs:
   rust:
-    uses: ./.github/_rust.yml
+    uses: ./.github/workflows/_rust.yml
   
   container:
-    uses: ./.github/_container.yml
+    uses: ./.github/workflows/_container.yml
   
   helm:
-    uses: ./.github/_helm.yml
+    uses: ./.github/workflows/_helm.yml
