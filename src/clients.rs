@@ -2,11 +2,14 @@ use std::fmt;
 
 use reqwest::Url;
 use serde::de::DeserializeOwned;
+use uuid::Uuid;
 
 use crate::model::app_metadata::AppMetadata;
+use crate::model::metadata::Root;
 
 pub trait Client {
     fn app_metadata(&self) -> impl Future<Output = Result<AppMetadata, ClientError>> + Send;
+    fn run_metadata(&self, id: Uuid) -> impl Future<Output = Result<Root, ClientError>> + Send;
 }
 
 pub type ClientResult<T> = Result<T, ClientError>;
@@ -27,6 +30,10 @@ impl TiledClient {
 impl Client for TiledClient {
     async fn app_metadata(&self) -> ClientResult<AppMetadata> {
         self.request::<AppMetadata>("/api/v1/").await
+    }
+    async fn run_metadata(&self, id: Uuid) -> ClientResult<Root> {
+        self.request::<Root>(&format!("/api/v1/metadata/{id}"))
+            .await
     }
 }
 
