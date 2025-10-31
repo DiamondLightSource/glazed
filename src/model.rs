@@ -51,7 +51,7 @@ mod tests {
 
         let response = schema.execute("{appMetadata { apiVersion } }").await;
 
-        assert_eq!(response.data.to_string(), "{appMetadata: {apiVersion: 0}}");
+        assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
         assert_eq!(response.errors, &[]);
         mock.assert();
     }
