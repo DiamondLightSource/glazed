@@ -1,4 +1,4 @@
 bind_address = "0.0.0.0:3000"
 
 [tiled_client]
-address = "http://127.0.0.1:8000"
+address = "http://tiled.tiled:8000"
