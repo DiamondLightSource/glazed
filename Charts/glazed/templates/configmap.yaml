@@ -7,5 +7,5 @@ data:
 {{ if .Values.customConfig.enabled }}
 {{ .Values.customConfig.toml | indent 4 }}
 {{ else }}
-{{ .Files.Get "config.toml" | indent 4 }}
+{{ .Files.Get "files/config.toml" | indent 4 }}
 {{ end }}
