@@ -122,5 +122,7 @@ tolerations: []
 
 affinity: {}
 
-overrideConfig: false
-# customConfig = ""
+customConfig:
+  enabled: false
+  toml: |-
+    foo=bar

@@ -4,8 +4,8 @@ metadata:
   name: {{ .Release.Name }}-configmap
 data:
   config.toml: |-
-{{ if .Values.overrideConfig }}
-{{ .Values.customConfig | indent 4 }}
+{{ if .Values.customConfig.enabled }}
+{{ .Values.customConfig.toml | indent 4 }}
 {{ else }}
 {{ .Files.Get "config.toml" | indent 4 }}
 {{ end }}
