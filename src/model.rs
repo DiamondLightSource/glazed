@@ -5,7 +5,7 @@ pub(crate) mod metadata;
 use async_graphql::Object;
 use uuid::Uuid;
 
-use crate::clients::{Client, ClientError, TiledClient};
+use crate::clients::{ClientError, TiledClient};
 
 pub(crate) struct TiledQuery(pub TiledClient);
 
