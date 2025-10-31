@@ -29,10 +29,21 @@ mod tests {
     use crate::TiledQuery;
     use crate::clients::TiledClient;
 
+    fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
+        Schema::build(
+            TiledQuery(TiledClient {
+                address: Url::parse(url).unwrap(),
+            }),
+            EmptyMutation,
+            EmptySubscription,
+        )
+        .finish()
+    }
+
     #[tokio::test]
     async fn test_api_version_query() {
-        let mock_server = MockServer::start();
-        let mock = mock_server
+        let server = MockServer::start();
+        let mock = server
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
                 then.status(200)
@@ -40,15 +51,7 @@ mod tests {
             })
             .await;
 
-        let schema = Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse(&mock_server.base_url()).unwrap(),
-            }),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish();
-
+        let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
 
         assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
@@ -58,16 +61,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_server_unavailable() {
-        let schema = Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse("http://tiled.example.com").unwrap(),
-            }),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish();
-
+        let schema = build_schema("http://tiled.example.com");
         let response = schema.execute("{appMetadata { apiVersion } }").await;
+
         assert_eq!(response.data, Value::Null);
         assert_eq!(
             response.errors[0].message,
@@ -78,27 +74,20 @@ mod tests {
 
     #[tokio::test]
     async fn test_internal_tiled_error() {
-        let mock_server = MockServer::start();
-        let mock = mock_server
+        let server = MockServer::start();
+        let mock = server
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
                 then.status(503);
             })
             .await;
 
-        let schema = Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse(&mock_server.base_url()).unwrap(),
-            }),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish();
-
+        let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
         let actual = &response.errors[0].message;
         let expected =
             "Tiled server error: HTTP status server error (503 Service Unavailable) for url";
+
         assert_eq!(response.data, Value::Null);
         assert!(
             actual.starts_with(expected),
@@ -110,24 +99,17 @@ mod tests {
 
     #[tokio::test]
     async fn test_invalid_server_response() {
-        let mock_server = MockServer::start();
-        let mock = mock_server
+        let server = MockServer::start();
+        let mock = server
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
                 then.status(200).body("{}");
             })
             .await;
 
-        let schema = Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse(&mock_server.base_url()).unwrap(),
-            }),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish();
-
+        let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
+
         assert_eq!(response.data, Value::Null);
         assert_eq!(response.errors.len(), 1);
         assert_eq!(
@@ -140,8 +122,8 @@ mod tests {
     #[tokio::test]
     async fn test_run_metadata_query() {
         let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
-        let mock_server = MockServer::start();
-        let mock = mock_server
+        let server = MockServer::start();
+        let mock = server
             .mock_async(|when, then| {
                 when.method("GET").path(format!("/api/v1/metadata/{id}"));
                 then.status(200)
@@ -149,25 +131,15 @@ mod tests {
             })
             .await;
 
-        let schema = Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse(&mock_server.base_url()).unwrap(),
-            }),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish();
-
+        let schema = build_schema(&server.base_url());
         let query = r#"{ runMetadata(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
-
         let response = schema.execute(query).await;
-
         let exp = value! ({
             "runMetadata": { "data": {"id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"}}
         });
 
-        mock.assert();
         assert_eq!(response.data, exp);
         assert_eq!(response.errors, &[]);
+        mock.assert();
     }
 }
