@@ -41,7 +41,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     .finish();
 
     let app = Router::new()
-        .route("/graphql", post(graphql_handler::<TiledClient>))
+        .route("/graphql", post(graphql_handler))
         .route("/graphiql", get(graphiql_handler))
         .layer(Extension(schema));
 

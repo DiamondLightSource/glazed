@@ -7,11 +7,6 @@ use uuid::Uuid;
 use crate::model::app_metadata::AppMetadata;
 use crate::model::metadata::Root;
 
-pub trait Client {
-    fn app_metadata(&self) -> impl Future<Output = Result<AppMetadata, ClientError>> + Send;
-    fn run_metadata(&self, id: Uuid) -> impl Future<Output = Result<Root, ClientError>> + Send;
-}
-
 pub type ClientResult<T> = Result<T, ClientError>;
 
 pub struct TiledClient {
@@ -26,12 +21,10 @@ impl TiledClient {
         let body = response.text().await?;
         serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
-}
-impl Client for TiledClient {
-    async fn app_metadata(&self) -> ClientResult<AppMetadata> {
+    pub async fn app_metadata(&self) -> ClientResult<AppMetadata> {
         self.request::<AppMetadata>("/api/v1/").await
     }
-    async fn run_metadata(&self, id: Uuid) -> ClientResult<Root> {
+    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<Root> {
         self.request::<Root>(&format!("/api/v1/metadata/{id}"))
             .await
     }
