@@ -4,10 +4,9 @@ use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::Extension;
 use axum::response::{Html, IntoResponse};
 
-use crate::clients::Client;
 use crate::model::TiledQuery;
 
-pub async fn graphql_handler<T: Client + Send + Sync + 'static>(
+pub async fn graphql_handler(
     schema: Extension<Schema<TiledQuery, EmptyMutation, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {

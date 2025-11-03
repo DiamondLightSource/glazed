@@ -2,12 +2,10 @@ use std::fmt;
 
 use reqwest::Url;
 use serde::de::DeserializeOwned;
+use uuid::Uuid;
 
-use crate::model::metadata::Metadata;
-
-pub trait Client {
-    fn metadata(&self) -> impl Future<Output = Result<Metadata, ClientError>> + Send;
-}
+use crate::model::app_metadata::AppMetadata;
+use crate::model::metadata::Root;
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -23,10 +21,12 @@ impl TiledClient {
         let body = response.text().await?;
         serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
-}
-impl Client for TiledClient {
-    async fn metadata(&self) -> ClientResult<Metadata> {
-        self.request::<Metadata>("/api/v1/").await
+    pub async fn app_metadata(&self) -> ClientResult<AppMetadata> {
+        self.request::<AppMetadata>("/api/v1/").await
+    }
+    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<Root> {
+        self.request::<Root>(&format!("/api/v1/metadata/{id}"))
+            .await
     }
 }
 
