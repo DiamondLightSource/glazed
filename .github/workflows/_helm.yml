@@ -36,37 +36,8 @@ jobs:
               exit 1
           fi
 
-      - name: Package helm charts
-        env:
-          VERSION: "${{ github.ref_type == 'tag' && github.ref_name || '0.0.0' }}"
+      - name: package chart and push it
         run: |
-          set -xe
-
-          mkdir -p charts
-          for i in $(find Charts -type d -maxdepth 1 -mindepth 1); do
-            if [[ ${i} =~ ^.*-ioc$ ]]; then
-              echo "Skipping IOC schema chart: ${i}"
-              continue
-            fi
-            echo "Packaging chart: ${i}"
-            helm package -u --app-version ${VERSION} --version ${VERSION} ${i}
-            mv $(basename ${i})-*.tgz charts/
-          done
-
-      - name: Upload helm chart values schemas
-        uses: actions/upload-artifact@v4
-        with:
-          name: helm-chart-schemas
-          path: schemas/*
-
-      - name: Push tagged helm chart to registry
-        # TODO - switch to using https://github.com/helm/chart-releaser-action of maybe the docker action?
-        if: ${{ github.ref_type == 'tag' }}
-        run: |
-          set -x
-
-          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io/${{ github.repository_owner }} --username ${{ github.repository_owner }} --password-stdin
-          REGISTRY=oci://ghcr.io/${{github.repository_owner }}/charts
-          for i in charts/*.tgz; do
-            helm push "${i}" ${REGISTRY,,}
-          done
+          helm dependencies update Charts/glazed
+          helm package Charts/glazed --version ${GITHUB_REF##*/} --app-version ${GITHUB_REF##*/} -d /tmp/
+          helm push /tmp/glazed-${GITHUB_REF##*/}.tgz oci://ghcr.io/diamondlightsource/charts
