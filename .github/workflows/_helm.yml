@@ -4,7 +4,6 @@ on:
   workflow_call:
 
 env:
-  HELM_VERSION_TO_INSTALL: 3.17.1
 
 jobs:
   package-helm-charts:
@@ -19,8 +18,6 @@ jobs:
 
       - name: Install helm
         uses: Azure/setup-helm@v3
-        with:
-          version: ${{ env.HELM_VERSION_TO_INSTALL }}
 
       # Check that alpha/beta versions have the form X.Y.Z-alpha.A requried by Helm.
       # An early check saves waiting for the entire build before finding a problem.
