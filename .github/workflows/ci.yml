@@ -14,7 +14,9 @@ jobs:
     uses: ./.github/workflows/_rust.yml
   
   container:
+    needs: rust
     uses: ./.github/workflows/_container.yml
   
   helm:
+    needs: container
     uses: ./.github/workflows/_helm.yml
