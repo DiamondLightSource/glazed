@@ -36,6 +36,12 @@ jobs:
               exit 1
           fi
 
+    
+      - name: login to gcr using helm
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io --username ${{ github.repository_owner }} --password-stdin
+
+
       - name: package chart and push it
         run: |
           helm dependencies update Charts/glazed
