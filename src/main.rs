@@ -21,7 +21,9 @@ use crate::model::TiledQuery;
 async fn main() -> Result<(), Box<dyn error::Error>> {
     let cli = Cli::init();
 
-    let config_filepath = cli.config_filepath.unwrap_or("Charts/glazed/files/config.toml".into());
+    let config_filepath = cli
+        .config_filepath
+        .unwrap_or("Charts/glazed/files/config.toml".into());
 
     println!("Loading config from {config_filepath:?}");
 
