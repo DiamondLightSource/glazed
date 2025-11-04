@@ -53,7 +53,6 @@ mod tests {
                     .body_from_file("resources/tiled_metadata.json");
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
 
@@ -84,7 +83,6 @@ mod tests {
                 then.status(503);
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
         let actual = &response.errors[0].message;
@@ -109,7 +107,6 @@ mod tests {
                 then.status(200).body("{}");
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
 
@@ -133,7 +130,6 @@ mod tests {
                     .body_from_file("resources/run_metadata.json");
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let query = r#"{ runMetadata(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
         let response = schema.execute(query).await;

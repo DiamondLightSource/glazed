@@ -7,7 +7,6 @@ use clap::{Parser, Subcommand};
 pub struct Cli {
     #[arg(short, long)]
     pub config_filepath: Option<PathBuf>,
-
     #[command(subcommand)]
     pub command: Commands,
 }

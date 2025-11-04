@@ -48,7 +48,5 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
 
-    axum::serve(listener, app).await?;
-
-    Ok(())
+    Ok(axum::serve(listener, app).await?)
 }
