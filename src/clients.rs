@@ -10,7 +10,6 @@ use crate::model::metadata::Root;
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
-#[derive(Debug)]
 pub struct TiledClient {
     pub address: Url,
 }
