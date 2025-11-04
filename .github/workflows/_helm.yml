@@ -28,8 +28,12 @@ jobs:
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io --username ${{ github.repository_owner }} --password-stdin
 
-      - name: Package and publish chart
+      - name: Package chart
         run: |
           helm dependencies update Charts/glazed
           helm package Charts/glazed --version "${{ steps.meta.outputs.version }}" --app-version "${{ steps.meta.outputs.version }}" -d /tmp/
-          test "${{ github.event_name == 'push' && github.ref_type == 'tag' }}" != false &&  helm push /tmp/glazed-${VERSION}.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
+
+      - name: Publish chart
+        if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        run: |
+          helm push /tmp/glazed-*.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
