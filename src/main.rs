@@ -19,10 +19,11 @@ use crate::model::TiledQuery;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn error::Error>> {
+    let subscriber = tracing_subscriber::FmtSubscriber::new();
+    tracing::subscriber::set_global_default(subscriber)?;
+
     let cli = Cli::init();
-
     let config_filepath = cli.config_filepath.unwrap_or("config.toml".into());
-
     let config = GlazedConfig::from_file(&config_filepath)?;
 
     match cli.command {
