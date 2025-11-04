@@ -1,5 +1,6 @@
 use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::model::node::Links;
 
@@ -9,10 +10,5 @@ pub struct AppMetadata {
     pub library_version: String,
     pub queries: Vec<String>,
     pub links: Links,
-    pub meta: Meta,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Meta {
-    pub root_path: String,
+    pub meta: Value,
 }
