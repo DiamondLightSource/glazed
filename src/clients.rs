@@ -6,7 +6,7 @@ use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::model::app_metadata::AppMetadata;
-use crate::model::metadata::Root;
+use crate::model::node::Root;
 
 pub type ClientResult<T> = Result<T, ClientError>;
 

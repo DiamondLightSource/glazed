@@ -5,40 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::model::common::Links;
-
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Root {
-    pub data: Data,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Data {
-    pub id: Uuid,
-    pub attributes: Attributes,
-    pub links: Option<Links>,
-    pub meta: Value,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Attributes {
-    pub ancestors: Vec<Value>,
-    pub structure_family: String,
-    pub specs: Vec<Spec>,
-    pub metadata: Metadata,
-    pub structure: Structure,
-    pub sorting: Vec<Sorting>,
-    pub data_sources: Value,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Spec {
-    pub name: String,
-    pub version: String,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Metadata {
+pub struct RunMetadata {
     pub start: Start,
     pub stop: Stop,
 }
@@ -105,16 +73,4 @@ pub struct Stop {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct NumEvents {
     pub primary: i64,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Structure {
-    pub contents: Value,
-    pub count: i64,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Sorting {
-    pub key: String,
-    pub direction: i64,
 }
