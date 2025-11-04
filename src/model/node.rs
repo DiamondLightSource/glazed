@@ -8,13 +8,16 @@ use crate::model::run_metadata::RunMetadata;
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Root {
     pub data: Data,
+    pub error: Value,
+    pub links: Option<RootLinks>,
+    pub meta: Value,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Data {
-    pub id: Uuid,
+    pub id: Uuid, // this now needs to be a string
     pub attributes: Attributes,
-    pub links: Option<Links>,
+    pub links: NodeLinks,
     pub meta: Value,
 }
 
@@ -28,16 +31,6 @@ pub struct Attributes {
     pub access_blob: Value,
     pub sorting: Vec<Sorting>,
     pub data_sources: Value,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Links {
-    #[serde(rename = "self")]
-    #[graphql(name = "self")]
-    pub self_field: String,
-    pub documentation: Option<String>,
-    pub search: Option<String>,
-    pub full: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
@@ -56,4 +49,25 @@ pub struct Structure {
 pub struct Sorting {
     pub key: String,
     pub direction: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct RootLinks {
+    #[serde(rename = "self")]
+    #[graphql(name = "self")]
+    pub self_field: String,
+    pub first: Option<String>,
+    pub last: Option<String>,
+    pub next: Option<String>,
+    pub prev: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct NodeLinks {
+    pub documentation: Option<String>,
+    #[serde(rename = "self")]
+    #[graphql(name = "self")]
+    pub self_field: String,
+    pub search: Option<String>,
+    pub full: Option<String>,
 }
