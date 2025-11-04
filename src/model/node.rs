@@ -25,6 +25,7 @@ pub struct Attributes {
     pub specs: Vec<Spec>,
     pub metadata: RunMetadata, // RunMd | EventStreamMd
     pub structure: Structure,
+    pub access_blob: Value,
     pub sorting: Vec<Sorting>,
     pub data_sources: Value,
 }
