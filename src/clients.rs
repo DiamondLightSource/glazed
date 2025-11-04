@@ -2,6 +2,7 @@ use std::fmt;
 
 use reqwest::Url;
 use serde::de::DeserializeOwned;
+use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::model::app_metadata::AppMetadata;
@@ -9,13 +10,15 @@ use crate::model::metadata::Root;
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
+#[derive(Debug)]
 pub struct TiledClient {
     pub address: Url,
 }
 
 impl TiledClient {
+    #[instrument]
     async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
-        println!("Requesting data from tiled");
+        info!("Requesting from tiled: {}", endpoint);
         let url = self.address.join(endpoint)?;
         let response = reqwest::get(url).await?.error_for_status()?;
         let body = response.text().await?;
