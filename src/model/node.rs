@@ -1,7 +1,6 @@
 use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use uuid::Uuid;
 
 use crate::model::run_metadata::RunMetadata;
 
@@ -23,7 +22,7 @@ pub struct MetadataRoot {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Data {
-    pub id: Uuid, // this now needs to be a string
+    pub id: String,
     pub attributes: Attributes,
     pub links: DataLinks,
     pub meta: Value,
