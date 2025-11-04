@@ -19,7 +19,10 @@ impl TiledQuery {
         self.0.app_metadata().await
     }
     #[instrument(skip(self))]
-    async fn run_metadata(&self, id: Uuid) -> async_graphql::Result<node::Root, ClientError> {
+    async fn run_metadata(
+        &self,
+        id: Uuid,
+    ) -> async_graphql::Result<node::MetadataRoot, ClientError> {
         self.0.run_metadata(id).await
     }
 }

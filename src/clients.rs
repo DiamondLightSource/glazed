@@ -6,7 +6,7 @@ use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::model::app_metadata::AppMetadata;
-use crate::model::node::Root;
+use crate::model::node::MetadataRoot;
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -26,8 +26,8 @@ impl TiledClient {
     pub async fn app_metadata(&self) -> ClientResult<AppMetadata> {
         self.request::<AppMetadata>("/api/v1/").await
     }
-    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<Root> {
-        self.request::<Root>(&format!("/api/v1/metadata/{id}"))
+    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<MetadataRoot> {
+        self.request::<MetadataRoot>(&format!("/api/v1/metadata/{id}"))
             .await
     }
 }

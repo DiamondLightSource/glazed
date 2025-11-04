@@ -6,10 +6,18 @@ use uuid::Uuid;
 use crate::model::run_metadata::RunMetadata;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Root {
+pub struct SearchRoot {
+    pub data: Vec<Data>,
+    pub error: Value,
+    pub links: Option<SearchLinks>,
+    pub meta: Value,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct MetadataRoot {
     pub data: Data,
     pub error: Value,
-    pub links: Option<RootLinks>,
+    pub links: Option<SearchLinks>,
     pub meta: Value,
 }
 
@@ -17,7 +25,7 @@ pub struct Root {
 pub struct Data {
     pub id: Uuid, // this now needs to be a string
     pub attributes: Attributes,
-    pub links: NodeLinks,
+    pub links: DataLinks,
     pub meta: Value,
 }
 
@@ -52,7 +60,7 @@ pub struct Sorting {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RootLinks {
+pub struct SearchLinks {
     #[serde(rename = "self")]
     #[graphql(name = "self")]
     pub self_field: String,
@@ -63,7 +71,7 @@ pub struct RootLinks {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct NodeLinks {
+pub struct DataLinks {
     pub documentation: Option<String>,
     #[serde(rename = "self")]
     #[graphql(name = "self")]
