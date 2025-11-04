@@ -34,6 +34,9 @@ jobs:
           helm package Charts/glazed --version "${{ steps.meta.outputs.version }}" --app-version "${{ steps.meta.outputs.version }}" -d /tmp/
 
       - name: Publish chart
+        env:
+          REPO: ${{ github.repository_owner }}
         if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        # Helm push requires the registry name is all lowercase
         run: |
-          helm push /tmp/glazed-*.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
+          helm push /tmp/glazed-*.tgz oci://ghcr.io/${REPO@L}/charts
