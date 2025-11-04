@@ -16,7 +16,7 @@ pub struct TiledClient {
 }
 
 impl TiledClient {
-    #[instrument]
+    #[instrument(skip(self))]
     async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
         info!("Requesting from tiled: {}", endpoint);
         let url = self.address.join(endpoint)?;
