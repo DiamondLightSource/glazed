@@ -3,6 +3,7 @@ pub(crate) mod common;
 pub(crate) mod metadata;
 
 use async_graphql::Object;
+use tracing::instrument;
 use uuid::Uuid;
 
 use crate::clients::{ClientError, TiledClient};
@@ -11,9 +12,11 @@ pub(crate) struct TiledQuery(pub TiledClient);
 
 #[Object]
 impl TiledQuery {
+    #[instrument(skip(self))]
     async fn app_metadata(&self) -> async_graphql::Result<app_metadata::AppMetadata, ClientError> {
         self.0.app_metadata().await
     }
+    #[instrument(skip(self))]
     async fn run_metadata(&self, id: Uuid) -> async_graphql::Result<metadata::Root, ClientError> {
         self.0.run_metadata(id).await
     }
