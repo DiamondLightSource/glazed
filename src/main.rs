@@ -21,15 +21,19 @@ use crate::model::TiledQuery;
 async fn main() -> Result<(), Box<dyn error::Error>> {
     let cli = Cli::init();
 
-    let config_filepath = cli
-        .config_filepath
-        .unwrap_or("Charts/glazed/files/config.toml".into());
+    let config;
 
-    println!("Loading config from {config_filepath:?}");
+    if let Some(config_filepath) = cli.config_filepath {
+        println!("Loading config from {config_filepath:?}");
 
-    let config = GlazedConfig::from_file(&config_filepath)?;
+        config = GlazedConfig::from_file(&config_filepath)?;
 
-    println!("Config loaded");
+        println!("Config loaded");
+    } else {
+        println!("Using default config");
+
+        config = GlazedConfig::default()?;
+    }
 
     match cli.command {
         Commands::Serve => serve(config).await,
