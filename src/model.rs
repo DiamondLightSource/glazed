@@ -1,5 +1,6 @@
 pub(crate) mod app_metadata;
 pub(crate) mod common;
+pub(crate) mod container;
 pub(crate) mod metadata;
 
 use async_graphql::Object;
