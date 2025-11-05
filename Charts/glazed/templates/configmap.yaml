@@ -3,9 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ include "helm.fullname" . }}-configmap
 data:
-  config.toml: |-
 {{ if .Values.customConfig.enabled }}
+  config.toml: |-
 {{ .Values.customConfig.toml | indent 4 }}
-{{ else }}
-{{ .Files.Get "files/config.toml" | indent 4 }}
 {{ end }}
