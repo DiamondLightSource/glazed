@@ -2,7 +2,7 @@ use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::model::run_metadata::RunMetadata;
+use crate::model::metadata::Metadata;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct SearchRoot {
@@ -33,7 +33,7 @@ pub struct Attributes {
     pub ancestors: Vec<Value>,
     pub structure_family: String,
     pub specs: Vec<Spec>,
-    pub metadata: RunMetadata, // RunMd | EventStreamMd
+    pub metadata: Metadata,
     pub structure: Structure,
     pub access_blob: Value,
     pub sorting: Vec<Sorting>,
