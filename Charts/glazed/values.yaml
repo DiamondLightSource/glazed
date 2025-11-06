@@ -150,10 +150,10 @@ volumes: []
 #     optional: false
 
 # Additional volumeMounts on the output Deployment definition.
-volumeMounts:
-- name: config-toml
-  mountPath: "/etc/glazed/"
-  readOnly: true
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
 
 nodeSelector: {}
 

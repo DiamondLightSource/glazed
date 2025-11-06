@@ -61,6 +61,11 @@ spec:
           {{- end }}
           {{- with .Values.volumeMounts }}
           volumeMounts:
+          {{ if $.Values.customConfig.enabled }}
+            - name: config-toml
+              mountPath: "/etc/glazed"
+              readOnly: true
+          {{ end }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
@@ -69,7 +74,7 @@ spec:
         configMap:
           name: {{ .Release.Name }}-configmap
           items:
-          - key: 
+          - key: config-toml
             path: config.toml
       {{ end }}
       {{- with .Values.volumes }}
