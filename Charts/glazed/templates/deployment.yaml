@@ -72,7 +72,7 @@ spec:
       {{ if .Values.customConfig.enabled }}
       - name: config-toml
         configMap:
-          name: {{ .Release.Name }}-configmap
+          name: {{ include "glazed.fullname" . }}-configmap
           items:
           - key: config-toml
             path: config.toml
