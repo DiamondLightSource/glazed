@@ -59,13 +59,13 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
-          {{ if $.Values.customConfig.enabled }}
+          {{ if .Values.customConfig.enabled }}
             - name: config-toml
               mountPath: "/etc/glazed"
               readOnly: true
           {{ end }}
+          {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
