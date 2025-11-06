@@ -74,7 +74,7 @@ spec:
         configMap:
           name: {{ include "glazed.fullname" . }}-configmap
           items:
-          - key: config-toml
+          - key: config.toml
             path: config.toml
       {{ end }}
       {{- with .Values.volumes }}
