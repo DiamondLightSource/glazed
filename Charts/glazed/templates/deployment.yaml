@@ -44,7 +44,7 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{ if .Values.customConfig.enabed }}
+          {{ if .Values.customConfig.enabled }}
           args: ["serve", "--config-filepath", "/etc/glazed/config.toml"]
           {{ end }}
           {{- with .Values.livenessProbe }}
