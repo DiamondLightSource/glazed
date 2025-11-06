@@ -3,8 +3,6 @@ name: Package helm charts
 on:
   workflow_call:
 
-env:
-
 jobs:
   package-helm-charts:
     name: Package and Push Helm Chart
