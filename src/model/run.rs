@@ -28,7 +28,7 @@ pub struct RunMetadataRoot {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct RunData {
-    pub id: String,
+    pub id: Uuid,
     pub attributes: RunContainerAttributes,
     pub links: Links,
     pub meta: Value,
