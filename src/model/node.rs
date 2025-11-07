@@ -43,7 +43,7 @@ pub struct Attributes {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Spec {
     pub name: String,
-    pub version: String,
+    pub version: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
