@@ -35,6 +35,15 @@ impl TiledQuery {
         self.0.event_stream_metadata(id, stream).await
     }
     #[instrument(skip(self))]
+    async fn array_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> async_graphql::Result<array::ArrayMetadataRoot, ClientError> {
+        self.0.array_metadata(id, stream, array).await
+    }
+    #[instrument(skip(self))]
     async fn search_root(&self) -> async_graphql::Result<run::RunRoot, ClientError> {
         self.0.search_root().await
     }
