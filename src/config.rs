@@ -18,13 +18,13 @@ impl GlazedConfig {
         config.try_deserialize()
     }
 
-    pub fn default() -> Result<Self, ParseError> {
-        Ok(GlazedConfig {
+    pub fn default() -> Self {
+        GlazedConfig {
             bind_address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3000),
             tiled_client: TiledClientConfig {
-                address: Url::parse("http://localhost:8000")?,
+                address: Url::parse("http://localhost:8000").expect("Statis URL is valid"),
             },
-        })
+        }
     }
 }
 

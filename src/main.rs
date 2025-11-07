@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     } else {
         println!("Using default config");
 
-        config = GlazedConfig::default()?;
+        config = GlazedConfig::default();
     }
 
     match cli.command {
