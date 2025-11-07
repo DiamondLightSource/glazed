@@ -62,6 +62,35 @@ pub struct EventStreamMdAttributes {
     pub data_sources: Value,
 }
 
+// search
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct SearchRoot {
+    pub data: Vec<SearchData>,
+    pub error: Value,
+    pub links: Option<SearchLinks>,
+    pub meta: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct SearchData {
+    pub id: String,
+    pub attributes: SearchAttributes,
+    pub links: SearchLinks,
+    pub meta: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct SearchAttributes {
+    pub ancestors: Vec<Value>,
+    pub structure_family: String,
+    pub specs: Vec<Spec>,
+    pub metadata: Value,  // Can be either Run or event
+    pub structure: Value, // could be array/table etc. could be anything
+    pub access_blob: Value,
+    pub sorting: Option<Vec<Sorting>>,
+    pub data_sources: Value,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Spec {
     pub name: String,

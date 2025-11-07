@@ -37,6 +37,18 @@ impl TiledClient {
         self.request(&format!("/api/v1/metadata/{id}/{stream}"))
             .await
     }
+    pub async fn search_container(
+        &self,
+        id: Uuid,
+        name: Option<String>,
+    ) -> ClientResult<SearchRoot> {
+        let endpoint = match name {
+            Some(name) => &format!("/api/v1/search/{id}/{name}"),
+            None => &format!("/api/v1/search/{id}"),
+        };
+
+        self.request(endpoint).await
+    }
 }
 
 #[derive(Debug)]
