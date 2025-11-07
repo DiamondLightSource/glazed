@@ -22,12 +22,6 @@ pub struct AppMetadataLinks {
     pub documentation: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum Metadata {
-    RunMetadata,
-    EventStreamMetadata,
-}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct EventStreamMetadata {
     configuration: HashMap<String, HashMap<String, Value>>,
