@@ -1,9 +1,9 @@
-use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::Path;
 
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
-use url::Url;
+use url::{ParseError, Url};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct GlazedConfig {
@@ -16,6 +16,15 @@ impl GlazedConfig {
         let config = Config::builder().add_source(File::from(path)).build()?;
 
         config.try_deserialize()
+    }
+
+    pub fn default() -> Result<Self, ParseError> {
+        Ok(GlazedConfig {
+            bind_address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3000),
+            tiled_client: TiledClientConfig {
+                address: Url::parse("http://tiled.tiled:8000")?,
+            },
+        })
     }
 }
 

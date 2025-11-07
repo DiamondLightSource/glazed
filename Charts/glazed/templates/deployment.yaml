@@ -44,7 +44,9 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{ if .Values.customConfig.enabled }}
           args: ["serve", "--config-filepath", "/etc/glazed/config.toml"]
+          {{ end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -57,17 +59,24 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
+          {{ if .Values.customConfig.enabled }}
+            - name: config-toml
+              mountPath: "/etc/glazed"
+              readOnly: true
+          {{ end }}
+          {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
+      {{ if .Values.customConfig.enabled }}
       - name: config-toml
         configMap:
-          name: {{ .Release.Name }}-configmap
+          name: {{ include "glazed.fullname" . }}-configmap
           items:
           - key: config.toml
             path: config.toml
+      {{ end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
