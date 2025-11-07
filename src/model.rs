@@ -1,8 +1,8 @@
-pub(crate) mod app_metadata;
-pub(crate) mod event_stream_metadata;
+pub(crate) mod array;
+pub(crate) mod container;
 pub(crate) mod metadata;
 pub(crate) mod node;
-pub(crate) mod run_metadata;
+pub(crate) mod table;
 
 use async_graphql::Object;
 use tracing::instrument;
@@ -15,7 +15,7 @@ pub(crate) struct TiledQuery(pub TiledClient);
 #[Object]
 impl TiledQuery {
     #[instrument(skip(self))]
-    async fn app_metadata(&self) -> async_graphql::Result<app_metadata::AppMetadata, ClientError> {
+    async fn app_metadata(&self) -> async_graphql::Result<metadata::AppMetadata, ClientError> {
         self.0.app_metadata().await
     }
     #[instrument(skip(self))]
