@@ -1,10 +1,8 @@
 pub(crate) mod app;
-pub(crate) mod array;
 pub(crate) mod container;
 pub(crate) mod event_stream;
 pub(crate) mod node;
 pub(crate) mod run;
-pub(crate) mod table;
 
 use async_graphql::Object;
 use tracing::instrument;
