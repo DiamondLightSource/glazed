@@ -5,36 +5,51 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
+use crate::model::container;
+use crate::model::node::Links;
+
+// A run is stored as a BlueskyRunContainer, which contains n EventStreamContainers
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct AppMetadata {
-    pub api_version: i64,
-    pub library_version: String,
-    pub queries: Vec<String>,
-    pub links: AppMetadataLinks,
+pub struct RunRoot {
+    pub data: Vec<RunData>,
+    pub error: Value,
+    pub links: Option<Links>,
     pub meta: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct AppMetadataLinks {
-    #[serde(rename = "self")]
-    #[graphql(name = "self")]
-    pub self_field: String,
-    pub documentation: Option<String>,
+pub struct RunMetadataRoot {
+    pub data: RunData,
+    pub error: Value,
+    pub links: Option<Links>,
+    pub meta: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct EventStreamMetadata {
-    configuration: HashMap<String, HashMap<String, Value>>,
-    data_keys: HashMap<String, HashMap<String, Value>>,
-    time: f64,
-    uid: Uuid,
-    hints: HashMap<String, Value>,
+pub struct RunData {
+    pub id: String,
+    pub attributes: RunContainerAttributes,
+    pub links: Links,
+    pub meta: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct RunContainerAttributes {
+    pub ancestors: Vec<Value>,
+    pub structure_family: String,
+    pub specs: Vec<container::Specs>,
+    pub metadata: RunMetadata,
+    pub structure: container::Structure,
+    pub access_blob: Value,
+    pub sorting: Vec<container::Sorting>,
+    pub data_sources: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct RunMetadata {
     pub start: Start,
-    pub stop: Stop,
+    pub stop: Option<Stop>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]

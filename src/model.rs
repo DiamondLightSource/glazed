@@ -1,7 +1,9 @@
+pub(crate) mod app;
 pub(crate) mod array;
 pub(crate) mod container;
-pub(crate) mod metadata;
+pub(crate) mod event_stream;
 pub(crate) mod node;
+pub(crate) mod run;
 pub(crate) mod table;
 
 use async_graphql::Object;
@@ -15,11 +17,14 @@ pub(crate) struct TiledQuery(pub TiledClient);
 #[Object]
 impl TiledQuery {
     #[instrument(skip(self))]
-    async fn app_metadata(&self) -> async_graphql::Result<metadata::AppMetadata, ClientError> {
+    async fn app_metadata(&self) -> async_graphql::Result<app::AppMetadata, ClientError> {
         self.0.app_metadata().await
     }
     #[instrument(skip(self))]
-    async fn run_metadata(&self, id: Uuid) -> async_graphql::Result<node::RunMdRoot, ClientError> {
+    async fn run_metadata(
+        &self,
+        id: Uuid,
+    ) -> async_graphql::Result<run::RunMetadataRoot, ClientError> {
         self.0.run_metadata(id).await
     }
     #[instrument(skip(self))]
@@ -27,7 +32,7 @@ impl TiledQuery {
         &self,
         id: Uuid,
         stream: String,
-    ) -> async_graphql::Result<node::EventStreamMdRoot, ClientError> {
+    ) -> async_graphql::Result<event_stream::EventStreamMetadataRoot, ClientError> {
         self.0.event_stream_metadata(id, stream).await
     }
     #[instrument(skip(self))]
