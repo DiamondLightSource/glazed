@@ -14,31 +14,29 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Generate Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          tags: |
+            type=semver,pattern={{version}}
+
       - name: Install helm
-        uses: Azure/setup-helm@v3
+        uses: Azure/setup-helm@v4
 
-      # Check that alpha/beta versions have the form X.Y.Z-alpha.A requried by Helm.
-      # An early check saves waiting for the entire build before finding a problem.
-      - name: Check helm version tag
-        if: ${{ github.ref_type == 'tag' }}
-        env:
-          VERSION: "${{ github.ref_name }}"
-        run: |
-          if [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+((-alpha|-beta|-rc)\.[0-9]+)?$ ]]; then
-              echo "Valid version format: '${VERSION}'"
-          else
-              echo "Invalid version: '${VERSION}'. Expected: 'X.Y.Z' or 'X.Y.Z-beta.1' or 'X.Y.Z-alpha.1'"
-              exit 1
-          fi
-
-    
-      - name: login to gcr using helm
+      - name: Login to chart registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io --username ${{ github.repository_owner }} --password-stdin
 
-
-      - name: package chart and push it
+      - name: Package chart
         run: |
           helm dependencies update Charts/glazed
-          helm package Charts/glazed --version ${GITHUB_REF##*/} --app-version ${GITHUB_REF##*/} -d /tmp/
-          helm push /tmp/glazed-${GITHUB_REF##*/}.tgz oci://ghcr.io/diamondlightsource/charts
+          helm package Charts/glazed --version "${{ steps.meta.outputs.version }}" --app-version "${{ steps.meta.outputs.version }}" -d /tmp/
+
+      - name: Publish chart
+        env:
+          REPO: ${{ github.repository_owner }}
+        if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        # Helm push requires the registry name is all lowercase
+        run: |
+          helm push /tmp/glazed-*.tgz oci://ghcr.io/${REPO@L}/charts
