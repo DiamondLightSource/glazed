@@ -1,6 +1,6 @@
 use std::fmt;
 
-use axum::http::HeaderMap;
+use axum::http::{HeaderMap, HeaderName, HeaderValue};
 use reqwest::Url;
 use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
@@ -24,7 +24,9 @@ impl TiledClient {
         headers: Option<HeaderMap>,
     ) -> ClientResult<T> {
         info!("Requesting from tiled: {}", endpoint);
-        let url = self.address.join(endpoint)?;
+        let mut url = self.address.clone();
+        url.set_path(endpoint);
+
         let client = reqwest::Client::new();
         let request = match headers {
             Some(headers) => client.get(url).headers(headers),
@@ -47,8 +49,8 @@ impl TiledClient {
         headers.insert("accept", "application/json".parse().unwrap());
 
         let endpoint = match path {
-            Some(path) => &format!("api/v1/container/full/{id}/{path}"),
-            None => &format!("api/v1/container/full/{id}"),
+            Some(path) => &format!("/api/v1/container/full/{id}/{path}"),
+            None => &format!("/api/v1/container/full/{id}"),
         };
 
         self.request::<Container>(endpoint, Some(headers)).await
