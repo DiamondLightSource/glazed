@@ -1,5 +1,4 @@
 pub(crate) mod app_metadata;
-pub(crate) mod container;
 pub(crate) mod event_stream_metadata;
 pub(crate) mod metadata;
 pub(crate) mod node;
