@@ -8,7 +8,7 @@ use serde_json::Value;
 pub struct ArrayData {
     pub id: String,
     pub attributes: ArrayAttributes,
-    pub links: Links,
+    pub links: ArrayLinks,
     pub meta: Value,
 }
 
@@ -18,14 +18,14 @@ pub struct ArrayAttributes {
     pub structure_family: String,
     pub specs: Option<Vec<Value>>,
     pub metadata: HashMap<String, Value>,
-    pub structure: Structure,
+    pub structure: ArrayStructure,
     pub access_blob: Value,
     pub sorting: Value,
     pub data_sources: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Structure {
+pub struct ArrayStructure {
     data_type: DataType,
     chunks: Value,
     shape: Value,
@@ -42,7 +42,7 @@ pub struct DataType {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Links {
+pub struct ArrayLinks {
     #[serde(rename = "self")]
     #[graphql(name = "self")]
     pub full: Option<String>,
