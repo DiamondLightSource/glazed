@@ -38,17 +38,14 @@ impl TiledClient {
         self.request(&format!("/api/v1/metadata/{id}/{stream}"))
             .await
     }
-    pub async fn search_container(
+    pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
+        self.request("/api/v1/search/").await
+    }
+    pub async fn search_run_container(
         &self,
         id: Uuid,
-        name: Option<String>,
-    ) -> ClientResult<SearchRoot> {
-        let endpoint = match name {
-            Some(name) => &format!("/api/v1/search/{id}/{name}"),
-            None => &format!("/api/v1/search/{id}"),
-        };
-
-        self.request(endpoint).await
+    ) -> ClientResult<event_stream::EventStreamRoot> {
+        self.request(&format!("/api/v1/search/{id}")).await
     }
 }
 
