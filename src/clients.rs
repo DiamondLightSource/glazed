@@ -24,11 +24,10 @@ impl TiledClient {
         serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
     pub async fn app_metadata(&self) -> ClientResult<AppMetadata> {
-        self.request::<AppMetadata>("/api/v1/").await
+        self.request("/api/v1/").await
     }
     pub async fn run_metadata(&self, id: Uuid) -> ClientResult<MetadataRoot> {
-        self.request::<MetadataRoot>(&format!("/api/v1/metadata/{id}"))
-            .await
+        self.request(&format!("/api/v1/metadata/{id}")).await
     }
 }
 
