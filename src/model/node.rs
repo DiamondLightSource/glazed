@@ -4,7 +4,7 @@ use serde_json::Value;
 
 use crate::model::metadata::Metadata;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct SearchRoot {
     pub data: Vec<Data>,
     pub error: Value,
@@ -12,7 +12,7 @@ pub struct SearchRoot {
     pub meta: Value,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct MetadataRoot {
     pub data: Data,
     pub error: Value,
@@ -20,7 +20,7 @@ pub struct MetadataRoot {
     pub meta: Value,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Data {
     pub id: String,
     pub attributes: Attributes,
@@ -28,7 +28,7 @@ pub struct Data {
     pub meta: Value,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Attributes {
     pub ancestors: Vec<Value>,
     pub structure_family: String,
@@ -40,25 +40,25 @@ pub struct Attributes {
     pub data_sources: Value,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Spec {
     pub name: String,
     pub version: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Structure {
     pub contents: Value,
     pub count: i64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Sorting {
     pub key: String,
     pub direction: i64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct SearchLinks {
     #[serde(rename = "self")]
     #[graphql(name = "self")]
@@ -69,7 +69,7 @@ pub struct SearchLinks {
     pub prev: Option<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct DataLinks {
     pub documentation: Option<String>,
     #[serde(rename = "self")]

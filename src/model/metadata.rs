@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct AppMetadata {
     pub api_version: i64,
     pub library_version: String,
@@ -14,7 +14,7 @@ pub struct AppMetadata {
     pub meta: Value,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct AppMetadataLinks {
     #[serde(rename = "self")]
     #[graphql(name = "self")]
@@ -28,7 +28,7 @@ pub enum Metadata {
     EventStreamMetadata,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct EventStreamMetadata {
     configuration: HashMap<String, HashMap<String, Value>>,
     data_keys: HashMap<String, HashMap<String, Value>>,
@@ -37,13 +37,13 @@ pub struct EventStreamMetadata {
     hints: HashMap<String, Value>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct RunMetadata {
     pub start: Start,
     pub stop: Stop,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Start {
     pub uid: Uuid,
     pub time: f64,
@@ -64,19 +64,19 @@ pub struct Start {
     pub shape: Vec<i64>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Versions {
     pub ophyd: String,
     pub ophyd_async: String,
     pub bluesky: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Hints {
     pub dimensions: Vec<HintDimension>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, SimpleObject)]
 pub struct HintDimension {
     pub axes: Vec<String>,
     pub stream: String,
@@ -92,7 +92,7 @@ impl<'de> Deserialize<'de> for HintDimension {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Stop {
     pub uid: Uuid,
     pub time: f64,
@@ -102,7 +102,7 @@ pub struct Stop {
     pub num_events: NumEvents,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct NumEvents {
     pub primary: i64,
 }
