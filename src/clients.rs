@@ -6,7 +6,7 @@ use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::model::app_metadata::AppMetadata;
-use crate::model::node::MetadataRoot;
+use crate::model::node::{EventStreamMdRoot, RunMdRoot, SearchRoot};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -26,8 +26,16 @@ impl TiledClient {
     pub async fn app_metadata(&self) -> ClientResult<AppMetadata> {
         self.request("/api/v1/").await
     }
-    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<MetadataRoot> {
+    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<RunMdRoot> {
         self.request(&format!("/api/v1/metadata/{id}")).await
+    }
+    pub async fn event_stream_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+    ) -> ClientResult<EventStreamMdRoot> {
+        self.request(&format!("/api/v1/metadata/{id}/{stream}"))
+            .await
     }
 }
 

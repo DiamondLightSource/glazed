@@ -2,38 +2,60 @@ use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::model::metadata::Metadata;
+use crate::model::metadata::{EventStreamMetadata, RunMetadata};
 
+// RunMd
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct SearchRoot {
-    pub data: Vec<Data>,
+pub struct RunMdRoot {
+    pub data: RunMdData,
     pub error: Value,
     pub links: Option<SearchLinks>,
     pub meta: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct MetadataRoot {
-    pub data: Data,
-    pub error: Value,
-    pub links: Option<SearchLinks>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Data {
+pub struct RunMdData {
     pub id: String,
-    pub attributes: Attributes,
+    pub attributes: RunMdAttributes,
     pub links: DataLinks,
     pub meta: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Attributes {
+pub struct RunMdAttributes {
     pub ancestors: Vec<Value>,
     pub structure_family: String,
     pub specs: Vec<Spec>,
-    pub metadata: Metadata,
+    pub metadata: RunMetadata,
+    pub structure: Structure,
+    pub access_blob: Value,
+    pub sorting: Vec<Sorting>,
+    pub data_sources: Value,
+}
+
+// EventStreamMd
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct EventStreamMdRoot {
+    pub data: EventStreamMdData,
+    pub error: Value,
+    pub links: Option<SearchLinks>,
+    pub meta: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct EventStreamMdData {
+    pub id: String,
+    pub attributes: EventStreamMdAttributes,
+    pub links: DataLinks,
+    pub meta: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct EventStreamMdAttributes {
+    pub ancestors: Vec<Value>,
+    pub structure_family: String,
+    pub specs: Vec<Spec>,
+    pub metadata: EventStreamMetadata,
     pub structure: Structure,
     pub access_blob: Value,
     pub sorting: Vec<Sorting>,
