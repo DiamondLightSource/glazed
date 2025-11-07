@@ -32,7 +32,7 @@ pub enum Metadata {
 pub struct EventStreamMetadata {
     configuration: HashMap<String, HashMap<String, Value>>,
     data_keys: HashMap<String, HashMap<String, Value>>,
-    time: i64,
+    time: f64,
     uid: Uuid,
     hints: HashMap<String, Value>,
 }
