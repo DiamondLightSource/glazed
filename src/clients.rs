@@ -5,9 +5,7 @@ use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
-use crate::model::app;
-use crate::model::event_stream;
-use crate::model::run;
+use crate::model::{app, event_stream, run};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
