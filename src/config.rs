@@ -22,7 +22,7 @@ impl GlazedConfig {
         GlazedConfig {
             bind_address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3000),
             tiled_client: TiledClientConfig {
-                address: Url::parse("http://localhost:8000").expect("Statis URL is valid"),
+                address: Url::parse("http://localhost:8000").expect("Static URL is valid"),
             },
         }
     }
