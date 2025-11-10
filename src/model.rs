@@ -1,5 +1,6 @@
 pub(crate) mod app;
 pub(crate) mod container;
+pub(crate) mod event_stream;
 pub(crate) mod node;
 pub(crate) mod run;
 
@@ -23,6 +24,14 @@ impl TiledQuery {
         id: Uuid,
     ) -> async_graphql::Result<run::RunMetadataRoot, ClientError> {
         self.0.run_metadata(id).await
+    }
+    #[instrument(skip(self))]
+    async fn event_stream_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+    ) -> async_graphql::Result<event_stream::EventStreamMetadataRoot, ClientError> {
+        self.0.event_stream_metadata(id, stream).await
     }
 }
 
