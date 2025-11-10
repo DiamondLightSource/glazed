@@ -36,6 +36,9 @@ impl TiledClient {
         self.request(&format!("/api/v1/metadata/{id}/{stream}"))
             .await
     }
+    pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
+        self.request("/api/v1/search/").await
+    }
 }
 
 #[derive(Debug)]
