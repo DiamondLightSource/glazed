@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Links {
-    pub documentation: Option<String>,
     #[serde(rename = "self")]
     #[graphql(name = "self")]
     pub self_field: String,
+    pub documentation: Option<String>,
     pub first: Option<String>,
     pub last: Option<String>,
     pub next: Option<String>,
