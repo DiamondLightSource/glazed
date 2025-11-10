@@ -3,6 +3,7 @@ pub(crate) mod common;
 pub(crate) mod metadata;
 
 use async_graphql::Object;
+use tracing::instrument;
 use uuid::Uuid;
 
 use crate::clients::{ClientError, TiledClient};
@@ -11,9 +12,11 @@ pub(crate) struct TiledQuery(pub TiledClient);
 
 #[Object]
 impl TiledQuery {
+    #[instrument(skip(self))]
     async fn app_metadata(&self) -> async_graphql::Result<app_metadata::AppMetadata, ClientError> {
         self.0.app_metadata().await
     }
+    #[instrument(skip(self))]
     async fn run_metadata(&self, id: Uuid) -> async_graphql::Result<metadata::Root, ClientError> {
         self.0.run_metadata(id).await
     }
@@ -50,7 +53,6 @@ mod tests {
                     .body_from_file("resources/tiled_metadata.json");
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
 
@@ -81,7 +83,6 @@ mod tests {
                 then.status(503);
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
         let actual = &response.errors[0].message;
@@ -106,7 +107,6 @@ mod tests {
                 then.status(200).body("{}");
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let response = schema.execute("{appMetadata { apiVersion } }").await;
 
@@ -130,7 +130,6 @@ mod tests {
                     .body_from_file("resources/run_metadata.json");
             })
             .await;
-
         let schema = build_schema(&server.base_url());
         let query = r#"{ runMetadata(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
         let response = schema.execute(query).await;

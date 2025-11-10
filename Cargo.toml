@@ -15,6 +15,8 @@ url = "2.5.7"
 config = "0.15.16"
 clap = { version = "4.5.48", features = ["derive"] }
 uuid = { version = "1.18.1", features = ["serde"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.20"
 
 [dev-dependencies]
 httpmock = "0.8.2"

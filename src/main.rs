@@ -19,6 +19,9 @@ use crate::model::TiledQuery;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn error::Error>> {
+    let subscriber = tracing_subscriber::FmtSubscriber::new();
+    tracing::subscriber::set_global_default(subscriber)?;
+
     let cli = Cli::init();
 
     let config;
@@ -59,7 +62,5 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
 
     println!("Serving...");
 
-    axum::serve(listener, app).await?;
-
-    Ok(())
+    Ok(axum::serve(listener, app).await?)
 }
