@@ -8,6 +8,14 @@ use uuid::Uuid;
 use crate::model::{container, node};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct EventStreamRoot {
+    pub data: Vec<EventStreamData>,
+    pub error: Value,
+    pub links: Option<node::Links>,
+    pub meta: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct EventStreamMetadataRoot {
     pub data: EventStreamData,
     pub error: Value,

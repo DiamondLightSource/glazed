@@ -39,6 +39,12 @@ impl TiledClient {
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
         self.request("/api/v1/search/").await
     }
+    pub async fn search_run_container(
+        &self,
+        id: Uuid,
+    ) -> ClientResult<event_stream::EventStreamRoot> {
+        self.request(&format!("/api/v1/search/{id}")).await
+    }
 }
 
 #[derive(Debug)]
