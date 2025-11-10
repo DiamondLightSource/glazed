@@ -105,10 +105,5 @@ pub struct Stop {
     pub run_start: Uuid,
     pub exit_status: String,
     pub reason: String,
-    pub num_events: NumEvents,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct NumEvents {
-    pub primary: i64,
+    pub num_events: HashMap<String, Value>,
 }
