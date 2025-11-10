@@ -30,6 +30,14 @@ impl TiledQuery {
     ) -> Result<event_stream::EventStreamMetadataRoot, ClientError> {
         self.0.event_stream_metadata(id, stream).await
     }
+    #[instrument(skip(self))]
+    async fn event_stream_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+    ) -> async_graphql::Result<event_stream::EventStreamMetadataRoot, ClientError> {
+        self.0.event_stream_metadata(id, stream).await
+    }
 }
 
 #[cfg(test)]
