@@ -8,14 +8,6 @@ use uuid::Uuid;
 use crate::model::{container, node};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunRoot {
-    pub data: Vec<RunData>,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct RunMetadataRoot {
     pub data: RunData,
     pub error: Value,
