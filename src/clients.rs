@@ -1,5 +1,6 @@
 use std::fmt;
 
+use axum::http::HeaderMap;
 use reqwest::Url;
 use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
@@ -15,18 +16,29 @@ pub struct TiledClient {
 
 impl TiledClient {
     #[instrument(skip(self))]
-    async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
+    async fn request<T: DeserializeOwned>(
+        &self,
+        endpoint: &str,
+        headers: Option<HeaderMap>,
+    ) -> ClientResult<T> {
         info!("Requesting from tiled: {}", endpoint);
-        let url = self.address.join(endpoint)?;
-        let response = reqwest::get(url).await?.error_for_status()?;
+        let mut url = self.address.clone();
+        url.set_path(endpoint);
+
+        let client = reqwest::Client::new();
+        let request = match headers {
+            Some(headers) => client.get(url).headers(headers),
+            None => client.get(url),
+        };
+        let response = request.send().await?.error_for_status()?;
         let body = response.text().await?;
         serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
-        self.request("/api/v1/").await
+        self.request("/api/v1/", None).await
     }
     pub async fn run_metadata(&self, id: Uuid) -> ClientResult<run::RunMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}")).await
+        self.request(&format!("/api/v1/metadata/{id}"), None).await
     }
     pub async fn event_stream_metadata(
         &self,
