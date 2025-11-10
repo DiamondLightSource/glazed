@@ -5,14 +5,13 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::model::container;
-use crate::model::node::Links;
+use crate::model::{container, node};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct EventStreamRoot {
     pub data: Vec<EventStreamData>,
     pub error: Value,
-    pub links: Option<Links>,
+    pub links: Option<node::Links>,
     pub meta: Value,
 }
 
@@ -20,7 +19,7 @@ pub struct EventStreamRoot {
 pub struct EventStreamMetadataRoot {
     pub data: EventStreamData,
     pub error: Value,
-    pub links: Option<Links>,
+    pub links: Option<node::Links>,
     pub meta: Value,
 }
 
@@ -28,7 +27,7 @@ pub struct EventStreamMetadataRoot {
 pub struct EventStreamData {
     pub id: String,
     pub attributes: EventStreamContainerAttributes,
-    pub links: Links,
+    pub links: node::Links,
     pub meta: Value,
 }
 
