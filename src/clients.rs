@@ -5,8 +5,7 @@ use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
-use crate::model::app_metadata::AppMetadata;
-use crate::model::metadata::Root;
+use crate::model::{app, run};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -23,12 +22,11 @@ impl TiledClient {
         let body = response.text().await?;
         serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
-    pub async fn app_metadata(&self) -> ClientResult<AppMetadata> {
-        self.request::<AppMetadata>("/api/v1/").await
+    pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
+        self.request("/api/v1/").await
     }
-    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<Root> {
-        self.request::<Root>(&format!("/api/v1/metadata/{id}"))
-            .await
+    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<run::RunMetadataRoot> {
+        self.request(&format!("/api/v1/metadata/{id}")).await
     }
 }
 
