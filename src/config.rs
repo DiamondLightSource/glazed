@@ -3,7 +3,7 @@ use std::path::Path;
 
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
-use url::{ParseError, Url};
+use url::Url;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct GlazedConfig {
