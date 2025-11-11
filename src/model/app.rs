@@ -40,7 +40,7 @@ mod tests {
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
                 then.status(200)
-                    .body_from_file("resources/tiled_metadata.json");
+                    .body_from_file("resources/app_metadata.json");
             })
             .await;
         let schema = build_schema(&server.base_url());
