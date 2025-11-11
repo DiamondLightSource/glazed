@@ -1,0 +1,177 @@
+{
+  "data": {
+    "id": "primary",
+    "attributes": {
+      "ancestors": [
+        "4866611f-e6d9-4517-bedf-fc5526df57ad"
+      ],
+      "structure_family": "container",
+      "specs": [
+        {
+          "name": "BlueskyEventStream",
+          "version": "3.0"
+        },
+        {
+          "name": "composite",
+          "version": null
+        }
+      ],
+      "metadata": {
+        "configuration": {
+          "det": {
+            "data": {
+              "det-driver-acquire_period": 0.005,
+              "det-driver-acquire_time": 0.1
+            },
+            "timestamps": {
+              "det-driver-acquire_period": 631152000,
+              "det-driver-acquire_time": 631152000
+            },
+            "data_keys": {
+              "det-driver-acquire_period": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-DI-CAM-01:DET:AcquirePeriod_RBV",
+                "units": "",
+                "precision": 3
+              },
+              "det-driver-acquire_time": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-DI-CAM-01:DET:AcquireTime_RBV",
+                "units": "",
+                "precision": 3
+              }
+            }
+          },
+          "stage-x": {
+            "data": {
+              "stage-x-motor_egu": "degrees",
+              "stage-x-offset": 0,
+              "stage-x-velocity": 1
+            },
+            "timestamps": {
+              "stage-x-motor_egu": 1762787449.240313,
+              "stage-x-offset": 1762787449.240313,
+              "stage-x-velocity": 1762787449.240313
+            },
+            "data_keys": {
+              "stage-x-motor_egu": {
+                "dtype": "string",
+                "shape": [],
+                "dtype_numpy": "|S40",
+                "source": "ca://BL01T-MO-SIMC-01:M1.EGU"
+              },
+              "stage-x-offset": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-MO-SIMC-01:M1.OFF",
+                "units": "degrees",
+                "precision": 5,
+                "limits": {
+                  "control": {
+                    "low": -9007199254740991,
+                    "high": 9007199254740991
+                  },
+                  "display": {
+                    "low": -9007199254740991,
+                    "high": 9007199254740991
+                  }
+                }
+              },
+              "stage-x-velocity": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-MO-SIMC-01:M1.VELO",
+                "units": "degrees",
+                "precision": 5,
+                "limits": {
+                  "control": {
+                    "low": 0.1,
+                    "high": 0
+                  },
+                  "display": {
+                    "low": 0.1,
+                    "high": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "data_keys": {
+          "det": {
+            "source": "ca://BL01T-DI-CAM-01:HDF5:FullFileName_RBV",
+            "shape": [
+              1,
+              1024,
+              1024
+            ],
+            "dtype": "array",
+            "dtype_numpy": "|i1",
+            "object_name": "det",
+            "external": "STREAM:"
+          },
+          "stage-x": {
+            "dtype": "number",
+            "shape": [],
+            "dtype_numpy": "<f8",
+            "source": "ca://BL01T-MO-SIMC-01:M1.RBV",
+            "units": "degrees",
+            "precision": 5,
+            "limits": {
+              "control": {
+                "low": -20000,
+                "high": 20000
+              },
+              "display": {
+                "low": -20000,
+                "high": 20000
+              }
+            },
+            "object_name": "stage-x"
+          }
+        },
+        "time": 1762787606.3792753,
+        "uid": "813e7742-44da-4928-96c8-352460cb058e",
+        "hints": {
+          "det": {
+            "fields": [
+              "det"
+            ]
+          },
+          "stage-x": {
+            "fields": [
+              "stage-x"
+            ]
+          }
+        }
+      },
+      "structure": {
+        "contents": null,
+        "count": 2
+      },
+      "access_blob": {},
+      "sorting": [
+        {
+          "key": "",
+          "direction": 1
+        }
+      ],
+      "data_sources": null
+    },
+    "links": {
+      "self": "http://0.0.0.0:8000/api/v1/metadata/4866611f-e6d9-4517-bedf-fc5526df57ad/primary",
+      "search": "http://0.0.0.0:8000/api/v1/search/4866611f-e6d9-4517-bedf-fc5526df57ad/primary",
+      "full": "http://0.0.0.0:8000/api/v1/container/full/4866611f-e6d9-4517-bedf-fc5526df57ad/primary"
+    },
+    "meta": null
+  },
+  "error": null,
+  "links": null,
+  "meta": {}
+}
