@@ -102,45 +102,11 @@ pub struct Stop {
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptyMutation, EmptySubscription, Schema, value};
-    use httpmock::MockServer;
-    use url::Url;
-    use uuid::Uuid;
+    use crate::model::run;
+    use crate::test_utils::assert_readable_as;
 
-    use crate::TiledQuery;
-    use crate::clients::TiledClient;
-
-    fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
-        Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse(url).unwrap(),
-            }),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish()
-    }
-    #[tokio::test]
-    async fn run_metadata() {
-        let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET").path(format!("/api/v1/metadata/{id}"));
-                then.status(200)
-                    .body_from_file("resources/run_metadata.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-
-        let query = r#"{ runMetadata(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
-        let exp = value! ({
-            "runMetadata": { "data": {"id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"}}
-        });
-        let response = schema.execute(query).await;
-
-        assert_eq!(response.data, exp);
-        assert_eq!(response.errors, &[]);
-        mock.assert();
+    #[test]
+    fn run_metadata() {
+        assert_readable_as::<run::RunMetadataRoot>("resources/run_metadata.json");
     }
 }
