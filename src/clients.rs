@@ -69,7 +69,7 @@ impl std::fmt::Display for ClientError {
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value};
+    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value, value};
     use httpmock::MockServer;
     use url::Url;
 
@@ -85,6 +85,24 @@ mod tests {
             EmptySubscription,
         )
         .finish()
+    }
+
+    #[tokio::test]
+    async fn request() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/");
+                then.status(200)
+                    .body_from_file("resources/app_metadata.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let response = schema.execute("{appMetadata { apiVersion } }").await;
+
+        assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
+        assert_eq!(response.errors, &[]);
+        mock.assert();
     }
 
     #[tokio::test]
