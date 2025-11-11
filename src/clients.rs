@@ -69,7 +69,7 @@ impl std::fmt::Display for ClientError {
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value, value};
+    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value};
     use httpmock::MockServer;
     use url::Url;
 
@@ -91,20 +91,39 @@ mod tests {
     async fn request() {
         let server = MockServer::start();
         let mock = server
+            .mock_async(|whem, them| {
+                whem.method("GET").path("/demo/api");
+                them.status(200).body("[1,2,3]");
+            })
+            .await;
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        assert_eq!(
+            client.request::<Vec<u8>>("/demo/api").await.unwrap(),
+            vec![1, 2, 3]
+        );
+        mock.assert();
+    }
+
+    #[tokio::test]
+    async fn request_app_metadata() {
+        let server = MockServer::start();
+        let mock = server
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
                 then.status(200)
                     .body_from_file("resources/app_metadata.json");
             })
             .await;
-        let schema = build_schema(&server.base_url());
-        let response = schema.execute("{appMetadata { apiVersion } }").await;
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let response = client.app_metadata().await.unwrap();
 
-        assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
-        assert_eq!(response.errors, &[]);
+        assert_eq!(response.api_version, 0);
         mock.assert();
     }
-
     #[tokio::test]
     async fn test_server_unavailable() {
         let schema = build_schema("http://tiled.example.com");
