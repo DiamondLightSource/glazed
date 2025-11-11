@@ -34,7 +34,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_api_version_query() {
+    async fn app_metadata() {
         let server = MockServer::start();
         let mock = server
             .mock_async(|when, then| {
