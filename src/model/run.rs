@@ -121,7 +121,7 @@ mod tests {
         .finish()
     }
     #[tokio::test]
-    async fn test_run_metadata_query() {
+    async fn run_metadata() {
         let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
         let server = MockServer::start();
         let mock = server
@@ -132,11 +132,12 @@ mod tests {
             })
             .await;
         let schema = build_schema(&server.base_url());
+
         let query = r#"{ runMetadata(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
-        let response = schema.execute(query).await;
         let exp = value! ({
             "runMetadata": { "data": {"id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"}}
         });
+        let response = schema.execute(query).await;
 
         assert_eq!(response.data, exp);
         assert_eq!(response.errors, &[]);
