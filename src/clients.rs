@@ -147,7 +147,11 @@ mod tests {
         };
 
         assert!(err.is_status());
-        assert!(err.status().is_some_and(|x| x == 503));
+        assert!(
+            err.status().is_some_and(|x| x == 503),
+            "Expected 503 but was {:?}",
+            err.status()
+        );
         mock.assert();
     }
 
