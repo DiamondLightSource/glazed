@@ -13,6 +13,7 @@ mod model;
 mod test_utils;
 
 use cli::{Cli, Commands};
+use tracing::info;
 
 use crate::clients::TiledClient;
 use crate::config::GlazedConfig;
@@ -25,21 +26,16 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     tracing::subscriber::set_global_default(subscriber)?;
 
     let cli = Cli::init();
-
     let config;
 
     if let Some(config_filepath) = cli.config_filepath {
-        println!("Loading config from {config_filepath:?}");
-
+        info!("Loading config from {config_filepath:?}");
         config = GlazedConfig::from_file(&config_filepath)?;
-
-        println!("Config loaded");
+        info!("Config loaded");
     } else {
-        println!("Using default config");
-
+        info!("Using default config");
         config = GlazedConfig::default();
     }
-
     match cli.command {
         Commands::Serve => serve(config).await,
     }
@@ -61,8 +57,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
-
-    println!("Serving...");
+    info!("Serving glazed at {:?}", config.bind_address);
 
     Ok(axum::serve(listener, app).await?)
 }
