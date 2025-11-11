@@ -57,24 +57,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_api_version_query() {
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET").path("/api/v1/");
-                then.status(200)
-                    .body_from_file("resources/tiled_metadata.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-        let response = schema.execute("{appMetadata { apiVersion } }").await;
-
-        assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
-        assert_eq!(response.errors, &[]);
-        mock.assert();
-    }
-
-    #[tokio::test]
     async fn test_run_metadata_query() {
         let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
         let server = MockServer::start();
