@@ -23,8 +23,20 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     tracing::subscriber::set_global_default(subscriber)?;
 
     let cli = Cli::init();
-    let config_filepath = cli.config_filepath.unwrap_or("config.toml".into());
-    let config = GlazedConfig::from_file(&config_filepath)?;
+
+    let config;
+
+    if let Some(config_filepath) = cli.config_filepath {
+        println!("Loading config from {config_filepath:?}");
+
+        config = GlazedConfig::from_file(&config_filepath)?;
+
+        println!("Config loaded");
+    } else {
+        println!("Using default config");
+
+        config = GlazedConfig::default();
+    }
 
     match cli.command {
         Commands::Serve => serve(config).await,
@@ -47,6 +59,8 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
+
+    println!("Serving...");
 
     Ok(axum::serve(listener, app).await?)
 }

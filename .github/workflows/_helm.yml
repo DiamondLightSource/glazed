@@ -1,0 +1,42 @@
+name: Package helm charts
+
+on:
+  workflow_call:
+
+jobs:
+  package-helm-charts:
+    name: Package and Push Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Generate Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          tags: |
+            type=semver,pattern={{version}}
+
+      - name: Install helm
+        uses: Azure/setup-helm@v4
+
+      - name: Login to chart registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io --username ${{ github.repository_owner }} --password-stdin
+
+      - name: Package chart
+        run: |
+          helm dependencies update Charts/glazed
+          helm package Charts/glazed --version "${{ steps.meta.outputs.version }}" --app-version "${{ steps.meta.outputs.version }}" -d /tmp/
+
+      - name: Publish chart
+        env:
+          REPO: ${{ github.repository_owner }}
+        if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        # Helm push requires the registry name is all lowercase
+        run: |
+          helm push /tmp/glazed-*.tgz oci://ghcr.io/${REPO@L}/charts
