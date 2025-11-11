@@ -15,14 +15,11 @@ pub(crate) struct TiledQuery(pub TiledClient);
 #[Object]
 impl TiledQuery {
     #[instrument(skip(self))]
-    async fn app_metadata(&self) -> async_graphql::Result<app::AppMetadata, ClientError> {
+    async fn app_metadata(&self) -> Result<app::AppMetadata, ClientError> {
         self.0.app_metadata().await
     }
     #[instrument(skip(self))]
-    async fn run_metadata(
-        &self,
-        id: Uuid,
-    ) -> async_graphql::Result<run::RunMetadataRoot, ClientError> {
+    async fn run_metadata(&self, id: Uuid) -> Result<run::RunMetadataRoot, ClientError> {
         self.0.run_metadata(id).await
     }
     #[instrument(skip(self))]
@@ -30,7 +27,7 @@ impl TiledQuery {
         &self,
         id: Uuid,
         stream: String,
-    ) -> async_graphql::Result<event_stream::EventStreamMetadataRoot, ClientError> {
+    ) -> Result<event_stream::EventStreamMetadataRoot, ClientError> {
         self.0.event_stream_metadata(id, stream).await
     }
 }
