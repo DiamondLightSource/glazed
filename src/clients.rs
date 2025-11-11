@@ -128,7 +128,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_internal_tiled_error() {
+    async fn internal_tiled_error() {
         let server = MockServer::start();
         let mock = server
             .mock_async(|when, then| {
@@ -152,7 +152,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_invalid_server_response() {
+    async fn invalid_server_response() {
         let server = MockServer::start();
         let mock = server
             .mock_async(|when, then| {
