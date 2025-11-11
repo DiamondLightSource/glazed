@@ -69,23 +69,10 @@ impl std::fmt::Display for ClientError {
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptyMutation, EmptySubscription, Schema, Value};
     use httpmock::MockServer;
     use url::Url;
 
-    use crate::TiledQuery;
-    use crate::clients::TiledClient;
-
-    fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
-        Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse(url).unwrap(),
-            }),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish()
-    }
+    use crate::clients::{ClientError, TiledClient};
 
     #[tokio::test]
     async fn request() {
@@ -125,16 +112,19 @@ mod tests {
         mock.assert();
     }
     #[tokio::test]
-    async fn test_server_unavailable() {
-        let schema = build_schema("http://tiled.example.com");
-        let response = schema.execute("{appMetadata { apiVersion } }").await;
+    async fn server_unavailable() {
+        let client = TiledClient {
+            address: Url::parse("http://tiled.example.com").unwrap(),
+        };
+        let response = client.app_metadata().await;
 
-        assert_eq!(response.data, Value::Null);
-        assert_eq!(
-            response.errors[0].message,
-            "Tiled server error: error sending request for url (http://tiled.example.com/api/v1/)"
+        let Err(ClientError::ServerError(err)) = response else {
+            panic!("Expected ServerError but got {response:?}");
+        };
+        assert!(
+            err.is_connect(),
+            "Expected connection error but got {err:?}"
         );
-        assert_eq!(response.errors.len(), 1);
     }
 
     #[tokio::test]
@@ -146,18 +136,18 @@ mod tests {
                 then.status(503);
             })
             .await;
-        let schema = build_schema(&server.base_url());
-        let response = schema.execute("{appMetadata { apiVersion } }").await;
-        let actual = &response.errors[0].message;
-        let expected =
-            "Tiled server error: HTTP status server error (503 Service Unavailable) for url";
 
-        assert_eq!(response.data, Value::Null);
-        assert!(
-            actual.starts_with(expected),
-            "Unexpected error: {actual} \nExpected: {expected} [...]"
-        );
-        assert_eq!(response.errors.len(), 1);
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let response = client.app_metadata().await;
+
+        let Err(ClientError::ServerError(err)) = response else {
+            panic!("Expected ServerError but got {response:?}");
+        };
+
+        assert!(err.is_status());
+        assert!(err.status().is_some_and(|x| x == 503));
         mock.assert();
     }
 
@@ -170,15 +160,17 @@ mod tests {
                 then.status(200).body("{}");
             })
             .await;
-        let schema = build_schema(&server.base_url());
-        let response = schema.execute("{appMetadata { apiVersion } }").await;
 
-        assert_eq!(response.data, Value::Null);
-        assert_eq!(response.errors.len(), 1);
-        assert_eq!(
-            response.errors[0].message,
-            "Invalid response: missing field `api_version` at line 1 column 2, response: {}"
-        );
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let response = client.app_metadata().await;
+
+        let Err(ClientError::InvalidResponse(err, _)) = response else {
+            panic!("Expected InvalidResponse but got {response:?}");
+        };
+
+        assert!(err.is_data());
         mock.assert();
     }
 }
