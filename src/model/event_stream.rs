@@ -43,3 +43,16 @@ pub struct EventStreamMetadata {
     uid: Uuid,
     hints: HashMap<String, Value>,
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::model::event_stream;
+    use crate::test_utils::assert_readable_as;
+
+    #[tokio::test]
+    async fn event_stream_metadata() {
+        assert_readable_as::<event_stream::EventStreamMetadataRoot>(
+            "resources/event_stream_metadata.json",
+        );
+    }
+}

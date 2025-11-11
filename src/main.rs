@@ -9,6 +9,8 @@ mod clients;
 mod config;
 mod handlers;
 mod model;
+#[cfg(test)]
+mod test_utils;
 
 use cli::{Cli, Commands};
 

@@ -12,3 +12,14 @@ pub struct AppMetadata {
     pub links: node::Links,
     pub meta: Value,
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::model::app;
+    use crate::test_utils::assert_readable_as;
+
+    #[test]
+    fn app_metadata() {
+        assert_readable_as::<app::AppMetadata>("resources/app_metadata.json");
+    }
+}

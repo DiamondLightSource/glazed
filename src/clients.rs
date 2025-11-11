@@ -66,3 +66,115 @@ impl std::fmt::Display for ClientError {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use httpmock::MockServer;
+    use url::Url;
+
+    use crate::clients::{ClientError, TiledClient};
+
+    #[tokio::test]
+    async fn request() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/demo/api");
+                then.status(200).body("[1,2,3]");
+            })
+            .await;
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        assert_eq!(
+            client.request::<Vec<u8>>("/demo/api").await.unwrap(),
+            vec![1, 2, 3]
+        );
+        mock.assert();
+    }
+
+    #[tokio::test]
+    async fn request_app_metadata() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/");
+                then.status(200)
+                    .body_from_file("resources/app_metadata.json");
+            })
+            .await;
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let response = client.app_metadata().await.unwrap();
+
+        assert_eq!(response.api_version, 0);
+        mock.assert();
+    }
+    #[tokio::test]
+    async fn server_unavailable() {
+        let client = TiledClient {
+            address: Url::parse("http://tiled.example.com").unwrap(),
+        };
+        let response = client.app_metadata().await;
+
+        let Err(ClientError::ServerError(err)) = response else {
+            panic!("Expected ServerError but got {response:?}");
+        };
+        assert!(
+            err.is_connect(),
+            "Expected connection error but got {err:?}"
+        );
+    }
+
+    #[tokio::test]
+    async fn internal_tiled_error() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/");
+                then.status(503);
+            })
+            .await;
+
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let response = client.app_metadata().await;
+
+        let Err(ClientError::ServerError(err)) = response else {
+            panic!("Expected ServerError but got {response:?}");
+        };
+
+        assert!(err.is_status());
+        assert!(
+            err.status().is_some_and(|x| x == 503),
+            "Expected 503 but was {:?}",
+            err.status()
+        );
+        mock.assert();
+    }
+
+    #[tokio::test]
+    async fn invalid_server_response() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/");
+                then.status(200).body("{}");
+            })
+            .await;
+
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let response = client.app_metadata().await;
+
+        let Err(ClientError::InvalidResponse(err, _)) = response else {
+            panic!("Expected InvalidResponse but got {response:?}");
+        };
+
+        assert!(err.is_data());
+        mock.assert();
+    }
+}

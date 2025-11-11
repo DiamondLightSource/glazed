@@ -99,3 +99,14 @@ pub struct Stop {
     pub reason: String,
     pub num_events: HashMap<String, Value>,
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::model::run;
+    use crate::test_utils::assert_readable_as;
+
+    #[test]
+    fn run_metadata() {
+        assert_readable_as::<run::RunMetadataRoot>("resources/run_metadata.json");
+    }
+}
