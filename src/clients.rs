@@ -78,9 +78,9 @@ mod tests {
     async fn request() {
         let server = MockServer::start();
         let mock = server
-            .mock_async(|whem, them| {
-                whem.method("GET").path("/demo/api");
-                them.status(200).body("[1,2,3]");
+            .mock_async(|when, then| {
+                when.method("GET").path("/demo/api");
+                then.status(200).body("[1,2,3]");
             })
             .await;
         let client = TiledClient {
