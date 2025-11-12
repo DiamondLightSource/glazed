@@ -1,5 +1,6 @@
 use std::fmt;
 
+use axum::http::HeaderMap;
 use reqwest::Url;
 use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
@@ -15,35 +16,44 @@ pub struct TiledClient {
 
 impl TiledClient {
     #[instrument(skip(self))]
-    async fn request<T: DeserializeOwned>(&self, endpoint: &str) -> ClientResult<T> {
+    async fn request<T: DeserializeOwned>(
+        &self,
+        endpoint: &str,
+        headers: Option<HeaderMap>,
+    ) -> ClientResult<T> {
         info!("Requesting from tiled: {}", endpoint);
         let url = self.address.join(endpoint)?;
-        let response = reqwest::get(url).await?.error_for_status()?;
+        let client = reqwest::Client::new();
+        let request = match headers {
+            Some(headers) => client.get(url).headers(headers),
+            None => client.get(url),
+        };
+        let response = request.send().await?.error_for_status()?;
         let body = response.text().await?;
         serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
-        self.request("/api/v1/").await
+        self.request("/api/v1/", None).await
     }
     pub async fn run_metadata(&self, id: Uuid) -> ClientResult<run::RunMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}")).await
+        self.request(&format!("/api/v1/metadata/{id}"), None).await
     }
     pub async fn event_stream_metadata(
         &self,
         id: Uuid,
         stream: String,
     ) -> ClientResult<event_stream::EventStreamMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}/{stream}"))
+        self.request(&format!("/api/v1/metadata/{id}/{stream}"), None)
             .await
     }
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
-        self.request("/api/v1/search/").await
+        self.request("/api/v1/search/", None).await
     }
     pub async fn search_run_container(
         &self,
         id: Uuid,
     ) -> ClientResult<event_stream::EventStreamRoot> {
-        self.request(&format!("/api/v1/search/{id}")).await
+        self.request(&format!("/api/v1/search/{id}"), None).await
     }
 }
 
@@ -78,6 +88,7 @@ impl std::fmt::Display for ClientError {
 
 #[cfg(test)]
 mod tests {
+    use axum::http::HeaderMap;
     use httpmock::MockServer;
     use url::Url;
 
@@ -96,7 +107,33 @@ mod tests {
             address: Url::parse(&server.base_url()).unwrap(),
         };
         assert_eq!(
-            client.request::<Vec<u8>>("/demo/api").await.unwrap(),
+            client.request::<Vec<u8>>("/demo/api", None).await.unwrap(),
+            vec![1, 2, 3]
+        );
+        mock.assert();
+    }
+    #[tokio::test]
+    async fn request_with_headers() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET")
+                    .path("/demo/api")
+                    .header("api-key", "foo");
+                then.status(200).body("[1,2,3]");
+            })
+            .await;
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let mut headers = HeaderMap::new();
+        headers.insert("api-key", "foo".parse().unwrap());
+
+        assert_eq!(
+            client
+                .request::<Vec<u8>>("/demo/api", Some(headers))
+                .await
+                .unwrap(),
             vec![1, 2, 3]
         );
         mock.assert();
