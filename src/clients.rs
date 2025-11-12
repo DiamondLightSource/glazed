@@ -45,17 +45,17 @@ impl TiledClient {
         id: Uuid,
         stream: String,
     ) -> ClientResult<event_stream::EventStreamMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}/{stream}"))
+        self.request(&format!("/api/v1/metadata/{id}/{stream}"), None)
             .await
     }
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
-        self.request("/api/v1/search/").await
+        self.request("/api/v1/search/", None).await
     }
     pub async fn search_run_container(
         &self,
         id: Uuid,
     ) -> ClientResult<event_stream::EventStreamRoot> {
-        self.request(&format!("/api/v1/search/{id}")).await
+        self.request(&format!("/api/v1/search/{id}"), None).await
     }
 }
 
@@ -108,7 +108,7 @@ mod tests {
             address: Url::parse(&server.base_url()).unwrap(),
         };
         assert_eq!(
-            client.request::<Vec<u8>>("/demo/api").await.unwrap(),
+            client.request::<Vec<u8>>("/demo/api", None).await.unwrap(),
             vec![1, 2, 3]
         );
         mock.assert();
