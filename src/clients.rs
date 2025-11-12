@@ -90,6 +90,7 @@ impl std::fmt::Display for ClientError {
 
 #[cfg(test)]
 mod tests {
+    use axum::http::HeaderMap;
     use httpmock::MockServer;
     use url::Url;
 
@@ -109,6 +110,32 @@ mod tests {
         };
         assert_eq!(
             client.request::<Vec<u8>>("/demo/api", None).await.unwrap(),
+            vec![1, 2, 3]
+        );
+        mock.assert();
+    }
+    #[tokio::test]
+    async fn request_with_headers() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET")
+                    .path("/demo/api")
+                    .header("api-key", "foo");
+                then.status(200).body("[1,2,3]");
+            })
+            .await;
+        let client = TiledClient {
+            address: Url::parse(&server.base_url()).unwrap(),
+        };
+        let mut headers = HeaderMap::new();
+        headers.insert("api-key", "foo".parse().unwrap());
+
+        assert_eq!(
+            client
+                .request::<Vec<u8>>("/demo/api", Some(headers))
+                .await
+                .unwrap(),
             vec![1, 2, 3]
         );
         mock.assert();
