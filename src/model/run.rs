@@ -8,6 +8,14 @@ use uuid::Uuid;
 use crate::model::{container, node};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+pub struct RunRoot {
+    pub data: Vec<RunData>,
+    pub error: Value,
+    pub links: Option<node::Links>,
+    pub meta: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct RunMetadataRoot {
     pub data: RunData,
     pub error: Value,
@@ -107,6 +115,10 @@ mod tests {
 
     #[test]
     fn run_metadata() {
-        assert_readable_as::<run::RunMetadataRoot>("resources/run_metadata.json");
+        assert_readable_as::<run::RunMetadataRoot>("resources/metadata_run.json");
+    }
+    #[test]
+    fn search_root_for_run_containers() {
+        assert_readable_as::<run::RunRoot>("resources/search_root.json");
     }
 }

@@ -1,0 +1,187 @@
+{
+  "data": [
+    {
+      "id": "primary",
+      "attributes": {
+        "ancestors": [
+          "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"
+        ],
+        "structure_family": "container",
+        "specs": [
+          {
+            "name": "BlueskyEventStream",
+            "version": "3.0"
+          },
+          {
+            "name": "composite",
+            "version": null
+          }
+        ],
+        "metadata": {
+          "configuration": {
+            "det": {
+              "data": {
+                "det-driver-acquire_period": 0.005,
+                "det-driver-acquire_time": 0.1
+              },
+              "timestamps": {
+                "det-driver-acquire_period": 1761820563.802417,
+                "det-driver-acquire_time": 1761820563.802396
+              },
+              "data_keys": {
+                "det-driver-acquire_period": {
+                  "dtype": "number",
+                  "shape": [],
+                  "dtype_numpy": "<f8",
+                  "source": "ca://BL01T-DI-CAM-01:DET:AcquirePeriod_RBV",
+                  "units": "",
+                  "precision": 3
+                },
+                "det-driver-acquire_time": {
+                  "dtype": "number",
+                  "shape": [],
+                  "dtype_numpy": "<f8",
+                  "source": "ca://BL01T-DI-CAM-01:DET:AcquireTime_RBV",
+                  "units": "",
+                  "precision": 3
+                }
+              }
+            },
+            "stage-x": {
+              "data": {
+                "stage-x-motor_egu": "degrees",
+                "stage-x-velocity": 1,
+                "stage-x-offset": 0
+              },
+              "timestamps": {
+                "stage-x-motor_egu": 1761820562.387004,
+                "stage-x-velocity": 631152000,
+                "stage-x-offset": 631152000
+              },
+              "data_keys": {
+                "stage-x-motor_egu": {
+                  "dtype": "string",
+                  "shape": [],
+                  "dtype_numpy": "|S40",
+                  "source": "ca://BL01T-MO-SIMC-01:M1.EGU"
+                },
+                "stage-x-velocity": {
+                  "dtype": "number",
+                  "shape": [],
+                  "dtype_numpy": "<f8",
+                  "source": "ca://BL01T-MO-SIMC-01:M1.VELO",
+                  "units": "degrees",
+                  "precision": 5,
+                  "limits": {
+                    "control": {
+                      "low": 0.1,
+                      "high": 0
+                    },
+                    "display": {
+                      "low": 0.1,
+                      "high": 0
+                    }
+                  }
+                },
+                "stage-x-offset": {
+                  "dtype": "number",
+                  "shape": [],
+                  "dtype_numpy": "<f8",
+                  "source": "ca://BL01T-MO-SIMC-01:M1.OFF",
+                  "units": "degrees",
+                  "precision": 5,
+                  "limits": {
+                    "control": {
+                      "low": -9007199254740991,
+                      "high": 9007199254740991
+                    },
+                    "display": {
+                      "low": -9007199254740991,
+                      "high": 9007199254740991
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "data_keys": {
+            "det": {
+              "source": "ca://BL01T-DI-CAM-01:HDF5:FullFileName_RBV",
+              "shape": [
+                1,
+                1024,
+                1024
+              ],
+              "dtype": "array",
+              "dtype_numpy": "|i1",
+              "object_name": "det",
+              "external": "STREAM:"
+            },
+            "stage-x": {
+              "dtype": "number",
+              "shape": [],
+              "dtype_numpy": "<f8",
+              "source": "ca://BL01T-MO-SIMC-01:M1.RBV",
+              "units": "degrees",
+              "precision": 5,
+              "limits": {
+                "control": {
+                  "low": -20000,
+                  "high": 20000
+                },
+                "display": {
+                  "low": -20000,
+                  "high": 20000
+                }
+              },
+              "object_name": "stage-x"
+            }
+          },
+          "time": 1761823736.1328046,
+          "uid": "97c7bb0c-8ebf-4d98-b506-abf20f382eb5",
+          "hints": {
+            "det": {
+              "fields": [
+                "det"
+              ]
+            },
+            "stage-x": {
+              "fields": [
+                "stage-x"
+              ]
+            }
+          }
+        },
+        "structure": {
+          "contents": null,
+          "count": 2
+        },
+        "access_blob": {},
+        "sorting": [
+          {
+            "key": "",
+            "direction": 1
+          }
+        ],
+        "data_sources": null
+      },
+      "links": {
+        "self": "http://127.0.0.1:8000/api/v1/metadata/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498/primary",
+        "search": "http://127.0.0.1:8000/api/v1/search/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498/primary",
+        "full": "http://127.0.0.1:8000/api/v1/container/full/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498/primary"
+      },
+      "meta": null
+    }
+  ],
+  "error": null,
+  "links": {
+    "self": "http://127.0.0.1:8000/api/v1/search/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498?page[offset]=0&page[limit]=100",
+    "first": "http://127.0.0.1:8000/api/v1/search/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498?page[offset]=0&page[limit]=100",
+    "last": "http://127.0.0.1:8000/api/v1/search/5d8f5c3e-0e00-4c5c-816d-70b4b0f41498?page[offset]=0&page[limit]=100",
+    "next": null,
+    "prev": null
+  },
+  "meta": {
+    "count": 1
+  }
+}

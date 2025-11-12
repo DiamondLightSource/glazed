@@ -36,6 +36,15 @@ impl TiledClient {
         self.request(&format!("/api/v1/metadata/{id}/{stream}"))
             .await
     }
+    pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
+        self.request("/api/v1/search/").await
+    }
+    pub async fn search_run_container(
+        &self,
+        id: Uuid,
+    ) -> ClientResult<event_stream::EventStreamRoot> {
+        self.request(&format!("/api/v1/search/{id}")).await
+    }
 }
 
 #[derive(Debug)]
@@ -100,7 +109,7 @@ mod tests {
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
                 then.status(200)
-                    .body_from_file("resources/app_metadata.json");
+                    .body_from_file("resources/metadata_app.json");
             })
             .await;
         let client = TiledClient {
