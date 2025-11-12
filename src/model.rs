@@ -103,4 +103,29 @@ mod tests {
         assert_eq!(response.errors, &[]);
         mock.assert();
     }
+    #[tokio::test]
+    async fn search_root() {
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/search/");
+                then.status(200)
+                    .body_from_file("resources/search_root.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let query = r#"{ searchRoot {data{id}}}"#;
+        let response = schema.execute(query).await;
+        let exp = value! ({
+            "searchRoot": { "data": [
+                {"id": "4866611f-e6d9-4517-bedf-fc5526df57ad"},
+                {"id": "1e37c0ed-e87e-470d-be18-9d7f62f69127"},
+                ]
+            }
+        });
+
+        assert_eq!(response.data, exp);
+        assert_eq!(response.errors, &[]);
+        mock.assert();
+    }
 }
