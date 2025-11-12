@@ -1,0 +1,57 @@
+{
+  "data": {
+    "id": "internal",
+    "attributes": {
+      "ancestors": [
+        "4866611f-e6d9-4517-bedf-fc5526df57ad",
+        "primary"
+      ],
+      "structure_family": "table",
+      "specs": [],
+      "metadata": {
+        "stage-x": {
+          "dtype": "number",
+          "shape": [],
+          "dtype_numpy": "<f8",
+          "source": "ca://BL01T-MO-SIMC-01:M1.RBV",
+          "units": "degrees",
+          "precision": 5,
+          "limits": {
+            "control": {
+              "low": -20000,
+              "high": 20000
+            },
+            "display": {
+              "low": -20000,
+              "high": 20000
+            }
+          },
+          "object_name": "stage-x"
+        }
+      },
+      "structure": {
+        "arrow_schema": "data:application/vnd.apache.arrow.file;base64,/////xgBAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAQAAACsAAAAaAAAADgAAAAEAAAAdP///wAAAQMQAAAAHAAAAAQAAAAAAAAACgAAAHRzX3N0YWdlLXgAAKr///8AAAIApP///wAAAQMQAAAAGAAAAAQAAAAAAAAABwAAAHN0YWdlLXgA1v///wAAAgDQ////AAABAxAAAAAcAAAABAAAAAAAAAAEAAAAdGltZQAABgAIAAYABgAAAAAAAgAQABQACAAGAAcADAAAABAAEAAAAAAAAQIQAAAAIAAAAAQAAAAAAAAABwAAAHNlcV9udW0ACAAMAAgABwAIAAAAAAAAAUAAAAAAAAAA",
+        "npartitions": 1,
+        "columns": [
+          "seq_num",
+          "time",
+          "stage-x",
+          "ts_stage-x"
+        ],
+        "resizable": false
+      },
+      "access_blob": {},
+      "sorting": null,
+      "data_sources": null
+    },
+    "links": {
+      "self": "http://127.0.0.1:8000/api/v1/metadata/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/internal",
+      "full": "http://127.0.0.1:8000/api/v1/table/full/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/internal",
+      "partition": "http://127.0.0.1:8000/api/v1/table/partition/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/internal?partition={index}"
+    },
+    "meta": null
+  },
+  "error": null,
+  "links": null,
+  "meta": {}
+}
