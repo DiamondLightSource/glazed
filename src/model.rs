@@ -31,14 +31,14 @@ impl TiledQuery {
         self.0.event_stream_metadata(id, stream).await
     }
     #[instrument(skip(self))]
-    async fn search_root(&self) -> async_graphql::Result<run::RunRoot, ClientError> {
+    async fn search_root(&self) -> Result<run::RunRoot, ClientError> {
         self.0.search_root().await
     }
     #[instrument(skip(self))]
     async fn search_run_container(
         &self,
         id: Uuid,
-    ) -> async_graphql::Result<event_stream::EventStreamRoot, ClientError> {
+    ) -> Result<event_stream::EventStreamRoot, ClientError> {
         self.0.search_run_container(id).await
     }
 }
