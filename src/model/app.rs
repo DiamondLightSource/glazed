@@ -20,6 +20,6 @@ mod tests {
 
     #[test]
     fn app_metadata() {
-        assert_readable_as::<app::AppMetadata>("resources/app_metadata.json");
+        assert_readable_as::<app::AppMetadata>("resources/metadata_app.json");
     }
 }

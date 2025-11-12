@@ -60,7 +60,7 @@ mod tests {
     #[tokio::test]
     async fn event_stream_metadata() {
         assert_readable_as::<event_stream::EventStreamMetadataRoot>(
-            "resources/event_stream_metadata.json",
+            "resources/metadata_event_stream.json",
         );
     }
     #[tokio::test]

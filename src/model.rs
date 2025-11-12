@@ -71,7 +71,7 @@ mod tests {
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
                 then.status(200)
-                    .body_from_file("resources/app_metadata.json");
+                    .body_from_file("resources/metadata_app.json");
             })
             .await;
         let schema = build_schema(&server.base_url());
@@ -89,7 +89,7 @@ mod tests {
             .mock_async(|when, then| {
                 when.method("GET").path(format!("/api/v1/metadata/{id}"));
                 then.status(200)
-                    .body_from_file("resources/run_metadata.json");
+                    .body_from_file("resources/metadata_run.json");
             })
             .await;
         let schema = build_schema(&server.base_url());
