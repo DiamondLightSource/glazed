@@ -46,6 +46,7 @@ pub struct TableStructure {
 pub struct TableLinks {
     #[serde(rename = "self")]
     #[graphql(name = "self")]
+    pub self_field: String,
     pub full: Option<String>,
     pub partition: Option<String>,
 }
