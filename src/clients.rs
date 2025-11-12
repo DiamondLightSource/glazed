@@ -22,9 +22,7 @@ impl TiledClient {
         headers: Option<HeaderMap>,
     ) -> ClientResult<T> {
         info!("Requesting from tiled: {}", endpoint);
-        let mut url = self.address.clone();
-        url.set_path(endpoint);
-
+        let url = self.address.join(endpoint)?;
         let client = reqwest::Client::new();
         let request = match headers {
             Some(headers) => client.get(url).headers(headers),
