@@ -79,6 +79,15 @@ impl TiledClient {
         self.request(&format!("/api/v1/metadata/{id}/{stream}/{array}"), None)
             .await
     }
+    pub async fn array_full(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> ClientResult<Vec<u8>> {
+        self.request(&format!("/api/v1/array/full/{id}/{stream}/{array}"), None)
+            .await
+    }
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
         self.request("/api/v1/search/", None).await
     }

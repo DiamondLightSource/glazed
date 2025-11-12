@@ -60,6 +60,15 @@ impl TiledQuery {
         self.0.array_metadata(id, stream, array).await
     }
     #[instrument(skip(self))]
+    async fn array_full(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> Result<Vec<u8>, ClientError> {
+        self.0.array_full(id, stream, array).await
+    }
+    #[instrument(skip(self))]
     async fn search_root(&self) -> Result<run::RunRoot, ClientError> {
         self.0.search_root().await
     }
