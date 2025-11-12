@@ -49,7 +49,7 @@ impl TiledQuery {
         id: Uuid,
         stream: String,
         table: String,
-    ) -> async_graphql::Result<HashMap<String, Vec<Value>>, ClientError> {
+    ) -> Result<HashMap<String, Vec<Value>>, ClientError> {
         self.0.table_full(id, stream, table).await
     }
     #[instrument(skip(self))]
