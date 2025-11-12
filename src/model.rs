@@ -128,4 +128,27 @@ mod tests {
         assert_eq!(response.errors, &[]);
         mock.assert();
     }
+    #[tokio::test]
+    async fn search_run_container() {
+        let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET").path(format!("/api/v1/search/{id}"));
+                then.status(200)
+                    .body_from_file("resources/search_run_container.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let query =
+            r#"{searchRunContainer(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
+        let response = schema.execute(query).await;
+        let exp = value! ({
+            "searchRunContainer": { "data": [{"id": "primary"}]}
+        });
+
+        assert_eq!(response.data, exp);
+        assert_eq!(response.errors, &[]);
+        mock.assert();
+    }
 }
