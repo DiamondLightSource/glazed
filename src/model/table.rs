@@ -52,11 +52,19 @@ pub struct TableLinks {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
+    use serde_json::Value;
+
     use crate::model::table;
     use crate::test_utils::assert_readable_as;
 
     #[test]
     fn table_metadata() {
         assert_readable_as::<table::TableMetadataRoot>("resources/metadata_table.json");
+    }
+    #[test]
+    fn table_full() {
+        assert_readable_as::<HashMap<String, Vec<Value>>>("resources/table_full.json");
     }
 }

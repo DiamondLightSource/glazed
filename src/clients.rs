@@ -1,8 +1,10 @@
+use std::collections::HashMap;
 use std::fmt;
 
 use axum::http::HeaderMap;
 use reqwest::Url;
 use serde::de::DeserializeOwned;
+use serde_json::Value;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
@@ -54,6 +56,21 @@ impl TiledClient {
     ) -> ClientResult<table::TableMetadataRoot> {
         self.request(&format!("/api/v1/metadata/{id}/{stream}/{table}"), None)
             .await
+    }
+    pub async fn table_full(
+        &self,
+        id: Uuid,
+        stream: String,
+        table: String,
+    ) -> ClientResult<HashMap<String, Vec<Value>>> {
+        let mut headers = HeaderMap::new();
+        headers.insert("accept", "application/json".parse().unwrap());
+
+        self.request(
+            &format!("/api/v1/table/full/{id}/{stream}/{table}"),
+            Some(headers),
+        )
+        .await
     }
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
         self.request("/api/v1/search/", None).await
