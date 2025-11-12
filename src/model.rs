@@ -5,10 +5,7 @@ pub(crate) mod node;
 pub(crate) mod run;
 pub(crate) mod table;
 
-use std::collections::HashMap;
-
 use async_graphql::Object;
-use serde_json::Value;
 use tracing::instrument;
 use uuid::Uuid;
 
@@ -49,7 +46,7 @@ impl TiledQuery {
         id: Uuid,
         stream: String,
         table: String,
-    ) -> Result<HashMap<String, Vec<Value>>, ClientError> {
+    ) -> Result<table::Table, ClientError> {
         self.0.table_full(id, stream, table).await
     }
     #[instrument(skip(self))]

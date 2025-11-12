@@ -1,10 +1,8 @@
-use std::collections::HashMap;
 use std::fmt;
 
 use axum::http::HeaderMap;
 use reqwest::Url;
 use serde::de::DeserializeOwned;
-use serde_json::Value;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
@@ -62,7 +60,7 @@ impl TiledClient {
         id: Uuid,
         stream: String,
         table: String,
-    ) -> ClientResult<HashMap<String, Vec<Value>>> {
+    ) -> ClientResult<table::Table> {
         let mut headers = HeaderMap::new();
         headers.insert("accept", "application/json".parse().unwrap());
 

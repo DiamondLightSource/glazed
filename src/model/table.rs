@@ -6,6 +6,8 @@ use serde_json::Value;
 
 use crate::model::node;
 
+pub type Table = HashMap<String, Vec<Value>>;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct TableMetadataRoot {
     pub data: TableData,
