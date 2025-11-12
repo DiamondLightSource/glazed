@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "id": "7d583c2f-3d0a-4695-af5a-6c9f52568f50",
+      "id": "4866611f-e6d9-4517-bedf-fc5526df57ad",
       "attributes": {
         "ancestors": [],
         "structure_family": "container",
@@ -13,37 +13,40 @@
         ],
         "metadata": {
           "start": {
-            "uid": "7d583c2f-3d0a-4695-af5a-6c9f52568f50",
-            "time": 1761762767.9284859,
+            "uid": "4866611f-e6d9-4517-bedf-fc5526df57ad",
+            "time": 1762787606.0709949,
             "versions": {
               "ophyd": "1.11.0",
-              "ophyd_async": "0.13.5",
+              "ophyd_async": "0.13.6",
               "bluesky": "1.14.6"
             },
             "instrument": "adsim",
-            "instrument_session": "cm12345-1",
-            "data_session_directory": "/tmp",
-            "scan_file": "adsim-14",
-            "scan_id": 14,
+            "instrument_session": "cm12345-2",
+            "data_session_directory": "/home/abi/data",
+            "detector_file_template": "{instrument}-{scan_id}-{device_name}",
+            "scan_file": "adsim-2",
+            "scan_id": 2,
             "plan_type": "generator",
-            "plan_name": "count",
+            "plan_name": "spec_scan",
             "detectors": [
               "det"
+            ],
+            "motors": [
+              "stage-x"
             ],
             "num_points": 5,
             "num_intervals": 4,
             "plan_args": {
               "detectors": [
-                "<ophyd_async.epics.adsimdetector._sim.SimDetector object at 0x73b1ea574bd0>"
+                "det"
               ],
-              "num": 5,
-              "delay": 0
+              "spec": "Line(axis=<ophyd_async.epics.motor.Motor object at 0x740d310d2b50>, start=0.0, stop=10.0, num=5)"
             },
             "hints": {
               "dimensions": [
                 [
                   [
-                    "time"
+                    "stage-x"
                   ],
                   "primary"
                 ]
@@ -52,6 +55,16 @@
             "shape": [
               5
             ]
+          },
+          "stop": {
+            "uid": "def4aa81-db42-497d-92e9-1d519d252c7e",
+            "time": 1762787618.4661725,
+            "run_start": "4866611f-e6d9-4517-bedf-fc5526df57ad",
+            "exit_status": "success",
+            "reason": "",
+            "num_events": {
+              "primary": 5
+            }
           }
         },
         "structure": {
@@ -68,14 +81,14 @@
         "data_sources": null
       },
       "links": {
-        "self": "http://127.0.0.1:8000/api/v1/metadata/7d583c2f-3d0a-4695-af5a-6c9f52568f50",
-        "search": "http://127.0.0.1:8000/api/v1/search/7d583c2f-3d0a-4695-af5a-6c9f52568f50",
-        "full": "http://127.0.0.1:8000/api/v1/container/full/7d583c2f-3d0a-4695-af5a-6c9f52568f50"
+        "self": "http://0.0.0.0:8000/api/v1/metadata/4866611f-e6d9-4517-bedf-fc5526df57ad",
+        "search": "http://0.0.0.0:8000/api/v1/search/4866611f-e6d9-4517-bedf-fc5526df57ad",
+        "full": "http://0.0.0.0:8000/api/v1/container/full/4866611f-e6d9-4517-bedf-fc5526df57ad"
       },
       "meta": null
     },
     {
-      "id": "c3827509-dd00-4464-a2db-f86e7a537aa3",
+      "id": "1e37c0ed-e87e-470d-be18-9d7f62f69127",
       "attributes": {
         "ancestors": [],
         "structure_family": "container",
@@ -87,45 +100,58 @@
         ],
         "metadata": {
           "start": {
-            "uid": "c3827509-dd00-4464-a2db-f86e7a537aa3",
-            "time": 1761762924.2108953,
+            "uid": "1e37c0ed-e87e-470d-be18-9d7f62f69127",
+            "time": 1762786856.890415,
             "versions": {
               "ophyd": "1.11.0",
-              "ophyd_async": "0.13.5",
+              "ophyd_async": "0.13.6",
               "bluesky": "1.14.6"
             },
             "instrument": "adsim",
-            "instrument_session": "cm12345-1",
+            "instrument_session": "cm12345-2",
             "data_session_directory": "/tmp",
-            "scan_file": "adsim-15",
-            "scan_id": 15,
+            "detector_file_template": "{instrument}-{scan_id}-{device_name}",
+            "scan_file": "adsim-2",
+            "scan_id": 2,
             "plan_type": "generator",
-            "plan_name": "count",
+            "plan_name": "spec_scan",
             "detectors": [
               "det"
             ],
-            "num_points": 5,
-            "num_intervals": 4,
+            "motors": [
+              "stage-x"
+            ],
+            "num_points": 10,
+            "num_intervals": 9,
             "plan_args": {
               "detectors": [
-                "<ophyd_async.epics.adsimdetector._sim.SimDetector object at 0x73b1ea574bd0>"
+                "det"
               ],
-              "num": 5,
-              "delay": 0
+              "spec": "Line(axis=<ophyd_async.epics.motor.Motor object at 0x74c545aeba10>, start=0.0, stop=10.0, num=10)"
             },
             "hints": {
               "dimensions": [
                 [
                   [
-                    "time"
+                    "stage-x"
                   ],
                   "primary"
                 ]
               ]
             },
             "shape": [
-              5
+              10
             ]
+          },
+          "stop": {
+            "uid": "4754ca2e-75df-4686-8084-7d8cbcc0bf5e",
+            "time": 1762786871.6394713,
+            "run_start": "1e37c0ed-e87e-470d-be18-9d7f62f69127",
+            "exit_status": "success",
+            "reason": "",
+            "num_events": {
+              "primary": 10
+            }
           }
         },
         "structure": {
@@ -142,83 +168,9 @@
         "data_sources": null
       },
       "links": {
-        "self": "http://127.0.0.1:8000/api/v1/metadata/c3827509-dd00-4464-a2db-f86e7a537aa3",
-        "search": "http://127.0.0.1:8000/api/v1/search/c3827509-dd00-4464-a2db-f86e7a537aa3",
-        "full": "http://127.0.0.1:8000/api/v1/container/full/c3827509-dd00-4464-a2db-f86e7a537aa3"
-      },
-      "meta": null
-    },
-    {
-      "id": "ab2e2c59-fa34-46c0-a02f-9b614d720eac",
-      "attributes": {
-        "ancestors": [],
-        "structure_family": "container",
-        "specs": [
-          {
-            "name": "BlueskyRun",
-            "version": "3.0"
-          }
-        ],
-        "metadata": {
-          "start": {
-            "uid": "ab2e2c59-fa34-46c0-a02f-9b614d720eac",
-            "time": 1761763356.5618088,
-            "versions": {
-              "ophyd": "1.11.0",
-              "ophyd_async": "0.13.5",
-              "bluesky": "1.14.6"
-            },
-            "instrument": "adsim",
-            "instrument_session": "cm12345-1",
-            "data_session_directory": "/tmp",
-            "scan_file": "adsim-16",
-            "scan_id": 16,
-            "plan_type": "generator",
-            "plan_name": "count",
-            "detectors": [
-              "det"
-            ],
-            "num_points": 5,
-            "num_intervals": 4,
-            "plan_args": {
-              "detectors": [
-                "<ophyd_async.epics.adsimdetector._sim.SimDetector object at 0x7a1158dbad10>"
-              ],
-              "num": 5,
-              "delay": 0
-            },
-            "hints": {
-              "dimensions": [
-                [
-                  [
-                    "time"
-                  ],
-                  "primary"
-                ]
-              ]
-            },
-            "shape": [
-              5
-            ]
-          }
-        },
-        "structure": {
-          "contents": null,
-          "count": 1
-        },
-        "access_blob": {},
-        "sorting": [
-          {
-            "key": "",
-            "direction": 1
-          }
-        ],
-        "data_sources": null
-      },
-      "links": {
-        "self": "http://127.0.0.1:8000/api/v1/metadata/ab2e2c59-fa34-46c0-a02f-9b614d720eac",
-        "search": "http://127.0.0.1:8000/api/v1/search/ab2e2c59-fa34-46c0-a02f-9b614d720eac",
-        "full": "http://127.0.0.1:8000/api/v1/container/full/ab2e2c59-fa34-46c0-a02f-9b614d720eac"
+        "self": "http://0.0.0.0:8000/api/v1/metadata/1e37c0ed-e87e-470d-be18-9d7f62f69127",
+        "search": "http://0.0.0.0:8000/api/v1/search/1e37c0ed-e87e-470d-be18-9d7f62f69127",
+        "full": "http://0.0.0.0:8000/api/v1/container/full/1e37c0ed-e87e-470d-be18-9d7f62f69127"
       },
       "meta": null
     }
@@ -232,6 +184,6 @@
     "prev": null
   },
   "meta": {
-    "count": 3
+    "count": 2
   }
 }
