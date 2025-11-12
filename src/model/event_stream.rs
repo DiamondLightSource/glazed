@@ -63,4 +63,8 @@ mod tests {
             "resources/event_stream_metadata.json",
         );
     }
+    #[tokio::test]
+    async fn search_run_container_for_event_stream_containers() {
+        assert_readable_as::<event_stream::EventStreamRoot>("resources/search_run_container.json");
+    }
 }

@@ -117,4 +117,8 @@ mod tests {
     fn run_metadata() {
         assert_readable_as::<run::RunMetadataRoot>("resources/run_metadata.json");
     }
+    #[test]
+    fn search_root_for_run_containers() {
+        assert_readable_as::<run::RunRoot>("resources/search_root.json");
+    }
 }

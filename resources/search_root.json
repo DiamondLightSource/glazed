@@ -1,0 +1,237 @@
+{
+  "data": [
+    {
+      "id": "7d583c2f-3d0a-4695-af5a-6c9f52568f50",
+      "attributes": {
+        "ancestors": [],
+        "structure_family": "container",
+        "specs": [
+          {
+            "name": "BlueskyRun",
+            "version": "3.0"
+          }
+        ],
+        "metadata": {
+          "start": {
+            "uid": "7d583c2f-3d0a-4695-af5a-6c9f52568f50",
+            "time": 1761762767.9284859,
+            "versions": {
+              "ophyd": "1.11.0",
+              "ophyd_async": "0.13.5",
+              "bluesky": "1.14.6"
+            },
+            "instrument": "adsim",
+            "instrument_session": "cm12345-1",
+            "data_session_directory": "/tmp",
+            "scan_file": "adsim-14",
+            "scan_id": 14,
+            "plan_type": "generator",
+            "plan_name": "count",
+            "detectors": [
+              "det"
+            ],
+            "num_points": 5,
+            "num_intervals": 4,
+            "plan_args": {
+              "detectors": [
+                "<ophyd_async.epics.adsimdetector._sim.SimDetector object at 0x73b1ea574bd0>"
+              ],
+              "num": 5,
+              "delay": 0
+            },
+            "hints": {
+              "dimensions": [
+                [
+                  [
+                    "time"
+                  ],
+                  "primary"
+                ]
+              ]
+            },
+            "shape": [
+              5
+            ]
+          }
+        },
+        "structure": {
+          "contents": null,
+          "count": 1
+        },
+        "access_blob": {},
+        "sorting": [
+          {
+            "key": "",
+            "direction": 1
+          }
+        ],
+        "data_sources": null
+      },
+      "links": {
+        "self": "http://127.0.0.1:8000/api/v1/metadata/7d583c2f-3d0a-4695-af5a-6c9f52568f50",
+        "search": "http://127.0.0.1:8000/api/v1/search/7d583c2f-3d0a-4695-af5a-6c9f52568f50",
+        "full": "http://127.0.0.1:8000/api/v1/container/full/7d583c2f-3d0a-4695-af5a-6c9f52568f50"
+      },
+      "meta": null
+    },
+    {
+      "id": "c3827509-dd00-4464-a2db-f86e7a537aa3",
+      "attributes": {
+        "ancestors": [],
+        "structure_family": "container",
+        "specs": [
+          {
+            "name": "BlueskyRun",
+            "version": "3.0"
+          }
+        ],
+        "metadata": {
+          "start": {
+            "uid": "c3827509-dd00-4464-a2db-f86e7a537aa3",
+            "time": 1761762924.2108953,
+            "versions": {
+              "ophyd": "1.11.0",
+              "ophyd_async": "0.13.5",
+              "bluesky": "1.14.6"
+            },
+            "instrument": "adsim",
+            "instrument_session": "cm12345-1",
+            "data_session_directory": "/tmp",
+            "scan_file": "adsim-15",
+            "scan_id": 15,
+            "plan_type": "generator",
+            "plan_name": "count",
+            "detectors": [
+              "det"
+            ],
+            "num_points": 5,
+            "num_intervals": 4,
+            "plan_args": {
+              "detectors": [
+                "<ophyd_async.epics.adsimdetector._sim.SimDetector object at 0x73b1ea574bd0>"
+              ],
+              "num": 5,
+              "delay": 0
+            },
+            "hints": {
+              "dimensions": [
+                [
+                  [
+                    "time"
+                  ],
+                  "primary"
+                ]
+              ]
+            },
+            "shape": [
+              5
+            ]
+          }
+        },
+        "structure": {
+          "contents": null,
+          "count": 1
+        },
+        "access_blob": {},
+        "sorting": [
+          {
+            "key": "",
+            "direction": 1
+          }
+        ],
+        "data_sources": null
+      },
+      "links": {
+        "self": "http://127.0.0.1:8000/api/v1/metadata/c3827509-dd00-4464-a2db-f86e7a537aa3",
+        "search": "http://127.0.0.1:8000/api/v1/search/c3827509-dd00-4464-a2db-f86e7a537aa3",
+        "full": "http://127.0.0.1:8000/api/v1/container/full/c3827509-dd00-4464-a2db-f86e7a537aa3"
+      },
+      "meta": null
+    },
+    {
+      "id": "ab2e2c59-fa34-46c0-a02f-9b614d720eac",
+      "attributes": {
+        "ancestors": [],
+        "structure_family": "container",
+        "specs": [
+          {
+            "name": "BlueskyRun",
+            "version": "3.0"
+          }
+        ],
+        "metadata": {
+          "start": {
+            "uid": "ab2e2c59-fa34-46c0-a02f-9b614d720eac",
+            "time": 1761763356.5618088,
+            "versions": {
+              "ophyd": "1.11.0",
+              "ophyd_async": "0.13.5",
+              "bluesky": "1.14.6"
+            },
+            "instrument": "adsim",
+            "instrument_session": "cm12345-1",
+            "data_session_directory": "/tmp",
+            "scan_file": "adsim-16",
+            "scan_id": 16,
+            "plan_type": "generator",
+            "plan_name": "count",
+            "detectors": [
+              "det"
+            ],
+            "num_points": 5,
+            "num_intervals": 4,
+            "plan_args": {
+              "detectors": [
+                "<ophyd_async.epics.adsimdetector._sim.SimDetector object at 0x7a1158dbad10>"
+              ],
+              "num": 5,
+              "delay": 0
+            },
+            "hints": {
+              "dimensions": [
+                [
+                  [
+                    "time"
+                  ],
+                  "primary"
+                ]
+              ]
+            },
+            "shape": [
+              5
+            ]
+          }
+        },
+        "structure": {
+          "contents": null,
+          "count": 1
+        },
+        "access_blob": {},
+        "sorting": [
+          {
+            "key": "",
+            "direction": 1
+          }
+        ],
+        "data_sources": null
+      },
+      "links": {
+        "self": "http://127.0.0.1:8000/api/v1/metadata/ab2e2c59-fa34-46c0-a02f-9b614d720eac",
+        "search": "http://127.0.0.1:8000/api/v1/search/ab2e2c59-fa34-46c0-a02f-9b614d720eac",
+        "full": "http://127.0.0.1:8000/api/v1/container/full/ab2e2c59-fa34-46c0-a02f-9b614d720eac"
+      },
+      "meta": null
+    }
+  ],
+  "error": null,
+  "links": {
+    "self": "http://127.0.0.1:8000/api/v1/search/?page[offset]=0&page[limit]=100",
+    "first": "http://127.0.0.1:8000/api/v1/search/?page[offset]=0&page[limit]=100",
+    "last": "http://127.0.0.1:8000/api/v1/search/?page[offset]=0&page[limit]=100",
+    "next": null,
+    "prev": null
+  },
+  "meta": {
+    "count": 3
+  }
+}
