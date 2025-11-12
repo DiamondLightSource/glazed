@@ -32,6 +32,15 @@ impl TiledQuery {
         self.0.event_stream_metadata(id, stream).await
     }
     #[instrument(skip(self))]
+    async fn table_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+        table: String,
+    ) -> Result<table::TableMetadataRoot, ClientError> {
+        self.0.table_metadata(id, stream, table).await
+    }
+    #[instrument(skip(self))]
     async fn search_root(&self) -> Result<run::RunRoot, ClientError> {
         self.0.search_root().await
     }
@@ -98,6 +107,31 @@ mod tests {
         let response = schema.execute(query).await;
         let exp = value! ({
             "runMetadata": { "data": {"id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"}}
+        });
+
+        assert_eq!(response.data, exp);
+        assert_eq!(response.errors, &[]);
+        mock.assert();
+    }
+    #[tokio::test]
+    async fn table_metadata() {
+        let id = Uuid::parse_str("4866611f-e6d9-4517-bedf-fc5526df57ad").unwrap();
+        let stream = "primary";
+        let table = "internal";
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET")
+                    .path(format!("/api/v1/metadata/{id}/{stream}/{table}"));
+                then.status(200)
+                    .body_from_file("resources/metadata_table.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let query = r#"{ tableMetadata(id:"4866611f-e6d9-4517-bedf-fc5526df57ad", stream:"primary", table:"internal") {data {id}}}"#;
+        let response = schema.execute(query).await;
+        let exp = value! ({
+            "tableMetadata": { "data": {"id": "internal"}}
         });
 
         assert_eq!(response.data, exp);
