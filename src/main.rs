@@ -1,6 +1,8 @@
 use std::error;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use axum::http::StatusCode;
+use axum::response::Html;
 use axum::routing::{get, post};
 use axum::{Extension, Router};
 
@@ -54,6 +56,10 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let app = Router::new()
         .route("/graphql", post(graphql_handler))
         .route("/graphiql", get(graphiql_handler))
+        .fallback((
+            StatusCode::NOT_FOUND,
+            Html(include_str!("../static/404.html")),
+        ))
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
