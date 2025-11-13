@@ -55,10 +55,6 @@ pub struct TableLinks {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
-    use serde_json::Value;
-
     use crate::model::table;
     use crate::test_utils::assert_readable_as;
 
@@ -68,6 +64,6 @@ mod tests {
     }
     #[test]
     fn table_full() {
-        assert_readable_as::<HashMap<String, Vec<Value>>>("resources/table_full.json");
+        assert_readable_as::<table::Table>("resources/table_full.json");
     }
 }
