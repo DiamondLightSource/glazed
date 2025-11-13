@@ -29,6 +29,8 @@ jobs:
           # Need load and tags so we can test it below
           load: true
           tags: test_tag
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Test cli works in cached runtime image
         run: docker run --rm test_tag --version
