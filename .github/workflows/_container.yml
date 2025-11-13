@@ -21,12 +21,17 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
 
+
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and export to Docker local cache
         uses: docker/build-push-action@v6
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           # Need load and tags so we can test it below
+          context: .
           load: true
           tags: test_tag
           cache-from: type=gha
