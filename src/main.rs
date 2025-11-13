@@ -2,7 +2,7 @@ use std::error;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::http::StatusCode;
-use axum::response::Html;
+use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
 use axum::{Extension, Router};
 
@@ -56,7 +56,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     .finish();
 
     let app = Router::new()
-        .route("/graphql", post(graphql_handler))
+        .route("/graphql", post(graphql_handler).get(graphql_get_warning))
         .route("/graphiql", get(graphiql_handler))
         .fallback((
             StatusCode::NOT_FOUND,
@@ -70,6 +70,14 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     Ok(axum::serve(listener, app)
         .with_graceful_shutdown(signal_handler())
         .await?)
+}
+
+async fn graphql_get_warning() -> impl IntoResponse {
+    (
+        StatusCode::METHOD_NOT_ALLOWED,
+        [("Allow", "POST")],
+        Html(include_str!("../static/get_graphql_warning.html")),
+    )
 }
 
 async fn signal_handler() {
