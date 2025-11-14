@@ -1,0 +1,243 @@
+{
+  "contents": {
+    "primary": {
+      "contents": {
+        "det": {
+          "contents": {},
+          "metadata": {}
+        },
+        "internal": {
+          "contents": {
+            "seq_num": {
+              "contents": {},
+              "metadata": {}
+            },
+            "time": {
+              "contents": {},
+              "metadata": {}
+            },
+            "stage-x": {
+              "contents": {},
+              "metadata": {}
+            },
+            "ts_stage-x": {
+              "contents": {},
+              "metadata": {}
+            }
+          },
+          "metadata": {
+            "stage-x": {
+              "dtype": "number",
+              "shape": [],
+              "dtype_numpy": "<f8",
+              "source": "ca://BL01T-MO-SIMC-01:M1.RBV",
+              "units": "degrees",
+              "precision": 5,
+              "limits": {
+                "control": {
+                  "low": -20000,
+                  "high": 20000
+                },
+                "display": {
+                  "low": -20000,
+                  "high": 20000
+                }
+              },
+              "object_name": "stage-x"
+            }
+          }
+        }
+      },
+      "metadata": {
+        "configuration": {
+          "det": {
+            "data": {
+              "det-driver-acquire_period": 0.005,
+              "det-driver-acquire_time": 0.1
+            },
+            "timestamps": {
+              "det-driver-acquire_period": 1761820563.802417,
+              "det-driver-acquire_time": 1761820563.802396
+            },
+            "data_keys": {
+              "det-driver-acquire_period": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-DI-CAM-01:DET:AcquirePeriod_RBV",
+                "units": "",
+                "precision": 3
+              },
+              "det-driver-acquire_time": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-DI-CAM-01:DET:AcquireTime_RBV",
+                "units": "",
+                "precision": 3
+              }
+            }
+          },
+          "stage-x": {
+            "data": {
+              "stage-x-motor_egu": "degrees",
+              "stage-x-velocity": 1,
+              "stage-x-offset": 0
+            },
+            "timestamps": {
+              "stage-x-motor_egu": 1761820562.387004,
+              "stage-x-velocity": 631152000,
+              "stage-x-offset": 631152000
+            },
+            "data_keys": {
+              "stage-x-motor_egu": {
+                "dtype": "string",
+                "shape": [],
+                "dtype_numpy": "|S40",
+                "source": "ca://BL01T-MO-SIMC-01:M1.EGU"
+              },
+              "stage-x-velocity": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-MO-SIMC-01:M1.VELO",
+                "units": "degrees",
+                "precision": 5,
+                "limits": {
+                  "control": {
+                    "low": 0.1,
+                    "high": 0
+                  },
+                  "display": {
+                    "low": 0.1,
+                    "high": 0
+                  }
+                }
+              },
+              "stage-x-offset": {
+                "dtype": "number",
+                "shape": [],
+                "dtype_numpy": "<f8",
+                "source": "ca://BL01T-MO-SIMC-01:M1.OFF",
+                "units": "degrees",
+                "precision": 5,
+                "limits": {
+                  "control": {
+                    "low": -9007199254740991,
+                    "high": 9007199254740991
+                  },
+                  "display": {
+                    "low": -9007199254740991,
+                    "high": 9007199254740991
+                  }
+                }
+              }
+            }
+          }
+        },
+        "data_keys": {
+          "det": {
+            "source": "ca://BL01T-DI-CAM-01:HDF5:FullFileName_RBV",
+            "shape": [
+              1,
+              1024,
+              1024
+            ],
+            "dtype": "array",
+            "dtype_numpy": "|i1",
+            "object_name": "det",
+            "external": "STREAM:"
+          },
+          "stage-x": {
+            "dtype": "number",
+            "shape": [],
+            "dtype_numpy": "<f8",
+            "source": "ca://BL01T-MO-SIMC-01:M1.RBV",
+            "units": "degrees",
+            "precision": 5,
+            "limits": {
+              "control": {
+                "low": -20000,
+                "high": 20000
+              },
+              "display": {
+                "low": -20000,
+                "high": 20000
+              }
+            },
+            "object_name": "stage-x"
+          }
+        },
+        "time": 1761823736.1328046,
+        "uid": "97c7bb0c-8ebf-4d98-b506-abf20f382eb5",
+        "hints": {
+          "det": {
+            "fields": [
+              "det"
+            ]
+          },
+          "stage-x": {
+            "fields": [
+              "stage-x"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "metadata": {
+    "start": {
+      "uid": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498",
+      "time": 1761823725.6956885,
+      "versions": {
+        "ophyd": "1.11.0",
+        "ophyd_async": "0.13.5",
+        "bluesky": "1.14.6"
+      },
+      "instrument": "adsim",
+      "instrument_session": "cm12345-1",
+      "data_session_directory": "/tmp",
+      "scan_file": "adsim-49",
+      "scan_id": 49,
+      "plan_type": "generator",
+      "plan_name": "spec_scan",
+      "detectors": [
+        "det"
+      ],
+      "motors": [
+        "stage-x"
+      ],
+      "num_points": 5,
+      "num_intervals": 4,
+      "plan_args": {
+        "detectors": [
+          "det"
+        ],
+        "spec": "Line(axis=<ophyd_async.epics.motor.Motor object at 0x772d3f4ea110>, start=0.0, stop=10.0, num=5)"
+      },
+      "hints": {
+        "dimensions": [
+          [
+            [
+              "stage-x"
+            ],
+            "primary"
+          ]
+        ]
+      },
+      "shape": [
+        5
+      ]
+    },
+    "stop": {
+      "uid": "a7963d20-8e25-4c8a-bc9f-c2c59eca9c71",
+      "time": 1761823748.31523,
+      "run_start": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498",
+      "exit_status": "success",
+      "reason": "",
+      "num_events": {
+        "primary": 5
+      }
+    }
+  }
+}
