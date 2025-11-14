@@ -1,4 +1,5 @@
 pub(crate) mod app;
+pub(crate) mod array;
 pub(crate) mod container;
 pub(crate) mod event_stream;
 pub(crate) mod node;
@@ -48,6 +49,24 @@ impl TiledQuery {
         table: String,
     ) -> Result<table::Table, ClientError> {
         self.0.table_full(id, stream, table).await
+    }
+    #[instrument(skip(self))]
+    async fn array_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> Result<array::ArrayMetadataRoot, ClientError> {
+        self.0.array_metadata(id, stream, array).await
+    }
+    #[instrument(skip(self))]
+    async fn array_full(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> Result<Vec<u8>, ClientError> {
+        self.0.array_full(id, stream, array).await
     }
     #[instrument(skip(self))]
     async fn search_root(&self) -> Result<run::RunRoot, ClientError> {
@@ -149,6 +168,31 @@ mod tests {
         let response = schema.execute(query).await;
         let exp = value! ({
             "tableMetadata": { "data": {"id": "internal"}}
+        });
+
+        assert_eq!(response.data, exp);
+        assert_eq!(response.errors, &[]);
+        mock.assert();
+    }
+    #[tokio::test]
+    async fn array_metadata() {
+        let id = Uuid::parse_str("4866611f-e6d9-4517-bedf-fc5526df57ad").unwrap();
+        let stream = "primary";
+        let array = "det";
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET")
+                    .path(format!("/api/v1/metadata/{id}/{stream}/{array}"));
+                then.status(200)
+                    .body_from_file("resources/metadata_array.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let query = r#"{ arrayMetadata(id:"4866611f-e6d9-4517-bedf-fc5526df57ad", stream:"primary", array:"det") {data {id}}}"#;
+        let response = schema.execute(query).await;
+        let exp = value! ({
+            "arrayMetadata": { "data": {"id": "det"}}
         });
 
         assert_eq!(response.data, exp);

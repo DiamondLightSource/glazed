@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
-use crate::model::{app, container, event_stream, run, table};
+use crate::model::{app, array, container, event_stream, run, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -69,6 +69,24 @@ impl TiledClient {
             Some(headers),
         )
         .await
+    }
+    pub async fn array_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> ClientResult<array::ArrayMetadataRoot> {
+        self.request(&format!("/api/v1/metadata/{id}/{stream}/{array}"), None)
+            .await
+    }
+    pub async fn array_full(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> ClientResult<Vec<u8>> {
+        self.request(&format!("/api/v1/array/full/{id}/{stream}/{array}"), None)
+            .await
     }
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
         self.request("/api/v1/search/", None).await
