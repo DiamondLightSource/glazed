@@ -54,17 +54,21 @@ pub struct EventStreamMetadata {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::event_stream;
+    use crate::model::{container, event_stream};
     use crate::test_utils::assert_readable_as;
 
-    #[tokio::test]
-    async fn event_stream_metadata() {
+    #[test]
+    fn event_stream_metadata() {
         assert_readable_as::<event_stream::EventStreamMetadataRoot>(
             "resources/metadata_event_stream.json",
         );
     }
-    #[tokio::test]
-    async fn search_run_container_for_event_stream_containers() {
+    #[test]
+    fn search_run_container_for_event_stream_containers() {
         assert_readable_as::<event_stream::EventStreamRoot>("resources/search_run_container.json");
+    }
+    #[test]
+    fn container_full() {
+        assert_readable_as::<container::Container>("resources/container_event_stream.json");
     }
 }

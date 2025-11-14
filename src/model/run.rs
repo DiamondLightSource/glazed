@@ -110,7 +110,7 @@ pub struct Stop {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::run;
+    use crate::model::{container, run};
     use crate::test_utils::assert_readable_as;
 
     #[test]
@@ -120,5 +120,9 @@ mod tests {
     #[test]
     fn search_root_for_run_containers() {
         assert_readable_as::<run::RunRoot>("resources/search_root.json");
+    }
+    #[test]
+    fn container_full() {
+        assert_readable_as::<container::Container>("resources/container_run.json");
     }
 }

@@ -21,14 +21,20 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
 
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and export to Docker local cache
         uses: docker/build-push-action@v6
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           # Need load and tags so we can test it below
+          context: .
           load: true
           tags: test_tag
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Test cli works in cached runtime image
         run: docker run --rm test_tag --version
@@ -47,6 +53,7 @@ jobs:
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
+          context: .
           push: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
-use crate::model::{app, event_stream, run, table};
+use crate::model::{app, container, event_stream, run, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -78,6 +78,21 @@ impl TiledClient {
         id: Uuid,
     ) -> ClientResult<event_stream::EventStreamRoot> {
         self.request(&format!("/api/v1/search/{id}"), None).await
+    }
+    pub async fn container_full(
+        &self,
+        id: Uuid,
+        stream: Option<String>,
+    ) -> ClientResult<container::Container> {
+        let mut headers = HeaderMap::new();
+        headers.insert("accept", "application/json".parse().unwrap());
+
+        let endpoint = match stream {
+            Some(stream) => &format!("/api/v1/container/full/{id}/{stream}"),
+            None => &format!("/api/v1/container/full/{id}"),
+        };
+
+        self.request(endpoint, Some(headers)).await
     }
 }
 

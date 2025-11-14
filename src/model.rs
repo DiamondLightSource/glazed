@@ -60,6 +60,14 @@ impl TiledQuery {
     ) -> Result<event_stream::EventStreamRoot, ClientError> {
         self.0.search_run_container(id).await
     }
+    #[instrument(skip(self))]
+    async fn container_full(
+        &self,
+        id: Uuid,
+        stream: Option<String>,
+    ) -> Result<container::Container, ClientError> {
+        self.0.container_full(id, stream).await
+    }
 }
 
 #[cfg(test)]
@@ -191,6 +199,36 @@ mod tests {
             "searchRunContainer": { "data": [{"id": "primary"}]}
         });
 
+        assert_eq!(response.data, exp);
+        assert_eq!(response.errors, &[]);
+        mock.assert();
+    }
+    #[tokio::test]
+    async fn container_full() {
+        let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET")
+                    .path(format!("/api/v1/container/full/{id}"))
+                    .header("accept", "application/json");
+                then.status(200)
+                    .body_from_file("resources/container_snippet.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let query = r#"{containerFull(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"){contents}}"#;
+        let response = schema.execute(query).await;
+        let exp = value! ({
+            "containerFull": {
+              "contents": {
+                "primary": {
+                  "contents": {},
+                  "metadata": {}
+                }
+              }
+            }
+        });
         assert_eq!(response.data, exp);
         assert_eq!(response.errors, &[]);
         mock.assert();
