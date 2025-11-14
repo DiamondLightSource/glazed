@@ -65,7 +65,7 @@ impl TiledQuery {
         &self,
         id: Uuid,
         stream: Option<String>,
-    ) -> async_graphql::Result<container::Container, ClientError> {
+    ) -> Result<container::Container, ClientError> {
         self.0.container_full(id, stream).await
     }
 }
