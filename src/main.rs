@@ -56,6 +56,14 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let app = Router::new()
         .route("/graphql", post(graphql_handler))
         .route("/graphiql", get(graphiql_handler))
+        .route(
+            "/graphql",
+            get((
+                StatusCode::METHOD_NOT_ALLOWED,
+                [("Allow", "POST")],
+                Html(include_str!("../static/get_graphql_warning.html")),
+            )),
+        )
         .fallback((
             StatusCode::NOT_FOUND,
             Html(include_str!("../static/404.html")),
