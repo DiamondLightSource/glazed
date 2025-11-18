@@ -15,6 +15,8 @@ mod model;
 mod test_utils;
 
 use cli::{Cli, Commands};
+use tokio::select;
+use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
 
 use crate::clients::TiledClient;
@@ -65,5 +67,19 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
     info!("Serving glazed at {:?}", config.bind_address);
 
-    Ok(axum::serve(listener, app).await?)
+    Ok(axum::serve(listener, app)
+        .with_graceful_shutdown(signal_handler())
+        .await?)
+}
+
+async fn signal_handler() {
+    let mut term = signal(SignalKind::terminate()).expect("Failed to create SIGTERM listener");
+    let mut int = signal(SignalKind::interrupt()).expect("Failed to create SIGINT listener");
+    let mut quit = signal(SignalKind::interrupt()).expect("Failed to create SIGQUIT listener");
+    let sig = select! {
+         _ = term.recv() => "SIGTERM",
+        _ = int.recv() => "SIGINT",
+        _ = quit.recv() => "SIGQUIT",
+    };
+    info!("Server interrupted by {sig}");
 }
