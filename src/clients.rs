@@ -20,30 +20,38 @@ impl TiledClient {
         &self,
         endpoint: &str,
         headers: Option<HeaderMap>,
+        query_params: Option<&[(&str, &str)]>,
     ) -> ClientResult<T> {
         info!("Requesting from tiled: {}", endpoint);
         let url = self.address.join(endpoint)?;
         let client = reqwest::Client::new();
-        let request = match headers {
+
+        let mut request = match headers {
             Some(headers) => client.get(url).headers(headers),
             None => client.get(url),
         };
+        if let Some(params) = query_params {
+            request = request.query(params);
+        }
+        info!("Querying: {request:?}");
+
         let response = request.send().await?.error_for_status()?;
         let body = response.text().await?;
         serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
     }
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
-        self.request("/api/v1/", None).await
+        self.request("/api/v1/", None, None).await
     }
     pub async fn run_metadata(&self, id: Uuid) -> ClientResult<run::RunMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}"), None).await
+        self.request(&format!("/api/v1/metadata/{id}"), None, None)
+            .await
     }
     pub async fn event_stream_metadata(
         &self,
         id: Uuid,
         stream: String,
     ) -> ClientResult<event_stream::EventStreamMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}/{stream}"), None)
+        self.request(&format!("/api/v1/metadata/{id}/{stream}"), None, None)
             .await
     }
     pub async fn array_metadata(
@@ -52,8 +60,12 @@ impl TiledClient {
         stream: String,
         array: String,
     ) -> ClientResult<array::ArrayMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}/{stream}/{array}"), None)
-            .await
+        self.request(
+            &format!("/api/v1/metadata/{id}/{stream}/{array}"),
+            None,
+            Some(&[("include_data_sources", "true")]),
+        )
+        .await
     }
     pub async fn table_metadata(
         &self,
@@ -61,8 +73,12 @@ impl TiledClient {
         stream: String,
         table: String,
     ) -> ClientResult<table::TableMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}/{stream}/{table}"), None)
-            .await
+        self.request(
+            &format!("/api/v1/metadata/{id}/{stream}/{table}"),
+            None,
+            Some(&[("include_data_sources", "true")]),
+        )
+        .await
     }
     pub async fn table_full(
         &self,
@@ -76,17 +92,19 @@ impl TiledClient {
         self.request(
             &format!("/api/v1/table/full/{id}/{stream}/{table}"),
             Some(headers),
+            None,
         )
         .await
     }
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
-        self.request("/api/v1/search/", None).await
+        self.request("/api/v1/search/", None, None).await
     }
     pub async fn search_run_container(
         &self,
         id: Uuid,
     ) -> ClientResult<event_stream::EventStreamRoot> {
-        self.request(&format!("/api/v1/search/{id}"), None).await
+        self.request(&format!("/api/v1/search/{id}"), None, None)
+            .await
     }
     pub async fn container_full(
         &self,
@@ -101,7 +119,7 @@ impl TiledClient {
             None => &format!("/api/v1/container/full/{id}"),
         };
 
-        self.request(endpoint, Some(headers)).await
+        self.request(endpoint, Some(headers), None).await
     }
 }
 
@@ -155,7 +173,10 @@ mod tests {
             address: Url::parse(&server.base_url()).unwrap(),
         };
         assert_eq!(
-            client.request::<Vec<u8>>("/demo/api", None).await.unwrap(),
+            client
+                .request::<Vec<u8>>("/demo/api", None, None)
+                .await
+                .unwrap(),
             vec![1, 2, 3]
         );
         mock.assert();
@@ -179,7 +200,7 @@ mod tests {
 
         assert_eq!(
             client
-                .request::<Vec<u8>>("/demo/api", Some(headers))
+                .request::<Vec<u8>>("/demo/api", Some(headers), None)
                 .await
                 .unwrap(),
             vec![1, 2, 3]
