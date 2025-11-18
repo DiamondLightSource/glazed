@@ -41,12 +41,62 @@
       },
       "access_blob": {},
       "sorting": null,
-      "data_sources": null
+      "data_sources": [
+        {
+          "id": 25,
+          "structure_family": "array",
+          "structure": {
+            "data_type": {
+              "endianness": "not_applicable",
+              "kind": "i",
+              "itemsize": 1,
+              "dt_units": null
+            },
+            "chunks": [
+              [
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                1024
+              ],
+              [
+                1024
+              ]
+            ],
+            "shape": [
+              5,
+              1024,
+              1024
+            ],
+            "dims": null,
+            "resizable": false
+          },
+          "mimetype": "application/x-hdf5",
+          "parameters": {
+            "dataset": "/entry/data/data",
+            "swmr": true
+          },
+          "assets": [
+            {
+              "data_uri": "file://localhost/home/abi/data/adsim-2-det.h5",
+              "is_directory": false,
+              "parameter": "data_uris",
+              "num": 0,
+              "id": 18
+            }
+          ],
+          "management": "external"
+        }
+      ]
     },
     "links": {
-      "self": "http://0.0.0.0:8000/api/v1/metadata/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/det",
-      "full": "http://0.0.0.0:8000/api/v1/array/full/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/det",
-      "block": "http://0.0.0.0:8000/api/v1/array/block/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/det?block={0},{1},{2}"
+      "self": "http://127.0.0.1:8000/api/v1/metadata/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/det",
+      "full": "http://127.0.0.1:8000/api/v1/array/full/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/det",
+      "block": "http://127.0.0.1:8000/api/v1/array/block/4866611f-e6d9-4517-bedf-fc5526df57ad/primary/det?block={0},{1},{2}"
     },
     "meta": null
   },
