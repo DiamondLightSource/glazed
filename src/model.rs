@@ -1,4 +1,5 @@
 pub(crate) mod app;
+pub(crate) mod array;
 pub(crate) mod container;
 pub(crate) mod event_stream;
 pub(crate) mod node;
@@ -30,6 +31,15 @@ impl TiledQuery {
         stream: String,
     ) -> Result<event_stream::EventStreamMetadataRoot, ClientError> {
         self.0.event_stream_metadata(id, stream).await
+    }
+    #[instrument(skip(self))]
+    async fn array_metadata(
+        &self,
+        id: Uuid,
+        stream: String,
+        array: String,
+    ) -> Result<array::ArrayMetadataRoot, ClientError> {
+        self.0.array_metadata(id, stream, array).await
     }
     #[instrument(skip(self))]
     async fn table_metadata(
@@ -124,6 +134,31 @@ mod tests {
         let response = schema.execute(query).await;
         let exp = value! ({
             "runMetadata": { "data": {"id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"}}
+        });
+
+        assert_eq!(response.data, exp);
+        assert_eq!(response.errors, &[]);
+        mock.assert();
+    }
+    #[tokio::test]
+    async fn array_metadata() {
+        let id = Uuid::parse_str("4866611f-e6d9-4517-bedf-fc5526df57ad").unwrap();
+        let stream = "primary";
+        let array = "det";
+        let server = MockServer::start();
+        let mock = server
+            .mock_async(|when, then| {
+                when.method("GET")
+                    .path(format!("/api/v1/metadata/{id}/{stream}/{array}"));
+                then.status(200)
+                    .body_from_file("resources/metadata_array.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let query = r#"{ arrayMetadata(id:"4866611f-e6d9-4517-bedf-fc5526df57ad", stream:"primary", array:"det") {data {id}}}"#;
+        let response = schema.execute(query).await;
+        let exp = value! ({
+            "arrayMetadata": { "data": {"id": "det"}}
         });
 
         assert_eq!(response.data, exp);
