@@ -40,7 +40,7 @@ pub struct EventStreamContainerAttributes {
     pub structure: container::Structure,
     pub access_blob: Value,
     pub sorting: Option<Vec<container::Sorting>>,
-    pub data_sources: Value,
+    pub data_sources: Option<Vec<node::DataSource>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
