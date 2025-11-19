@@ -20,4 +20,5 @@ impl Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     Serve,
+    Demo,
 }

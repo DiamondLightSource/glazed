@@ -1,4 +1,5 @@
 use std::error;
+use std::fmt::Arguments;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::http::StatusCode;
@@ -15,6 +16,8 @@ mod model;
 mod test_utils;
 
 use cli::{Cli, Commands};
+use serde::Serialize;
+use serde::ser::{SerializeSeq, SerializeTuple as _};
 use tokio::select;
 use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
@@ -42,8 +45,99 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     }
     match cli.command {
         Commands::Serve => serve(config).await,
+        Commands::Demo => demo().await,
     }
 }
+
+async fn demo() -> Result<(), Box<dyn error::Error>> {
+    let client = reqwest::Client::new();
+
+    let query = Query {
+        filters: vec![
+            Filter::Eq(EqFilter {
+                key: "start.instrument".into(),
+                value: "adsim".into(),
+            }),
+            Filter::Eq(EqFilter {
+                key: "start.instrument_session".into(),
+                value: "cm12345-1".into(),
+            }),
+        ],
+    };
+    let req = client
+        .get("http://localhost:8407/api/v1/search/")
+        .query(&query);
+    let resp = req.send().await?;
+
+    println!("{resp:#?}");
+    println!("{}", resp.text().await?);
+    Ok(())
+}
+
+struct Query {
+    filters: Vec<Filter>,
+}
+impl Serialize for Query {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_seq(None)?;
+        for filter in &self.filters {
+            filter.serialize_into::<S>(&mut seq)?;
+        }
+        seq.end()
+    }
+}
+
+enum Filter {
+    Eq(EqFilter),
+}
+
+impl Filter {
+    fn serialize_into<S>(&self, ser: &mut S::SerializeSeq) -> Result<(), S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Filter::Eq(eq_filter) => eq_filter.serialize_into::<S>(ser),
+        }
+    }
+}
+
+struct EqFilter {
+    key: String,
+    value: String,
+}
+
+impl EqFilter {
+    fn serialize_into<S>(&self, ser: &mut S::SerializeSeq) -> Result<(), S::Error>
+    where
+        S: serde::Serializer,
+    {
+        ser.serialize_element::<(&str, &str)>(&("filter[eq][condition][key]".into(), &self.key))?;
+        ser.serialize_element::<(&str, Arguments)>(&(
+            "filter[eq][condition][value]".into(),
+            format_args!(r#""{}""#, self.value),
+        ))
+    }
+}
+
+impl Serialize for EqFilter {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_tuple(1)?;
+        seq.serialize_element(&("filter[eq][condition][key]", &self.key))?;
+        seq.serialize_element(&(
+            "filter[eq][condition][value]",
+            &format!(r#""{}""#, self.value),
+        ))?;
+        seq.end()
+    }
+}
+
 
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let schema = Schema::build(

@@ -7,7 +7,7 @@ pub(crate) mod run;
 pub(crate) mod table;
 
 use async_graphql::{Object, SimpleObject};
-use tracing::instrument;
+use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::clients::{ClientError, TiledClient};
@@ -79,8 +79,8 @@ impl TiledQuery {
         self.0.container_full(id, stream).await
     }
 
-    #[instrument(skip(self, ctx))]
-    async fn instrument(&self, ctx: &Context<'_>, name: String) -> InstrumentModel {
+    #[instrument(skip(self))]
+    async fn instrument(&self, name: String) -> InstrumentModel {
         // info!("Quetying: {:#?}", ctx.look_ahead().selection_fields());
         let root = self.0.search_root().await;
         info!("root: {root:#?}");
