@@ -6,7 +6,7 @@ pub(crate) mod node;
 pub(crate) mod run;
 pub(crate) mod table;
 
-use async_graphql::Object;
+use async_graphql::{Object, SimpleObject};
 use tracing::instrument;
 use uuid::Uuid;
 
@@ -78,6 +78,53 @@ impl TiledQuery {
     ) -> Result<container::Container, ClientError> {
         self.0.container_full(id, stream).await
     }
+
+    #[instrument(skip(self, ctx))]
+    async fn instrument(&self, ctx: &Context<'_>, name: String) -> InstrumentModel {
+        // info!("Quetying: {:#?}", ctx.look_ahead().selection_fields());
+        let root = self.0.search_root().await;
+        info!("root: {root:#?}");
+        InstrumentModel { name }
+    }
+}
+
+// #[derive(SimpleObject)]
+struct InstrumentModel {
+    name: String,
+}
+
+#[Object]
+impl InstrumentModel {
+    async fn name(&self) -> &str {
+        info!("Querying name");
+        &self.name
+    }
+    async fn runs(&self) -> Vec<RunModel> {
+        info!("Querying runs");
+        vec![]
+    }
+}
+
+struct RunModel {
+    id: String,
+}
+
+#[Object]
+impl RunModel {
+    async fn detectors(&self) -> Vec<Detector> {
+        todo!()
+    }
+}
+
+#[derive(SimpleObject)]
+struct Detector {
+    data: DataFile,
+}
+
+#[derive(SimpleObject)]
+struct DataFile {
+    file_location: String,
+    download_link: String,
 }
 
 #[cfg(test)]
