@@ -37,10 +37,10 @@ pub struct EventStreamContainerAttributes {
     pub structure_family: String,
     pub specs: Vec<container::Specs>,
     pub metadata: EventStreamMetadata,
-    pub structure: container::Structure,
+    pub structure: container::ContainerStructure,
     pub access_blob: Value,
     pub sorting: Option<Vec<container::Sorting>>,
-    pub data_sources: Value,
+    pub data_sources: Option<Vec<node::DataSource>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]

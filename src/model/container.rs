@@ -9,7 +9,7 @@ pub struct Container {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Structure {
+pub struct ContainerStructure {
     pub contents: Value,
     pub count: i64,
 }

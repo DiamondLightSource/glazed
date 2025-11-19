@@ -33,7 +33,7 @@ pub struct TableAttributes {
     pub structure: TableStructure,
     pub access_blob: Value,
     pub sorting: Value,
-    pub data_sources: Value,
+    pub data_sources: Option<Vec<node::DataSource>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
