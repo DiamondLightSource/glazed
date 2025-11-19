@@ -37,7 +37,7 @@ pub struct RunContainerAttributes {
     pub structure_family: String,
     pub specs: Vec<container::Specs>,
     pub metadata: RunMetadata,
-    pub structure: container::Structure,
+    pub structure: container::ContainerStructure,
     pub access_blob: Value,
     pub sorting: Vec<container::Sorting>,
     pub data_sources: Option<Vec<node::DataSource>>,
