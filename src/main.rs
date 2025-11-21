@@ -47,9 +47,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
 
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let schema = Schema::build(
-        TiledQuery(TiledClient {
-            address: config.tiled_client.address.to_owned(),
-        }),
+        TiledQuery(TiledClient::new(config.tiled_client.address)),
         EmptyMutation,
         EmptySubscription,
     )

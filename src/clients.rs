@@ -1,7 +1,9 @@
 use std::fmt;
 
 use axum::http::HeaderMap;
-use reqwest::Url;
+#[cfg(test)]
+use httpmock::MockServer;
+use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 use uuid::Uuid;
@@ -11,10 +13,17 @@ use crate::model::{app, array, container, event_stream, run, table};
 pub type ClientResult<T> = Result<T, ClientError>;
 
 pub struct TiledClient {
-    pub address: Url,
+    client: Client,
+    address: Url,
 }
 
 impl TiledClient {
+    pub fn new(address: Url) -> Self {
+        Self {
+            client: Client::new(),
+            address,
+        }
+    }
     #[instrument(skip(self))]
     async fn request<T: DeserializeOwned>(
         &self,
@@ -24,11 +33,10 @@ impl TiledClient {
     ) -> ClientResult<T> {
         info!("Requesting from tiled: {}", endpoint);
         let url = self.address.join(endpoint)?;
-        let client = reqwest::Client::new();
 
         let mut request = match headers {
-            Some(headers) => client.get(url).headers(headers),
-            None => client.get(url),
+            Some(headers) => self.client.get(url).headers(headers),
+            None => self.client.get(url),
         };
         if let Some(params) = query_params {
             request = request.query(params);
@@ -121,6 +129,16 @@ impl TiledClient {
 
         self.request(endpoint, Some(headers), None).await
     }
+
+    /// Create a new client for the given mock server
+    #[cfg(test)]
+    pub fn for_mock_server(server: &MockServer) -> Self {
+        Self {
+            // We're only in tests so panicking is fine
+            address: server.base_url().parse().unwrap(),
+            client: Client::new(),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -156,7 +174,6 @@ impl std::fmt::Display for ClientError {
 mod tests {
     use axum::http::HeaderMap;
     use httpmock::MockServer;
-    use url::Url;
 
     use crate::clients::{ClientError, TiledClient};
 
@@ -169,9 +186,7 @@ mod tests {
                 then.status(200).body("[1,2,3]");
             })
             .await;
-        let client = TiledClient {
-            address: Url::parse(&server.base_url()).unwrap(),
-        };
+        let client = TiledClient::for_mock_server(&server);
         assert_eq!(
             client
                 .request::<Vec<u8>>("/demo/api", None, None)
@@ -192,9 +207,7 @@ mod tests {
                 then.status(200).body("[1,2,3]");
             })
             .await;
-        let client = TiledClient {
-            address: Url::parse(&server.base_url()).unwrap(),
-        };
+        let client = TiledClient::for_mock_server(&server);
         let mut headers = HeaderMap::new();
         headers.insert("api-key", "foo".parse().unwrap());
 
@@ -218,9 +231,7 @@ mod tests {
                     .body_from_file("resources/metadata_app.json");
             })
             .await;
-        let client = TiledClient {
-            address: Url::parse(&server.base_url()).unwrap(),
-        };
+        let client = TiledClient::for_mock_server(&server);
         let response = client.app_metadata().await.unwrap();
 
         assert_eq!(response.api_version, 0);
@@ -228,9 +239,7 @@ mod tests {
     }
     #[tokio::test]
     async fn server_unavailable() {
-        let client = TiledClient {
-            address: Url::parse("http://tiled.example.com").unwrap(),
-        };
+        let client = TiledClient::new("http://non-existent.example.com".parse().unwrap());
         let response = client.app_metadata().await;
 
         let Err(ClientError::ServerError(err)) = response else {
@@ -252,9 +261,7 @@ mod tests {
             })
             .await;
 
-        let client = TiledClient {
-            address: Url::parse(&server.base_url()).unwrap(),
-        };
+        let client = TiledClient::for_mock_server(&server);
         let response = client.app_metadata().await;
 
         let Err(ClientError::ServerError(err)) = response else {
@@ -280,9 +287,7 @@ mod tests {
             })
             .await;
 
-        let client = TiledClient {
-            address: Url::parse(&server.base_url()).unwrap(),
-        };
+        let client = TiledClient::for_mock_server(&server);
         let response = client.app_metadata().await;
 
         let Err(ClientError::InvalidResponse(err, _)) = response else {
