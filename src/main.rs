@@ -1,8 +1,9 @@
 use std::error;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use axum::body::Body;
 use axum::http::StatusCode;
-use axum::response::Html;
+use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
 use axum::{Extension, Router};
 
@@ -58,6 +59,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let app = Router::new()
         .route("/graphql", post(graphql_handler))
         .route("/graphiql", get(graphiql_handler))
+        .route("/asset", get(download_file))
         .fallback((
             StatusCode::NOT_FOUND,
             Html(include_str!("../static/404.html")),
@@ -70,6 +72,12 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     Ok(axum::serve(listener, app)
         .with_graceful_shutdown(signal_handler())
         .await?)
+}
+
+async fn download_file() -> impl IntoResponse {
+    let client = reqwest::Client::new();
+    let req = client.get("http://localhost:8407/api/v1/asset/bytes/77e40dcd-00f7-48aa-9eeb-1909c3ce5831/primary/det?id=1").send().await.unwrap();
+    Body::from_stream(req.bytes_stream())
 }
 
 async fn signal_handler() {
