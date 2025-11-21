@@ -124,16 +124,26 @@ impl TiledQuery {
         let sessions = runs
             .data
             .into_iter()
-            .map(|fd| (fd.attributes.metadata.start.instrument_session, fd.id))
-            .into_group_map();
-
-        let sessions = sessions
-            .into_iter()
-            .map(|(id, runs)| InstrumentSession {
-                id,
-                runs: runs.into_iter().map(|id| Run { id }).collect(),
+            .map(|fd| {
+                (
+                    fd.attributes.metadata.start.instrument_session,
+                    Run {
+                        id: fd.id,
+                        detectors: fd
+                            .attributes
+                            .metadata
+                            .start
+                            .detectors
+                            .into_iter()
+                            .map(|name| Detector { name })
+                            .collect(),
+                    },
+                )
             })
-            .collect::<Vec<_>>();
+            .into_group_map()
+            .into_iter()
+            .map(|(id, runs)| InstrumentSession { id, runs })
+            .collect();
 
         let inst = Instrument {
             name,
@@ -158,19 +168,20 @@ struct InstrumentSession {
 #[derive(Debug, Eq, SimpleObject, PartialEq)]
 struct Run {
     id: Uuid,
-    // detectors: Vec<String>,
+    detectors: Vec<Detector>,
 }
 
-// #[derive(SimpleObject)]
-// struct Detector {
-//     data: DataFile,
-// }
+#[derive(Debug, Eq, SimpleObject, PartialEq)]
+struct Detector {
+    name: String,
+    // data: DataFile,
+}
 
-// #[derive(SimpleObject)]
-// struct DataFile {
-//     file_location: String,
-//     download_link: String,
-// }
+#[derive(Debug, Eq, SimpleObject, PartialEq)]
+struct DataFile {
+    file_location: String,
+    // download_link: String,
+}
 
 #[cfg(test)]
 mod tests {
