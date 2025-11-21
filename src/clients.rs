@@ -8,7 +8,7 @@ use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
-use crate::model::{app, array, container, event_stream, run, table};
+use crate::model::{app, array, container, event_stream, filter, run, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -106,6 +106,12 @@ impl TiledClient {
     }
     pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
         self.request("/api/v1/search/", None, None).await
+    }
+    pub async fn query_root(
+        &self,
+        query_params: Option<&[(&str, &str)]>,
+    ) -> ClientResult<filter::FilterRun> {
+        self.request("/api/v1/search/", None, query_params).await
     }
     pub async fn search_run_container(
         &self,

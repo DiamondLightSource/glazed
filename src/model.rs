@@ -2,12 +2,15 @@ pub(crate) mod app;
 pub(crate) mod array;
 pub(crate) mod container;
 pub(crate) mod event_stream;
+pub(crate) mod filter;
 pub(crate) mod node;
 pub(crate) mod run;
 pub(crate) mod table;
 
-use async_graphql::{Context, Object, Result};
-use tracing::instrument;
+use async_graphql::{Context, Object, Result, SimpleObject};
+use itertools::Itertools;
+
+use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::clients::TiledClient;
@@ -99,7 +102,75 @@ impl TiledQuery {
             .container_full(id, stream)
             .await?)
     }
+    #[instrument(skip(self, ctx))]
+    async fn instrument(&self, ctx: &Context<'_>, name: String) -> Result<Instrument, ClientError> {
+        let fields = ctx.look_ahead().selection_fields();
+        info!("Querying: {:#?}", fields);
+
+        let instrument = format!(r#""{}""#, name);
+
+        let query_params = &[
+            ("fields", "metadata"),
+            ("omit_links", "true"),
+            ("filter[eq][condition][key]", "start.instrument"),
+            ("filter[eq][condition][value]", &instrument),
+        ];
+
+        let root = self.0.query_root(Some(query_params)).await;
+        info!("root: {root:#?}");
+
+        let runs = root.unwrap();
+
+        let sessions = runs
+            .data
+            .into_iter()
+            .map(|fd| (fd.attributes.metadata.start.instrument_session, fd.id))
+            .into_group_map();
+
+        let sessions = sessions
+            .into_iter()
+            .map(|(id, runs)| InstrumentSession {
+                id,
+                runs: runs.into_iter().map(|id| Run { id }).collect(),
+            })
+            .collect::<Vec<_>>();
+
+        let inst = Instrument {
+            name,
+            instrument_sessions: sessions,
+        };
+        Ok(inst)
+    }
 }
+
+#[derive(Debug, Eq, SimpleObject, PartialEq)]
+struct Instrument {
+    name: String,
+    instrument_sessions: Vec<InstrumentSession>,
+}
+
+#[derive(Debug, Eq, SimpleObject, PartialEq)]
+struct InstrumentSession {
+    id: String,
+    runs: Vec<Run>,
+}
+
+#[derive(Debug, Eq, SimpleObject, PartialEq)]
+struct Run {
+    id: Uuid,
+    // detectors: Vec<String>,
+}
+
+// #[derive(SimpleObject)]
+// struct Detector {
+//     data: DataFile,
+// }
+
+// #[derive(SimpleObject)]
+// struct DataFile {
+//     file_location: String,
+//     download_link: String,
+// }
 
 #[cfg(test)]
 mod tests {
