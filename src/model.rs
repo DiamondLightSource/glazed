@@ -103,7 +103,7 @@ impl TiledQuery {
             .await?)
     }
     #[instrument(skip(self, ctx))]
-    async fn instrument(&self, ctx: &Context<'_>, name: String) -> Result<Instrument, ClientError> {
+    async fn instrument(&self, ctx: &Context<'_>, name: String) -> Result<Instrument> {
         let fields = ctx.look_ahead().selection_fields();
         info!("Querying: {:#?}", fields);
 
@@ -116,7 +116,7 @@ impl TiledQuery {
             ("filter[eq][condition][value]", &instrument),
         ];
 
-        let root = self.0.query_root(Some(query_params)).await;
+        let root = ctx.data::<TiledClient>()?.query_root(Some(query_params)).await;
         info!("root: {root:#?}");
 
         let runs = root.unwrap();
