@@ -5,11 +5,11 @@ pub(crate) mod event_stream;
 pub(crate) mod filter;
 pub(crate) mod node;
 pub(crate) mod run;
+pub(crate) mod session;
 pub(crate) mod table;
 
-use async_graphql::{Context, Object, Result, SimpleObject};
+use async_graphql::{Context, Object, Result};
 use itertools::Itertools;
-
 use tracing::{info, instrument};
 use uuid::Uuid;
 
@@ -103,7 +103,7 @@ impl TiledQuery {
             .await?)
     }
     #[instrument(skip(self, ctx))]
-    async fn instrument(&self, ctx: &Context<'_>, name: String) -> Result<Instrument> {
+    async fn instrument(&self, ctx: &Context<'_>, name: String) -> Result<session::Instrument> {
         let fields = ctx.look_ahead().selection_fields();
         info!("Querying: {:#?}", fields);
 
@@ -116,71 +116,34 @@ impl TiledQuery {
             ("filter[eq][condition][value]", &instrument),
         ];
 
-        let root = ctx.data::<TiledClient>()?.query_root(Some(query_params)).await;
+        let root = ctx
+            .data::<TiledClient>()?
+            .query_root(Some(query_params))
+            .await;
         info!("root: {root:#?}");
 
         let runs = root.unwrap();
 
-        let sessions = runs
+        let instrument_sessions = runs
             .data
             .into_iter()
             .map(|fd| {
                 (
-                    fd.attributes.metadata.start.instrument_session,
-                    Run {
-                        id: fd.id,
-                        detectors: fd
-                            .attributes
-                            .metadata
-                            .start
-                            .detectors
-                            .into_iter()
-                            .map(|name| Detector { name })
-                            .collect(),
-                    },
+                    fd.attributes.metadata.start.instrument_session.clone(),
+                    fd.into(),
                 )
             })
             .into_group_map()
             .into_iter()
-            .map(|(id, runs)| InstrumentSession { id, runs })
+            .map(|(id, runs)| session::InstrumentSession { id, runs })
             .collect();
 
-        let inst = Instrument {
+        let inst = session::Instrument {
             name,
-            instrument_sessions: sessions,
+            instrument_sessions,
         };
         Ok(inst)
     }
-}
-
-#[derive(Debug, Eq, SimpleObject, PartialEq)]
-struct Instrument {
-    name: String,
-    instrument_sessions: Vec<InstrumentSession>,
-}
-
-#[derive(Debug, Eq, SimpleObject, PartialEq)]
-struct InstrumentSession {
-    id: String,
-    runs: Vec<Run>,
-}
-
-#[derive(Debug, Eq, SimpleObject, PartialEq)]
-struct Run {
-    id: Uuid,
-    detectors: Vec<Detector>,
-}
-
-#[derive(Debug, Eq, SimpleObject, PartialEq)]
-struct Detector {
-    name: String,
-    // data: DataFile,
-}
-
-#[derive(Debug, Eq, SimpleObject, PartialEq)]
-struct DataFile {
-    file_location: String,
-    // download_link: String,
 }
 
 #[cfg(test)]

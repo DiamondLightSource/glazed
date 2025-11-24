@@ -1,7 +1,6 @@
 use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
 use uuid::Uuid;
 
 use crate::model::{node, run};
@@ -22,8 +21,3 @@ pub struct FilterData {
 pub struct FilterAttributes {
     pub metadata: run::RunMetadata,
 }
-
-// #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-// pub struct FilterAttributes {
-//     pub metadata: Vec<String>;
-// }
