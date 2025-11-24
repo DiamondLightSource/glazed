@@ -6,77 +6,98 @@ pub(crate) mod node;
 pub(crate) mod run;
 pub(crate) mod table;
 
-use async_graphql::Object;
+use async_graphql::{Context, Object, Result};
 use tracing::instrument;
 use uuid::Uuid;
 
-use crate::clients::{ClientError, TiledClient};
+use crate::clients::TiledClient;
 
-pub(crate) struct TiledQuery(pub TiledClient);
+pub(crate) struct TiledQuery;
 
 #[Object]
 impl TiledQuery {
-    #[instrument(skip(self))]
-    async fn app_metadata(&self) -> Result<app::AppMetadata, ClientError> {
-        self.0.app_metadata().await
+    #[instrument(skip(self, ctx))]
+    async fn app_metadata(&self, ctx: &Context<'_>) -> Result<app::AppMetadata> {
+        Ok(ctx.data::<TiledClient>()?.app_metadata().await?)
     }
-    #[instrument(skip(self))]
-    async fn run_metadata(&self, id: Uuid) -> Result<run::RunMetadataRoot, ClientError> {
-        self.0.run_metadata(id).await
+    #[instrument(skip(self, ctx))]
+    async fn run_metadata(&self, ctx: &Context<'_>, id: Uuid) -> Result<run::RunMetadataRoot> {
+        Ok(ctx.data::<TiledClient>()?.run_metadata(id).await?)
     }
-    #[instrument(skip(self))]
+    #[instrument(skip(self, ctx))]
     async fn event_stream_metadata(
         &self,
+        ctx: &Context<'_>,
         id: Uuid,
         stream: String,
-    ) -> Result<event_stream::EventStreamMetadataRoot, ClientError> {
-        self.0.event_stream_metadata(id, stream).await
+    ) -> Result<event_stream::EventStreamMetadataRoot> {
+        Ok(ctx
+            .data::<TiledClient>()?
+            .event_stream_metadata(id, stream)
+            .await?)
     }
-    #[instrument(skip(self))]
+    #[instrument(skip(self, ctx))]
     async fn array_metadata(
         &self,
+        ctx: &Context<'_>,
         id: Uuid,
         stream: String,
         array: String,
-    ) -> Result<array::ArrayMetadataRoot, ClientError> {
-        self.0.array_metadata(id, stream, array).await
+    ) -> Result<array::ArrayMetadataRoot> {
+        Ok(ctx
+            .data::<TiledClient>()?
+            .array_metadata(id, stream, array)
+            .await?)
     }
-    #[instrument(skip(self))]
+    #[instrument(skip(self, ctx))]
     async fn table_metadata(
         &self,
+        ctx: &Context<'_>,
         id: Uuid,
         stream: String,
         table: String,
-    ) -> Result<table::TableMetadataRoot, ClientError> {
-        self.0.table_metadata(id, stream, table).await
+    ) -> Result<table::TableMetadataRoot> {
+        Ok(ctx
+            .data::<TiledClient>()?
+            .table_metadata(id, stream, table)
+            .await?)
     }
-    #[instrument(skip(self))]
+    #[instrument(skip(self, ctx))]
     async fn table_full(
         &self,
+        ctx: &Context<'_>,
         id: Uuid,
         stream: String,
         table: String,
-    ) -> Result<table::Table, ClientError> {
-        self.0.table_full(id, stream, table).await
+    ) -> Result<table::Table> {
+        Ok(ctx
+            .data::<TiledClient>()?
+            .table_full(id, stream, table)
+            .await?)
     }
-    #[instrument(skip(self))]
-    async fn search_root(&self) -> Result<run::RunRoot, ClientError> {
-        self.0.search_root().await
+    #[instrument(skip(self, ctx))]
+    async fn search_root(&self, ctx: &Context<'_>) -> Result<run::RunRoot> {
+        Ok(ctx.data::<TiledClient>()?.search_root().await?)
     }
-    #[instrument(skip(self))]
+    #[instrument(skip(self, ctx))]
     async fn search_run_container(
         &self,
+        ctx: &Context<'_>,
         id: Uuid,
-    ) -> Result<event_stream::EventStreamRoot, ClientError> {
-        self.0.search_run_container(id).await
+    ) -> Result<event_stream::EventStreamRoot> {
+        Ok(ctx.data::<TiledClient>()?.search_run_container(id).await?)
     }
-    #[instrument(skip(self))]
+    #[instrument(skip(self, ctx))]
     async fn container_full(
         &self,
+        ctx: &Context<'_>,
         id: Uuid,
         stream: Option<String>,
-    ) -> Result<container::Container, ClientError> {
-        self.0.container_full(id, stream).await
+    ) -> Result<container::Container> {
+        Ok(ctx
+            .data::<TiledClient>()?
+            .container_full(id, stream)
+            .await?)
     }
 }
 
@@ -90,12 +111,9 @@ mod tests {
     use crate::clients::TiledClient;
 
     fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
-        Schema::build(
-            TiledQuery(TiledClient::new(url.parse().unwrap())),
-            EmptyMutation,
-            EmptySubscription,
-        )
-        .finish()
+        Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+            .data(TiledClient::new(url.parse().unwrap()))
+            .finish()
     }
 
     #[tokio::test]

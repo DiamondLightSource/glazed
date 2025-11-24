@@ -46,12 +46,9 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
 }
 
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
-    let schema = Schema::build(
-        TiledQuery(TiledClient::new(config.tiled_client.address)),
-        EmptyMutation,
-        EmptySubscription,
-    )
-    .finish();
+    let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+        .data(TiledClient::new(config.tiled_client.address))
+        .finish();
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
