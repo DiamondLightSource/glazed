@@ -81,7 +81,7 @@ async fn graphql_get_warning() -> impl IntoResponse {
 async fn signal_handler() {
     let mut term = signal(SignalKind::terminate()).expect("Failed to create SIGTERM listener");
     let mut int = signal(SignalKind::interrupt()).expect("Failed to create SIGINT listener");
-    let mut quit = signal(SignalKind::interrupt()).expect("Failed to create SIGQUIT listener");
+    let mut quit = signal(SignalKind::quit()).expect("Failed to create SIGQUIT listener");
     let sig = select! {
          _ = term.recv() => "SIGTERM",
         _ = int.recv() => "SIGINT",
