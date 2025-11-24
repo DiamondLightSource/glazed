@@ -84,7 +84,6 @@ impl TiledQuery {
 mod tests {
     use async_graphql::{EmptyMutation, EmptySubscription, Schema, value};
     use httpmock::MockServer;
-    use url::Url;
     use uuid::Uuid;
 
     use crate::TiledQuery;
@@ -92,9 +91,7 @@ mod tests {
 
     fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
         Schema::build(
-            TiledQuery(TiledClient {
-                address: Url::parse(url).unwrap(),
-            }),
+            TiledQuery(TiledClient::new(url.parse().unwrap())),
             EmptyMutation,
             EmptySubscription,
         )
