@@ -10,7 +10,7 @@ pub(crate) mod table;
 
 use async_graphql::{Context, Object, Result};
 use itertools::Itertools;
-use tracing::{info, instrument};
+use tracing::instrument;
 use uuid::Uuid;
 
 use crate::clients::TiledClient;
@@ -116,12 +116,9 @@ impl TiledQuery {
         let root = ctx
             .data::<TiledClient>()?
             .query_root(Some(query_params))
-            .await;
-        info!("root: {root:#?}");
+            .await?;
 
-        let runs = root.unwrap();
-
-        let instrument_sessions = runs
+        let instrument_sessions = root
             .data
             .into_iter()
             .map(|fd| {
