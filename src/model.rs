@@ -103,6 +103,27 @@ impl TiledQuery {
             .await?)
     }
     #[instrument(skip(self, ctx))]
+    async fn instrument_session(
+        &self,
+        ctx: &Context<'_>,
+        instrument_session: String,
+    ) -> Result<session::InstrumentSession> {
+        let query = &[
+            ("filter[eq][condition][key]", "start.instrument_session"),
+            (
+                "filter[eq][condition][value]",
+                &format!(r#""{}""#, instrument_session),
+            ),
+        ];
+        let root = ctx.data::<TiledClient>()?.query_root(Some(query)).await?;
+        let runs = root.data.into_iter().map(session::Run::from).collect();
+        Ok(session::InstrumentSession {
+            id: instrument_session,
+            runs,
+        })
+    }
+
+    #[instrument(skip(self, ctx))]
     async fn instrument(&self, ctx: &Context<'_>, name: String) -> Result<session::Instrument> {
         let instrument = format!(r#""{}""#, name);
 
