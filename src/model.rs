@@ -104,9 +104,6 @@ impl TiledQuery {
     }
     #[instrument(skip(self, ctx))]
     async fn instrument(&self, ctx: &Context<'_>, name: String) -> Result<session::Instrument> {
-        let fields = ctx.look_ahead().selection_fields();
-        info!("Querying: {:#?}", fields);
-
         let instrument = format!(r#""{}""#, name);
 
         let query_params = &[
