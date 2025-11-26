@@ -20,6 +20,12 @@ pub struct Links {
     pub full: Option<String>,
 }
 
+#[derive(Union, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase", untagged)]
+pub enum Sorting {
+    Container(container::ContainerSorting),
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct DataSource {
     #[serde(flatten)]

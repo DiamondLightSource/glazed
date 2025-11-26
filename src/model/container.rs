@@ -21,7 +21,7 @@ pub struct Specs {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct Sorting {
+pub struct ContainerSorting {
     pub key: String,
     pub direction: i64,
 }

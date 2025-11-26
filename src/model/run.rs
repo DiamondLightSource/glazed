@@ -39,7 +39,7 @@ pub struct RunContainerAttributes {
     #[serde(flatten)]
     pub structure: node::Structure,
     pub access_blob: Value,
-    pub sorting: Vec<container::Sorting>,
+    pub sorting: Vec<node::Sorting>,
     pub data_sources: Option<Vec<node::DataSource>>,
 }
 
