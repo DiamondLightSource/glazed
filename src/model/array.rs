@@ -25,10 +25,10 @@ pub struct ArrayData {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct ArrayAttributes {
     pub ancestors: Vec<Value>,
-    pub structure_family: String,
     pub specs: Option<Vec<Value>>,
     pub metadata: HashMap<String, Value>,
-    pub structure: ArrayStructure,
+    #[serde(flatten)]
+    pub structure: node::Structure,
     pub access_blob: Value,
     pub sorting: Value,
     pub data_sources: Option<Vec<node::DataSource>>,
