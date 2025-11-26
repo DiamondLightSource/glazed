@@ -5,44 +5,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::model::{container, node};
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct EventStreamRoot {
-    pub data: Vec<EventStreamData>,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct EventStreamMetadataRoot {
-    pub data: EventStreamData,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct EventStreamData {
-    pub id: String,
-    pub attributes: EventStreamContainerAttributes,
-    pub links: node::Links,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct EventStreamContainerAttributes {
-    pub ancestors: Vec<Value>,
-    pub specs: Vec<container::Specs>,
-    pub metadata: EventStreamMetadata,
-    #[serde(flatten)]
-    pub structure: node::Structure,
-    pub access_blob: Value,
-    pub sorting: Vec<node::Sorting>,
-    pub data_sources: Option<Vec<node::DataSource>>,
-}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct EventStreamMetadata {
     configuration: HashMap<String, HashMap<String, Value>>,

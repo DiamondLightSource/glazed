@@ -8,7 +8,7 @@ use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 use uuid::Uuid;
 
-use crate::model::{app, array, container, event_stream, run, table};
+use crate::model::{app, container, node, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -50,7 +50,7 @@ impl TiledClient {
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
         self.request("/api/v1/", None, None).await
     }
-    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<run::RunMetadataRoot> {
+    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<node::MetadataRoot> {
         self.request(&format!("/api/v1/metadata/{id}"), None, None)
             .await
     }
@@ -58,7 +58,7 @@ impl TiledClient {
         &self,
         id: Uuid,
         stream: String,
-    ) -> ClientResult<event_stream::EventStreamMetadataRoot> {
+    ) -> ClientResult<node::MetadataRoot> {
         self.request(&format!("/api/v1/metadata/{id}/{stream}"), None, None)
             .await
     }
@@ -67,7 +67,7 @@ impl TiledClient {
         id: Uuid,
         stream: String,
         array: String,
-    ) -> ClientResult<array::ArrayMetadataRoot> {
+    ) -> ClientResult<node::MetadataRoot> {
         self.request(
             &format!("/api/v1/metadata/{id}/{stream}/{array}"),
             None,
@@ -80,7 +80,7 @@ impl TiledClient {
         id: Uuid,
         stream: String,
         table: String,
-    ) -> ClientResult<table::TableMetadataRoot> {
+    ) -> ClientResult<node::MetadataRoot> {
         self.request(
             &format!("/api/v1/metadata/{id}/{stream}/{table}"),
             None,
@@ -104,13 +104,10 @@ impl TiledClient {
         )
         .await
     }
-    pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
+    pub async fn search_root(&self) -> ClientResult<node::Root> {
         self.request("/api/v1/search/", None, None).await
     }
-    pub async fn search_run_container(
-        &self,
-        id: Uuid,
-    ) -> ClientResult<event_stream::EventStreamRoot> {
+    pub async fn search_run_container(&self, id: Uuid) -> ClientResult<node::Root> {
         self.request(&format!("/api/v1/search/{id}"), None, None)
             .await
     }

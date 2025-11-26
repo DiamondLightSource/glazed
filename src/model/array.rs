@@ -7,22 +7,6 @@ use serde_json::Value;
 use crate::model::node;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct ArrayMetadataRoot {
-    pub data: ArrayData,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct ArrayData {
-    pub id: String,
-    pub attributes: ArrayAttributes,
-    pub links: ArrayLinks,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct ArrayAttributes {
     pub ancestors: Vec<Value>,
     pub specs: Option<Vec<Value>>,
@@ -30,7 +14,7 @@ pub struct ArrayAttributes {
     #[serde(flatten)]
     pub structure: node::Structure,
     pub access_blob: Value,
-    pub sorting: Value,
+    pub sorting: Option<Vec<node::Sorting>>,
     pub data_sources: Option<Vec<node::DataSource>>,
 }
 
@@ -49,14 +33,6 @@ pub struct DataType {
     kind: String,
     itemsize: i64,
     dt_units: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct ArrayLinks {
-    #[serde(rename = "self")]
-    #[graphql(name = "self")]
-    pub full: Option<String>,
-    pub block: Option<String>,
 }
 
 #[cfg(test)]

@@ -5,44 +5,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::model::{container, node};
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunRoot {
-    pub data: Vec<RunData>,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunMetadataRoot {
-    pub data: RunData,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunData {
-    pub id: Uuid,
-    pub attributes: RunContainerAttributes,
-    pub links: node::Links,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunContainerAttributes {
-    pub ancestors: Vec<Value>,
-    pub specs: Vec<container::Specs>,
-    pub metadata: RunMetadata,
-    #[serde(flatten)]
-    pub structure: node::Structure,
-    pub access_blob: Value,
-    pub sorting: Vec<node::Sorting>,
-    pub data_sources: Option<Vec<node::DataSource>>,
-}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct RunMetadata {
     pub start: Start,

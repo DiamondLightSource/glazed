@@ -21,7 +21,7 @@ impl TiledQuery {
         Ok(ctx.data::<TiledClient>()?.app_metadata().await?)
     }
     #[instrument(skip(self, ctx))]
-    async fn run_metadata(&self, ctx: &Context<'_>, id: Uuid) -> Result<run::RunMetadataRoot> {
+    async fn run_metadata(&self, ctx: &Context<'_>, id: Uuid) -> Result<node::MetadataRoot> {
         Ok(ctx.data::<TiledClient>()?.run_metadata(id).await?)
     }
     #[instrument(skip(self, ctx))]
@@ -30,7 +30,7 @@ impl TiledQuery {
         ctx: &Context<'_>,
         id: Uuid,
         stream: String,
-    ) -> Result<event_stream::EventStreamMetadataRoot> {
+    ) -> Result<node::MetadataRoot> {
         Ok(ctx
             .data::<TiledClient>()?
             .event_stream_metadata(id, stream)
@@ -43,7 +43,7 @@ impl TiledQuery {
         id: Uuid,
         stream: String,
         array: String,
-    ) -> Result<array::ArrayMetadataRoot> {
+    ) -> Result<node::MetadataRoot> {
         Ok(ctx
             .data::<TiledClient>()?
             .array_metadata(id, stream, array)
@@ -56,7 +56,7 @@ impl TiledQuery {
         id: Uuid,
         stream: String,
         table: String,
-    ) -> Result<table::TableMetadataRoot> {
+    ) -> Result<node::MetadataRoot> {
         Ok(ctx
             .data::<TiledClient>()?
             .table_metadata(id, stream, table)
@@ -76,15 +76,11 @@ impl TiledQuery {
             .await?)
     }
     #[instrument(skip(self, ctx))]
-    async fn search_root(&self, ctx: &Context<'_>) -> Result<run::RunRoot> {
+    async fn search_root(&self, ctx: &Context<'_>) -> Result<node::Root> {
         Ok(ctx.data::<TiledClient>()?.search_root().await?)
     }
     #[instrument(skip(self, ctx))]
-    async fn search_run_container(
-        &self,
-        ctx: &Context<'_>,
-        id: Uuid,
-    ) -> Result<event_stream::EventStreamRoot> {
+    async fn search_run_container(&self, ctx: &Context<'_>, id: Uuid) -> Result<node::Root> {
         Ok(ctx.data::<TiledClient>()?.search_run_container(id).await?)
     }
     #[instrument(skip(self, ctx))]
