@@ -1,6 +1,8 @@
 use std::error;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use axum::body::Body;
+use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
@@ -15,6 +17,7 @@ mod model;
 mod test_utils;
 
 use cli::{Cli, Commands};
+use serde::Deserialize;
 use tokio::select;
 use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
@@ -53,6 +56,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
         .route("/graphiql", get(graphiql_handler))
+        .route("/asset/{run}/{stream}/{det}/{id}", get(download))
         .fallback((
             StatusCode::NOT_FOUND,
             Html(include_str!("../static/404.html")),
@@ -65,6 +69,29 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     Ok(axum::serve(listener, app)
         .with_graceful_shutdown(signal_handler())
         .await?)
+}
+
+async fn download(Path(req): Path<DownloadRequest>) -> impl IntoResponse {
+    info!("Downloading with {req:?}");
+    // (StatusCode::IM_A_TEAPOT, "Ok")
+    let client = reqwest::Client::new();
+    let req = client
+        .get(format!(
+            "http://localhost:8000/api/v1/asset/bytes/{}/{}/{}?id={}",
+            req.run, req.stream, req.det, req.id
+        ))
+        .send()
+        .await
+        .unwrap();
+    Body::from_stream(req.bytes_stream())
+}
+
+#[derive(Debug, Deserialize)]
+struct DownloadRequest {
+    run: String,
+    stream: String,
+    det: String,
+    id: u32,
 }
 
 async fn graphql_get_warning() -> impl IntoResponse {

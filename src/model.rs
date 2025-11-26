@@ -148,8 +148,8 @@ impl InstrumentSession {
         Ok(root
             .data
             .into_iter()
-            .skip(1)
-            .take(1)
+            // .skip(1)
+            // .take(1)
             .map(|d| Run { data: d })
             .collect())
     }
@@ -187,7 +187,7 @@ impl Run {
                     let det_dat = DetectorData {
                         file: det.assets[0].data_uri.clone(),
                         download: format!(
-                            "http://localhost:3000/data/{}/{}/{}?id={}",
+                            "http://localhost:3000/asset/{}/{}/{}/{}",
                             self.data.id,
                             stream.id.clone(),
                             dataset.id,
