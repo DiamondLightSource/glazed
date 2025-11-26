@@ -99,7 +99,7 @@ impl TiledQuery {
     ) -> Result<container::Container> {
         Ok(ctx
             .data::<TiledClient>()?
-            .container_full(id, stream)
+            .container_full(id, stream.as_deref())
             .await?)
     }
     #[instrument(skip(self, ctx))]

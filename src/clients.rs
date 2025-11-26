@@ -123,7 +123,7 @@ impl TiledClient {
     pub async fn container_full(
         &self,
         id: Uuid,
-        stream: Option<String>,
+        stream: Option<&str>,
     ) -> ClientResult<container::Container> {
         let mut headers = HeaderMap::new();
         headers.insert("accept", "application/json".parse().unwrap());

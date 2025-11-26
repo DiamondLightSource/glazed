@@ -46,7 +46,7 @@ pub struct EventStreamContainerAttributes {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct EventStreamMetadata {
     configuration: HashMap<String, HashMap<String, Value>>,
-    data_keys: HashMap<String, HashMap<String, Value>>,
+    pub data_keys: HashMap<String, HashMap<String, Value>>,
     time: f64,
     uid: Uuid,
     hints: HashMap<String, Value>,
