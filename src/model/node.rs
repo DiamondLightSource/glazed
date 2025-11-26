@@ -39,19 +39,20 @@ struct Spec {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "structure_family", rename_all = "lowercase")]
-enum NodeAttributes {
+pub enum NodeAttributes {
     Container(Attributes<container::ContainerMetadata, container::ContainerStructure>),
     Array(Attributes<HashMap<String, Value>, array::ArrayStructure>),
+    Table(Attributes<HashMap<String, Value>, table::TableStructure>),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-struct Attributes<Meta, S> {
+pub struct Attributes<Meta, S> {
     pub ancestors: Vec<String>,
     pub specs: Vec<Spec>,
     pub metadata: Meta,
     pub structure: S,
     pub access_blob: Value,
-    pub sorting: Vec<Sorting>,
+    pub sorting: Option<Vec<Sorting>>,
     pub data_sources: Option<Vec<DataSource<S>>>,
 }
 
@@ -109,11 +110,11 @@ pub enum Management {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct Asset {
-    data_uri: String,
+    pub data_uri: String,
     is_directory: bool,
     parameter: Option<String>,
     num: Option<i64>,
-    id: Option<i64>,
+    pub id: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]

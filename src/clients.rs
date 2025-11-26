@@ -50,8 +50,13 @@ impl TiledClient {
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
         self.request("/api/v1/", None, None).await
     }
-    pub async fn search<T: DeserializeOwned>(&self, path: &str) -> ClientResult<T> {
-        self.request(path, None, None).await
+    pub async fn search<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        query: &[(&str, &str)],
+    ) -> ClientResult<T> {
+        self.request(&format!("api/v1/search/{}", path), None, Some(query))
+            .await
     }
     // pub async fn run_metadata(&self, id: Uuid) -> ClientResult<node::MetadataRoot> {
     //     self.request(&format!("/api/v1/metadata/{id}"), None, None)

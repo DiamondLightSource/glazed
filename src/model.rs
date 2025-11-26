@@ -6,8 +6,8 @@ pub(crate) mod node;
 pub(crate) mod run;
 pub(crate) mod table;
 
-use async_graphql::{Context, Object, Result};
-use tracing::instrument;
+use async_graphql::{Context, Object, Result, SimpleObject};
+use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::clients::TiledClient;
@@ -23,10 +23,14 @@ impl TiledQuery {
     async fn root(&self, ctx: &Context<'_>) -> Result<Root> {
         let root = ctx
             .data::<TiledClient>()?
-            .search::<node::Root>("api/v1/search/")
+            .search::<node::Root>("", &[])
             .await
             .unwrap();
         Ok(Root { node: root })
+    }
+
+    async fn instrument_session(&self, ctx: &Context<'_>, name: String) -> InstrumentSession {
+        InstrumentSession { name }
     }
     // #[instrument(skip(self, ctx))]
     // async fn run_metadata(&self, ctx: &Context<'_>, id: Uuid) -> Result<node::MetadataRoot> {
@@ -103,6 +107,110 @@ impl TiledQuery {
     //         .container_full(id, stream)
     //         .await?)
     // }
+}
+
+// struct Instrument {
+//     name: String,
+// }
+
+// #[Object]
+// impl Instrument {
+//     async fn name(&self) -> &str {
+//         &self.name
+//     }
+// }
+
+struct InstrumentSession {
+    name: String,
+    // runs: Vec<Run>,
+}
+
+#[Object]
+impl InstrumentSession {
+    async fn name(&self) -> &str {
+        &self.name
+    }
+    async fn runs(&self, ctx: &Context<'_>) -> Result<Vec<Run>> {
+        let root = ctx
+            .data::<TiledClient>()?
+            .search::<node::Root>(
+                "",
+                &[
+                    ("filter[eq][condition][key]", "start.instrument_session"),
+                    (
+                        "filter[eq][condition][value]",
+                        &format!(r#""{}""#, self.name),
+                    ),
+                    ("include_data_sources", "true"),
+                ],
+            )
+            .await?;
+        Ok(root
+            .data
+            .into_iter()
+            .skip(1)
+            .take(1)
+            .map(|d| Run { data: d })
+            .collect())
+    }
+}
+
+struct Run {
+    data: node::Data,
+}
+
+#[Object]
+impl Run {
+    async fn id(&self) -> &str {
+        &self.data.id
+    }
+    async fn external(&self, ctx: &Context<'_>) -> Result<Vec<DetectorData>> {
+        let client = ctx.data::<TiledClient>()?;
+        let run_data = client
+            .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
+            .await?;
+        //dbg!(run_data);
+        // let streams = run_data.data;
+        let mut sources = Vec::new();
+        for stream in run_data.data {
+            let stream_data = client
+                .search::<node::Root>(
+                    &format!("{}/{}", self.data.id, stream.id),
+                    &[("include_data_sources", "true")],
+                )
+                .await?;
+            dbg!(&stream_data);
+            for dataset in stream_data.data {
+                if let node::NodeAttributes::Array(arr) = dataset.attributes {
+                    info!("We have an array: {:?}", arr);
+                    let det = arr.data_sources.expect("No datasources")[0].clone();
+                    let det_dat = DetectorData {
+                        file: det.assets[0].data_uri.clone(),
+                        download: format!(
+                            "http://localhost:3000/data/{}/{}/{}?id={}",
+                            self.data.id,
+                            stream.id.clone(),
+                            dataset.id,
+                            det.assets[0].id.unwrap()
+                        ),
+                        name: dataset.id.clone(),
+                    };
+                    sources.push(det_dat);
+                } else {
+                    info!("We have: {:?}", stream.attributes);
+                }
+            }
+        }
+        // dbg!(&self.data);
+        Ok(sources)
+    }
+}
+
+#[derive(SimpleObject)]
+struct DetectorData {
+    name: String,
+    file: String,
+    download: String,
 }
 
 struct Root {
