@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
-type SearchResponse = Response<Vec<Resource<NodeAttributes, Value, Value>>, PaginationLinks, Value>;
+type SearchResponse =
+    Response<Vec<Resource<NodeAttributes, NodeLinks, Value>>, PaginationLinks, Value>;
 
 #[derive(Debug, Deserialize, PartialEq)]
 struct Error {
@@ -110,6 +111,16 @@ struct SparseLinks {
     this: String,
     full: String,
     block: String,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(untagged)]
+enum NodeLinks {
+    Container(ContainerLinks),
+    Array(ArrayLinks),
+    Awkwards(AwkwardLinks),
+    DataFrame(DataFrameLinks),
+    Sparse(SparseLinks),
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
