@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use async_graphql::{Enum, SimpleObject, Union};
+use async_graphql::{Enum, OutputType, SimpleObject, Union};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
 use crate::model::{array, container, table};
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Root {
     pub data: Vec<Data>,
     pub error: Value,
@@ -15,45 +15,68 @@ pub struct Root {
     pub meta: Value,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct MetadataRoot {
-    pub data: Data,
-    pub error: Value,
-    pub links: Option<Links>,
-    pub meta: Value,
-}
+// #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+// pub struct MetadataRoot {
+//     pub data: Data,
+//     pub error: Value,
+//     pub links: Option<Links>,
+//     pub meta: Value,
+// }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Data {
     pub id: String,
-    #[serde(flatten)]
-    pub attributes: Attributes,
+    pub attributes: NodeAttributes,
     pub links: Links,
     pub meta: Value,
 }
 
-#[derive(Union, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(
-    rename_all = "lowercase",
-    tag = "structure_family",
-    content = "attributes"
-)]
-pub enum Attributes {
-    Array(array::ArrayAttributes),
-    Container(container::ContainerAttributes),
-    Table(table::TableAttributes),
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+struct Spec {
+    name: String,
+    version: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "structure_family", rename_all = "lowercase")]
+enum NodeAttributes {
+    Container(Attributes<container::ContainerMetadata, container::ContainerStructure>),
+    Array(Attributes<HashMap<String, Value>, array::ArrayStructure>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+struct Attributes<Meta, S> {
+    pub ancestors: Vec<String>,
+    pub specs: Vec<Spec>,
+    pub metadata: Meta,
+    pub structure: S,
+    pub access_blob: Value,
+    pub sorting: Vec<Sorting>,
+    pub data_sources: Option<Vec<DataSource<S>>>,
+}
+
+// #[derive(Union, Debug, Clone, PartialEq, Serialize, Deserialize)]
+// #[serde(
+//     rename_all = "lowercase",
+//     tag = "structure_family",
+//     content = "attributes"
+// )]
+// pub enum Attributes {
+//     Array(array::ArrayAttributes),
+//     Container(container::ContainerAttributes),
+//     Table(table::TableAttributes),
+// }
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Sorting {
     pub key: String,
     pub direction: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct DataSource {
-    #[serde(flatten)]
-    pub structure: Structure,
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+//#[serde(tag = "structure_family")]
+pub struct DataSource<S> {
+    pub structure: S,
     pub id: Option<u64>,
     pub mimetype: Option<String>,
     pub parameters: HashMap<String, Value>,
@@ -61,19 +84,19 @@ pub struct DataSource {
     management: Management,
 }
 
-#[derive(Union, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(
-    rename_all = "lowercase",
-    tag = "structure_family",
-    content = "structure"
-)]
-pub enum Structure {
-    Array(array::ArrayStructure),
-    //Awkward(AwkwardSructure),
-    Container(container::ContainerStructure),
-    //Sparse(SparseStructure),
-    Table(table::TableStructure),
-}
+// #[derive(Union, Debug, Clone, PartialEq, Serialize, Deserialize)]
+// #[serde(
+//     rename_all = "lowercase",
+//     tag = "structure_family",
+//     content = "structure"
+// )]
+// pub enum Structure {
+//     Array(array::ArrayStructure),
+//     //Awkward(AwkwardSructure),
+//     Container(container::ContainerStructure),
+//     //Sparse(SparseStructure),
+//     Table(table::TableStructure),
+// }
 
 #[derive(Enum, Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
