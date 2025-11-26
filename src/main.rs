@@ -13,6 +13,7 @@ mod handlers;
 mod model;
 #[cfg(test)]
 mod test_utils;
+mod tiled;
 
 use cli::{Cli, Commands};
 use tokio::select;
