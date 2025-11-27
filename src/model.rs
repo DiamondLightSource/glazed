@@ -19,14 +19,6 @@ impl TiledQuery {
     async fn app_metadata(&self, ctx: &Context<'_>) -> Result<app::AppMetadata> {
         Ok(ctx.data::<TiledClient>()?.app_metadata().await?)
     }
-    async fn root(&self, ctx: &Context<'_>) -> Result<Root> {
-        let root = ctx
-            .data::<TiledClient>()?
-            .search::<node::Root>("", &[])
-            .await
-            .unwrap();
-        Ok(Root { node: root })
-    }
 
     async fn instrument_session(&self, ctx: &Context<'_>, name: String) -> InstrumentSession {
         InstrumentSession { name }
@@ -116,33 +108,6 @@ struct DetectorData {
     name: String,
     file: String,
     download: String,
-}
-
-struct Root {
-    node: node::Root,
-}
-
-#[Object]
-impl Root {
-    async fn data(&self, ctx: &Context<'_>) -> Vec<Data> {
-        self.node
-            .data
-            .iter()
-            .cloned()
-            .map(|d| Data { contents: d })
-            .collect()
-    }
-}
-
-struct Data {
-    contents: node::Data,
-}
-
-#[Object]
-impl Data {
-    async fn id(&self) -> &str {
-        &self.contents.id
-    }
 }
 
 #[cfg(test)]
