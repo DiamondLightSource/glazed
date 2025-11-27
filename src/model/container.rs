@@ -7,7 +7,7 @@ use crate::model::{event_stream, run};
 #[derive(Union, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
 pub enum ContainerMetadata {
-    Run(run::RunMetadata),
+    Run(Box<run::RunMetadata>),
     EventStream(event_stream::EventStreamMetadata),
 }
 
