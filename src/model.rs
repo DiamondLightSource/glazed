@@ -20,7 +20,7 @@ impl TiledQuery {
         Ok(ctx.data::<TiledClient>()?.app_metadata().await?)
     }
 
-    async fn instrument_session(&self, ctx: &Context<'_>, name: String) -> InstrumentSession {
+    async fn instrument_session(&self, _ctx: &Context<'_>, name: String) -> InstrumentSession {
         InstrumentSession { name }
     }
 }
