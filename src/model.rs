@@ -79,7 +79,7 @@ impl Run {
             dbg!(&stream_data);
             for dataset in stream_data.data {
                 if let node::NodeAttributes::Array(arr) = dataset.attributes {
-                    info!("We have an array: {:?}", arr);
+                    // info!("We have an array: {:?}", arr);
                     let det = arr.data_sources.expect("No datasources")[0].clone();
                     let det_dat = DetectorData {
                         file: det.assets[0].data_uri.clone(),
@@ -94,12 +94,47 @@ impl Run {
                     };
                     sources.push(det_dat);
                 } else {
-                    info!("We have: {:?}", stream.attributes);
+                    info!("We have something else: {:?}", stream.attributes);
                 }
             }
         }
 
         Ok(sources)
+    }
+    async fn internal(&self, ctx: &Context<'_>) -> Result<Vec<table::Table>> {
+        let client = ctx.data::<TiledClient>()?;
+        let run_data = client
+            .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
+            .await?;
+
+        let mut tables: Vec<table::Table> = Vec::new();
+        for stream in run_data.data {
+            let stream_data = client
+                .search::<node::Root>(
+                    &format!("{}/{}", self.data.id, stream.id),
+                    &[("include_data_sources", "true")],
+                )
+                .await?;
+            dbg!(&stream_data);
+            for dataset in stream_data.data {
+                if let node::NodeAttributes::Table(table) = dataset.attributes {
+                    info!("We have an table: {:?}", table);
+                    let p = table
+                        .ancestors
+                        .into_iter()
+                        .chain(vec![dataset.id])
+                        .collect::<Vec<String>>()
+                        .join("/");
+                    info!("path: {:?}", p);
+
+                    let table_data = client.table_full(&p).await?;
+                    tables.push(table_data);
+                } else {
+                    info!("We have something else: {:?}", stream.attributes);
+                }
+            }
+        }
+        Ok(tables)
     }
 }
 
