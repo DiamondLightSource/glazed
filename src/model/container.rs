@@ -10,18 +10,6 @@ pub struct Container {
     pub metadata: Value,
 }
 
-// #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-// pub struct ContainerAttributes {
-//     pub ancestors: Vec<Value>,
-//     pub specs: Vec<ContainerSpecs>,
-//     pub metadata: ContainerMetadata,
-//     #[serde(flatten)]
-//     pub structure: node::Structure,
-//     pub access_blob: Value,
-//     pub sorting: Vec<node::Sorting>,
-//     pub data_sources: Option<Vec<node::DataSource>>,
-// }
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct ContainerSpecs {
     pub name: String,
