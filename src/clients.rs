@@ -6,9 +6,8 @@ use httpmock::MockServer;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
-use uuid::Uuid;
 
-use crate::model::{app, container, node, table};
+use crate::model::app;
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -31,7 +30,6 @@ impl TiledClient {
         headers: Option<HeaderMap>,
         query_params: Option<&[(&str, &str)]>,
     ) -> ClientResult<T> {
-        info!("Requesting from tiled: {}", endpoint);
         let url = self.address.join(endpoint)?;
 
         let mut request = match headers {
@@ -58,82 +56,6 @@ impl TiledClient {
         self.request(&format!("api/v1/search/{}", path), None, Some(query))
             .await
     }
-    // pub async fn run_metadata(&self, id: Uuid) -> ClientResult<node::MetadataRoot> {
-    //     self.request(&format!("/api/v1/metadata/{id}"), None, None)
-    //         .await
-    // }
-    // pub async fn event_stream_metadata(
-    //     &self,
-    //     id: Uuid,
-    //     stream: String,
-    // ) -> ClientResult<node::MetadataRoot> {
-    //     self.request(&format!("/api/v1/metadata/{id}/{stream}"), None, None)
-    //         .await
-    // }
-    // pub async fn array_metadata(
-    //     &self,
-    //     id: Uuid,
-    //     stream: String,
-    //     array: String,
-    // ) -> ClientResult<node::MetadataRoot> {
-    //     self.request(
-    //         &format!("/api/v1/metadata/{id}/{stream}/{array}"),
-    //         None,
-    //         Some(&[("include_data_sources", "true")]),
-    //     )
-    //     .await
-    // }
-    // pub async fn table_metadata(
-    //     &self,
-    //     id: Uuid,
-    //     stream: String,
-    //     table: String,
-    // ) -> ClientResult<node::MetadataRoot> {
-    //     self.request(
-    //         &format!("/api/v1/metadata/{id}/{stream}/{table}"),
-    //         None,
-    //         Some(&[("include_data_sources", "true")]),
-    //     )
-    //     .await
-    // }
-    // pub async fn table_full(
-    //     &self,
-    //     id: Uuid,
-    //     stream: String,
-    //     table: String,
-    // ) -> ClientResult<table::Table> {
-    //     let mut headers = HeaderMap::new();
-    //     headers.insert("accept", "application/json".parse().unwrap());
-
-    //     self.request(
-    //         &format!("/api/v1/table/full/{id}/{stream}/{table}"),
-    //         Some(headers),
-    //         None,
-    //     )
-    //     .await
-    // }
-    // pub async fn search_root(&self) -> ClientResult<node::Root> {
-    //     self.request("/api/v1/search/", None, None).await
-    // }
-    // pub async fn search_run_container(&self, id: Uuid) -> ClientResult<node::Root> {
-    //     self.request(&format!("/api/v1/search/{id}"), None, None)
-    //         .await
-    // }
-    // pub async fn container_full(
-    //     &self,
-    //     id: Uuid,
-    //     stream: Option<String>,
-    // ) -> ClientResult<container::Container> {
-    //     let mut headers = HeaderMap::new();
-    //     headers.insert("accept", "application/json".parse().unwrap());
-
-    //     let endpoint = match stream {
-    //         Some(stream) => &format!("/api/v1/container/full/{id}/{stream}"),
-    //         None => &format!("/api/v1/container/full/{id}"),
-    //     };
-
-    //     self.request(endpoint, Some(headers), None).await
-    // }
 
     /// Create a new client for the given mock server
     #[cfg(test)]
