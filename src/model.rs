@@ -8,7 +8,6 @@ pub(crate) mod table;
 
 use async_graphql::{Context, Object, Result, SimpleObject};
 use tracing::{info, instrument};
-use uuid::Uuid;
 
 use crate::clients::TiledClient;
 
@@ -32,97 +31,10 @@ impl TiledQuery {
     async fn instrument_session(&self, ctx: &Context<'_>, name: String) -> InstrumentSession {
         InstrumentSession { name }
     }
-    // #[instrument(skip(self, ctx))]
-    // async fn run_metadata(&self, ctx: &Context<'_>, id: Uuid) -> Result<node::MetadataRoot> {
-    //     Ok(ctx.data::<TiledClient>()?.run_metadata(id).await?)
-    // }
-    // #[instrument(skip(self, ctx))]
-    // async fn event_stream_metadata(
-    //     &self,
-    //     ctx: &Context<'_>,
-    //     id: Uuid,
-    //     stream: String,
-    // ) -> Result<node::MetadataRoot> {
-    //     Ok(ctx
-    //         .data::<TiledClient>()?
-    //         .event_stream_metadata(id, stream)
-    //         .await?)
-    // }
-    // #[instrument(skip(self, ctx))]
-    // async fn array_metadata(
-    //     &self,
-    //     ctx: &Context<'_>,
-    //     id: Uuid,
-    //     stream: String,
-    //     array: String,
-    // ) -> Result<node::MetadataRoot> {
-    //     Ok(ctx
-    //         .data::<TiledClient>()?
-    //         .array_metadata(id, stream, array)
-    //         .await?)
-    // }
-    // #[instrument(skip(self, ctx))]
-    // async fn table_metadata(
-    //     &self,
-    //     ctx: &Context<'_>,
-    //     id: Uuid,
-    //     stream: String,
-    //     table: String,
-    // ) -> Result<node::MetadataRoot> {
-    //     Ok(ctx
-    //         .data::<TiledClient>()?
-    //         .table_metadata(id, stream, table)
-    //         .await?)
-    // }
-    // #[instrument(skip(self, ctx))]
-    // async fn table_full(
-    //     &self,
-    //     ctx: &Context<'_>,
-    //     id: Uuid,
-    //     stream: String,
-    //     table: String,
-    // ) -> Result<table::Table> {
-    //     Ok(ctx
-    //         .data::<TiledClient>()?
-    //         .table_full(id, stream, table)
-    //         .await?)
-    // }
-    // #[instrument(skip(self, ctx))]
-    // async fn search_root(&self, ctx: &Context<'_>) -> Result<node::Root> {
-    //     Ok(ctx.data::<TiledClient>()?.search_root().await?)
-    // }
-    // #[instrument(skip(self, ctx))]
-    // async fn search_run_container(&self, ctx: &Context<'_>, id: Uuid) -> Result<node::Root> {
-    //     Ok(ctx.data::<TiledClient>()?.search_run_container(id).await?)
-    // }
-    // #[instrument(skip(self, ctx))]
-    // async fn container_full(
-    //     &self,
-    //     ctx: &Context<'_>,
-    //     id: Uuid,
-    //     stream: Option<String>,
-    // ) -> Result<container::Container> {
-    //     Ok(ctx
-    //         .data::<TiledClient>()?
-    //         .container_full(id, stream)
-    //         .await?)
-    // }
 }
-
-// struct Instrument {
-//     name: String,
-// }
-
-// #[Object]
-// impl Instrument {
-//     async fn name(&self) -> &str {
-//         &self.name
-//     }
-// }
 
 struct InstrumentSession {
     name: String,
-    // runs: Vec<Run>,
 }
 
 #[Object]
@@ -145,13 +57,7 @@ impl InstrumentSession {
                 ],
             )
             .await?;
-        Ok(root
-            .data
-            .into_iter()
-            // .skip(1)
-            // .take(1)
-            .map(|d| Run { data: d })
-            .collect())
+        Ok(root.data.into_iter().map(|d| Run { data: d }).collect())
     }
 }
 
@@ -169,8 +75,7 @@ impl Run {
         let run_data = client
             .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
             .await?;
-        //dbg!(run_data);
-        // let streams = run_data.data;
+
         let mut sources = Vec::new();
         for stream in run_data.data {
             let stream_data = client
@@ -201,7 +106,7 @@ impl Run {
                 }
             }
         }
-        // dbg!(&self.data);
+
         Ok(sources)
     }
 }
