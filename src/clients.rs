@@ -7,7 +7,7 @@ use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use tracing::{info, instrument};
 
-use crate::model::app;
+use crate::model::{app, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -54,6 +54,13 @@ impl TiledClient {
         query: &[(&str, &str)],
     ) -> ClientResult<T> {
         self.request(&format!("api/v1/search/{}", path), None, Some(query))
+            .await
+    }
+    pub async fn table_full(&self, path: &str) -> ClientResult<table::Table> {
+        let mut headers = HeaderMap::new();
+        headers.insert("accept", "application/json".parse().unwrap());
+
+        self.request(&format!("/api/v1/table/full/{}", path), Some(headers), None)
             .await
     }
 
