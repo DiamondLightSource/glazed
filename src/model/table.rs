@@ -13,18 +13,3 @@ pub struct TableStructure {
     pub columns: Vec<Value>,
     pub resizable: bool,
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::model::table;
-    use crate::test_utils::assert_readable_as;
-
-    // #[test]
-    // fn table_metadata() {
-    //     assert_readable_as::<table::TableMetadataRoot>("resources/metadata_table.json");
-    // }
-    // #[test]
-    // fn table_full() {
-    //     assert_readable_as::<table::Table>("resources/table_full.json");
-    // }
-}

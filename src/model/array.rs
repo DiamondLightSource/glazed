@@ -18,14 +18,3 @@ pub struct DataType {
     itemsize: i64,
     dt_units: Value,
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::model::array;
-    use crate::test_utils::assert_readable_as;
-
-    // #[test]
-    // fn array_metadata() {
-    //     assert_readable_as::<array::ArrayMetadataRoot>("resources/metadata_array.json");
-    // }
-}
