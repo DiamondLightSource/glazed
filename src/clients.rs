@@ -5,12 +5,13 @@ use axum::http::HeaderMap;
 use httpmock::MockServer;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 use crate::model::app;
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
+#[derive(Clone)]
 pub struct TiledClient {
     client: Client,
     address: Url,
@@ -18,6 +19,11 @@ pub struct TiledClient {
 
 impl TiledClient {
     pub fn new(address: Url) -> Self {
+        if address.cannot_be_a_base() {
+            // Panicking is not great but if we've got this far, nothing else is going to work so
+            // bail out early.
+            panic!("Invalid tiled URL");
+        }
         Self {
             client: Client::new(),
             address,
@@ -55,6 +61,32 @@ impl TiledClient {
     ) -> ClientResult<T> {
         self.request(&format!("api/v1/search/{}", path), None, Some(query))
             .await
+    }
+
+    pub(crate) async fn download(
+        &self,
+        run: String,
+        stream: String,
+        det: String,
+        id: u32,
+    ) -> reqwest::Result<reqwest::Response> {
+        let mut url = self
+            .address
+            .join("/api/v1/asset/bytes")
+            .expect("Base address was cannot_be_a_base");
+        url.path_segments_mut()
+            .expect("Base address was cannot_be_a_base")
+            .push(&run)
+            .push(&stream)
+            .push(&det);
+
+        debug!("Downloading id={id} from {url}");
+        Ok(self
+            .client
+            .get(url)
+            .query(&[("id", &id.to_string())])
+            .send()
+            .await?)
     }
 
     /// Create a new client for the given mock server
