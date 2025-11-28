@@ -6,7 +6,10 @@ pub(crate) mod node;
 pub(crate) mod run;
 pub(crate) mod table;
 
-use async_graphql::{Context, Object, Result, SimpleObject};
+use std::collections::HashMap;
+
+use async_graphql::{Context, Object, Result, SimpleObject, Union};
+use serde_json::Value;
 use tracing::{info, instrument};
 
 use crate::clients::TiledClient;
@@ -53,6 +56,73 @@ impl InstrumentSession {
     }
 }
 
+#[derive(Union)]
+enum RunData<'run> {
+    Array(ArrayData<'run>),
+    Internal(TableData),
+}
+
+struct ArrayData<'run> {
+    run: &'run Run,
+    id: String,
+    stream: String,
+    attrs: node::Attributes<HashMap<String, Value>, array::ArrayStructure>,
+}
+
+#[Object]
+impl ArrayData<'_> {
+    async fn name(&self) -> &str {
+        &self.id
+    }
+    async fn file(&self) -> Vec<&str> {
+        self.attrs
+            .data_sources
+            .as_deref()
+            .unwrap_or_default()
+            .iter()
+            .flat_map(|det| det.assets.iter().map(|ass| ass.data_uri.as_str()))
+            .collect()
+        // file: det.assets[0].data_uri.clone(),
+    }
+    async fn download(&self) -> Vec<String> {
+        self.attrs
+            .data_sources
+            .as_deref()
+            .unwrap_or_default()
+            .iter()
+            .flat_map(|det| det.assets.iter().map(|ass| ass.id))
+            .flatten()
+            .map(|id| {
+                format!(
+                    "http://localhost:3000/asset/{}/{}/{}/{}",
+                    self.run.data.id, self.stream, self.id, id
+                )
+            })
+            .collect()
+    }
+}
+
+struct TableData {
+    id: String,
+    attrs: node::Attributes<HashMap<String, Value>, table::TableStructure>,
+}
+
+#[Object]
+impl TableData {
+    async fn name(&self) -> &str {
+        &self.id
+    }
+    async fn columns(&self) -> &[String] {
+        &self.attrs.structure.columns
+    }
+    async fn data(&self, columns: Vec<String>) -> HashMap<String, Value> {
+        columns
+            .into_iter()
+            .map(|c| (c, Value::Array(vec![])))
+            .collect()
+    }
+}
+
 struct Run {
     data: node::Data,
 }
@@ -62,6 +132,42 @@ impl Run {
     async fn id(&self) -> &str {
         &self.data.id
     }
+    async fn data(&self, ctx: &Context<'_>) -> Result<Vec<RunData>> {
+        let client = ctx.data::<TiledClient>()?;
+        let run_data = client
+            .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
+            .await?;
+        let mut sources = Vec::new();
+        for stream in run_data.data {
+            let stream_data = client
+                .search::<node::Root>(
+                    &format!("{}/{}", self.data.id, stream.id),
+                    &[("include_data_sources", "true")],
+                )
+                .await?;
+            for dataset in stream_data.data {
+                match dataset.attributes {
+                    node::NodeAttributes::Array(attrs) => sources.push(RunData::Array(ArrayData {
+                        run: self,
+                        stream: stream.id.clone(),
+                        id: dataset.id,
+                        attrs,
+                    })),
+                    node::NodeAttributes::Table(attrs) => {
+                        sources.push(RunData::Internal(TableData {
+                            id: dataset.id,
+                            attrs,
+                        }))
+                    }
+                    node::NodeAttributes::Container(cont) => {
+                        todo!()
+                    }
+                }
+            }
+        }
+        Ok(sources)
+    }
+
     async fn external(&self, ctx: &Context<'_>) -> Result<Vec<DetectorData>> {
         let client = ctx.data::<TiledClient>()?;
         let run_data = client

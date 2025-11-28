@@ -10,6 +10,6 @@ pub type Table = HashMap<String, Vec<Value>>;
 pub struct TableStructure {
     pub arrow_schema: String,
     pub npartitions: i64,
-    pub columns: Vec<Value>,
+    pub columns: Vec<String>,
     pub resizable: bool,
 }
