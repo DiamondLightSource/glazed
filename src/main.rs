@@ -1,8 +1,4 @@
-use std::error;
-
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-use axum::body::Body;
-use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
@@ -11,13 +7,13 @@ use axum::{Extension, Router};
 mod cli;
 mod clients;
 mod config;
+mod download;
 mod handlers;
 mod model;
 #[cfg(test)]
 mod test_utils;
 
 use cli::{Cli, Commands};
-use serde::Deserialize;
 use tokio::select;
 use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
@@ -28,7 +24,7 @@ use crate::handlers::{graphiql_handler, graphql_handler};
 use crate::model::TiledQuery;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn error::Error>> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let subscriber = tracing_subscriber::FmtSubscriber::new();
     tracing::subscriber::set_global_default(subscriber)?;
 
@@ -48,16 +44,18 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     }
 }
 
-async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
+async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
+    let client = TiledClient::new(config.tiled_client.address);
     let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
-        .data(TiledClient::new(config.tiled_client.address))
         .data(config.bind_address)
+        .data(client.clone())
         .finish();
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
         .route("/graphiql", get(graphiql_handler))
-        .route("/asset/{run}/{stream}/{det}/{id}", get(download))
+        .route("/asset/{run}/{stream}/{det}/{id}", get(download::download))
+        .with_state(client)
         .fallback((
             StatusCode::NOT_FOUND,
             Html(include_str!("../static/404.html")),
@@ -70,29 +68,6 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     Ok(axum::serve(listener, app)
         .with_graceful_shutdown(signal_handler())
         .await?)
-}
-
-async fn download(Path(req): Path<DownloadRequest>) -> impl IntoResponse {
-    info!("Downloading with {req:?}");
-    // (StatusCode::IM_A_TEAPOT, "Ok")
-    let client = reqwest::Client::new();
-    let req = client
-        .get(format!(
-            "http://localhost:8000/api/v1/asset/bytes/{}/{}/{}?id={}",
-            req.run, req.stream, req.det, req.id
-        ))
-        .send()
-        .await
-        .unwrap();
-    Body::from_stream(req.bytes_stream())
-}
-
-#[derive(Debug, Deserialize)]
-struct DownloadRequest {
-    run: String,
-    stream: String,
-    det: String,
-    id: u32,
 }
 
 async fn graphql_get_warning() -> impl IntoResponse {
