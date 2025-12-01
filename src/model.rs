@@ -13,6 +13,7 @@ use serde_json::Value;
 use tracing::{info, instrument};
 
 use crate::clients::TiledClient;
+use crate::model::node::NodeAttributes;
 
 pub(crate) struct TiledQuery;
 
@@ -70,35 +71,41 @@ struct ArrayData<'run> {
 }
 
 #[Object]
-impl ArrayData<'_> {
+impl<'run> ArrayData<'run> {
     async fn name(&self) -> &str {
         &self.id
     }
-    async fn file(&self) -> Vec<&str> {
+    async fn files<'ad>(&'ad self) -> Vec<Asset<'ad>> {
         self.attrs
             .data_sources
             .as_deref()
             .unwrap_or_default()
             .iter()
-            .flat_map(|det| det.assets.iter().map(|ass| ass.data_uri.as_str()))
-            .collect()
-        // file: det.assets[0].data_uri.clone(),
-    }
-    async fn download(&self) -> Vec<String> {
-        self.attrs
-            .data_sources
-            .as_deref()
-            .unwrap_or_default()
-            .iter()
-            .flat_map(|det| det.assets.iter().map(|ass| ass.id))
-            .flatten()
-            .map(|id| {
-                format!(
-                    "http://localhost:3000/asset/{}/{}/{}/{}",
-                    self.run.data.id, self.stream, self.id, id
-                )
+            .flat_map(|source| source.assets.iter())
+            .map(|a| Asset {
+                data: self,
+                asset: &a,
             })
             .collect()
+    }
+}
+
+struct Asset<'a> {
+    asset: &'a node::Asset,
+    data: &'a ArrayData<'a>,
+}
+
+#[Object]
+impl Asset<'_> {
+    async fn file(&self) -> &str {
+        &self.asset.data_uri
+    }
+    async fn download(&self) -> Option<String> {
+        let id = self.asset.id?;
+        Some(format!(
+            "http://localhost:3000/asset/{}/{}/{}/{}",
+            self.data.run.data.id, self.data.stream, self.data.id, id
+        ))
     }
 }
 
@@ -115,11 +122,24 @@ impl TableData {
     async fn columns(&self) -> &[String] {
         &self.attrs.structure.columns
     }
-    async fn data(&self, columns: Vec<String>) -> HashMap<String, Value> {
-        columns
-            .into_iter()
-            .map(|c| (c, Value::Array(vec![])))
-            .collect()
+    async fn data(
+        &self,
+        ctx: &Context<'_>,
+        columns: Vec<String>,
+    ) -> Result<HashMap<String, Vec<Value>>> {
+        let client = ctx.data::<TiledClient>()?;
+        let p = self
+            .attrs
+            .ancestors
+            .iter()
+            .chain(vec![&self.id])
+            .map(|s| s.as_str())
+            .collect::<Vec<_>>()
+            .join("/");
+        info!("path: {:?}", p);
+
+        let table_data = client.table_full(&p, columns).await?;
+        Ok(table_data)
     }
 }
 
@@ -147,100 +167,23 @@ impl Run {
                 .await?;
             for dataset in stream_data.data {
                 match dataset.attributes {
-                    node::NodeAttributes::Array(attrs) => sources.push(RunData::Array(ArrayData {
+                    NodeAttributes::Array(attrs) => sources.push(RunData::Array(ArrayData {
                         run: self,
                         stream: stream.id.clone(),
                         id: dataset.id,
                         attrs,
                     })),
-                    node::NodeAttributes::Table(attrs) => {
-                        sources.push(RunData::Internal(TableData {
-                            id: dataset.id,
-                            attrs,
-                        }))
-                    }
-                    node::NodeAttributes::Container(cont) => {
+                    NodeAttributes::Table(attrs) => sources.push(RunData::Internal(TableData {
+                        id: dataset.id,
+                        attrs,
+                    })),
+                    NodeAttributes::Container(cont) => {
                         todo!()
                     }
                 }
             }
         }
         Ok(sources)
-    }
-
-    async fn external(&self, ctx: &Context<'_>) -> Result<Vec<DetectorData>> {
-        let client = ctx.data::<TiledClient>()?;
-        let run_data = client
-            .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
-            .await?;
-
-        let mut sources = Vec::new();
-        for stream in run_data.data {
-            let stream_data = client
-                .search::<node::Root>(
-                    &format!("{}/{}", self.data.id, stream.id),
-                    &[("include_data_sources", "true")],
-                )
-                .await?;
-            dbg!(&stream_data);
-            for dataset in stream_data.data {
-                if let node::NodeAttributes::Array(arr) = dataset.attributes {
-                    // info!("We have an array: {:?}", arr);
-                    let det = arr.data_sources.expect("No datasources")[0].clone();
-                    let det_dat = DetectorData {
-                        file: det.assets[0].data_uri.clone(),
-                        download: format!(
-                            "http://localhost:3000/asset/{}/{}/{}/{}",
-                            self.data.id,
-                            stream.id.clone(),
-                            dataset.id,
-                            det.assets[0].id.unwrap()
-                        ),
-                        name: dataset.id.clone(),
-                    };
-                    sources.push(det_dat);
-                } else {
-                    info!("We have something else: {:?}", stream.attributes);
-                }
-            }
-        }
-
-        Ok(sources)
-    }
-    async fn internal(&self, ctx: &Context<'_>) -> Result<Vec<table::Table>> {
-        let client = ctx.data::<TiledClient>()?;
-        let run_data = client
-            .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
-            .await?;
-
-        let mut tables: Vec<table::Table> = Vec::new();
-        for stream in run_data.data {
-            let stream_data = client
-                .search::<node::Root>(
-                    &format!("{}/{}", self.data.id, stream.id),
-                    &[("include_data_sources", "true")],
-                )
-                .await?;
-            dbg!(&stream_data);
-            for dataset in stream_data.data {
-                if let node::NodeAttributes::Table(table) = dataset.attributes {
-                    info!("We have an table: {:?}", table);
-                    let p = table
-                        .ancestors
-                        .into_iter()
-                        .chain(vec![dataset.id])
-                        .collect::<Vec<String>>()
-                        .join("/");
-                    info!("path: {:?}", p);
-
-                    let table_data = client.table_full(&p).await?;
-                    tables.push(table_data);
-                } else {
-                    info!("We have something else: {:?}", stream.attributes);
-                }
-            }
-        }
-        Ok(tables)
     }
 }
 
