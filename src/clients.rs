@@ -96,12 +96,11 @@ impl TiledClient {
             .push(&det);
 
         debug!("Downloading id={id} from {url}");
-        Ok(self
-            .client
+        self.client
             .get(url)
             .query(&[("id", &id.to_string())])
             .send()
-            .await?)
+            .await
     }
 
     /// Create a new client for the given mock server
