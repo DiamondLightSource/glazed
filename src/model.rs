@@ -8,7 +8,7 @@ pub(crate) mod table;
 
 use std::collections::HashMap;
 
-use async_graphql::{Context, Object, Result, SimpleObject, Union};
+use async_graphql::{Context, Object, Result, Union};
 use serde_json::Value;
 use tracing::{info, instrument};
 
@@ -84,7 +84,7 @@ impl<'run> ArrayData<'run> {
             .flat_map(|source| source.assets.iter())
             .map(|a| Asset {
                 data: self,
-                asset: &a,
+                asset: a,
             })
             .collect()
     }
@@ -159,7 +159,7 @@ impl Run {
     async fn id(&self) -> &str {
         &self.data.id
     }
-    async fn data(&self, ctx: &Context<'_>) -> Result<Vec<RunData>> {
+    async fn data(&self, ctx: &Context<'_>) -> Result<Vec<RunData<'_>>> {
         let client = ctx.data::<TiledClient>()?;
         let run_data = client
             .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
@@ -184,21 +184,12 @@ impl Run {
                         id: dataset.id,
                         attrs,
                     })),
-                    NodeAttributes::Container(cont) => {
-                        todo!()
-                    }
+                    NodeAttributes::Container(_) => {}
                 }
             }
         }
         Ok(sources)
     }
-}
-
-#[derive(SimpleObject)]
-struct DetectorData {
-    name: String,
-    file: String,
-    download: String,
 }
 
 #[cfg(test)]
