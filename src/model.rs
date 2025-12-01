@@ -149,6 +149,13 @@ struct Run {
 
 #[Object]
 impl Run {
+    async fn scan_number(&self) -> Option<i64> {
+        if let NodeAttributes::Container(attr) = &self.data.attributes {
+            attr.metadata.start_doc().map(|sd| sd.scan_id)
+        } else {
+            None
+        }
+    }
     async fn id(&self) -> &str {
         &self.data.id
     }

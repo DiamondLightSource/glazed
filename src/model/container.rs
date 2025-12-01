@@ -12,6 +12,16 @@ pub enum ContainerMetadata {
     EventStream(event_stream::EventStreamMetadata),
 }
 
+impl ContainerMetadata {
+    pub fn start_doc(&self) -> Option<&Start> {
+        if let ContainerMetadata::Run(run) = self {
+            Some(&run.start)
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct ContainerStructure {
     pub contents: Value,
