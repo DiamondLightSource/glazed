@@ -56,12 +56,20 @@ impl TiledClient {
         self.request(&format!("api/v1/search/{}", path), None, Some(query))
             .await
     }
-    pub async fn table_full(&self, path: &str) -> ClientResult<table::Table> {
+    pub async fn table_full(&self, path: &str, columns: Vec<String>) -> ClientResult<table::Table> {
         let mut headers = HeaderMap::new();
         headers.insert("accept", "application/json".parse().unwrap());
+        let query = columns
+            .iter()
+            .map(|col| ("column", col.as_str()))
+            .collect::<Vec<_>>();
 
-        self.request(&format!("/api/v1/table/full/{}", path), Some(headers), None)
-            .await
+        self.request(
+            &format!("/api/v1/table/full/{}", path),
+            Some(headers),
+            Some(&query),
+        )
+        .await
     }
 
     /// Create a new client for the given mock server
