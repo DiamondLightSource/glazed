@@ -7,6 +7,7 @@ pub(crate) mod run;
 pub(crate) mod table;
 
 use std::collections::HashMap;
+use std::net::SocketAddr;
 
 use async_graphql::{Context, Object, Result, Union};
 use serde_json::Value;
@@ -100,11 +101,12 @@ impl Asset<'_> {
     async fn file(&self) -> &str {
         &self.asset.data_uri
     }
-    async fn download(&self) -> Option<String> {
+    async fn download(&self, ctx: &Context<'_>) -> Option<String> {
         let id = self.asset.id?;
+        let base = ctx.data::<SocketAddr>().ok()?;
         Some(format!(
-            "http://localhost:3000/asset/{}/{}/{}/{}",
-            self.data.run.data.id, self.data.stream, self.data.id, id
+            "{}/asset/{}/{}/{}/{}",
+            base, self.data.run.data.id, self.data.stream, self.data.id, id
         ))
     }
 }

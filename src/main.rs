@@ -51,6 +51,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
     let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
         .data(TiledClient::new(config.tiled_client.address))
+        .data(config.bind_address)
         .finish();
 
     let app = Router::new()
