@@ -5,44 +5,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::model::{container, node};
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunRoot {
-    pub data: Vec<RunData>,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunMetadataRoot {
-    pub data: RunData,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunData {
-    pub id: Uuid,
-    pub attributes: RunContainerAttributes,
-    pub links: node::Links,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct RunContainerAttributes {
-    pub ancestors: Vec<Value>,
-    pub structure_family: String,
-    pub specs: Vec<container::Specs>,
-    pub metadata: RunMetadata,
-    pub structure: container::ContainerStructure,
-    pub access_blob: Value,
-    pub sorting: Vec<container::Sorting>,
-    pub data_sources: Option<Vec<node::DataSource>>,
-}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct RunMetadata {
     pub start: Start,
@@ -110,19 +72,11 @@ pub struct Stop {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{container, run};
+    use crate::model::node;
     use crate::test_utils::assert_readable_as;
 
     #[test]
-    fn run_metadata() {
-        assert_readable_as::<run::RunMetadataRoot>("resources/metadata_run.json");
-    }
-    #[test]
     fn search_root_for_run_containers() {
-        assert_readable_as::<run::RunRoot>("resources/search_root.json");
-    }
-    #[test]
-    fn container_full() {
-        assert_readable_as::<container::Container>("resources/container_run.json");
+        assert_readable_as::<node::Root>("resources/search_root.json");
     }
 }

@@ -6,11 +6,15 @@ pub(crate) mod node;
 pub(crate) mod run;
 pub(crate) mod table;
 
-use async_graphql::{Context, Object, Result};
-use tracing::instrument;
-use uuid::Uuid;
+use std::collections::HashMap;
+use std::net::SocketAddr;
+
+use async_graphql::{Context, Object, Result, Union};
+use serde_json::Value;
+use tracing::{info, instrument};
 
 use crate::clients::TiledClient;
+use crate::model::node::NodeAttributes;
 
 pub(crate) struct TiledQuery;
 
@@ -20,84 +24,176 @@ impl TiledQuery {
     async fn app_metadata(&self, ctx: &Context<'_>) -> Result<app::AppMetadata> {
         Ok(ctx.data::<TiledClient>()?.app_metadata().await?)
     }
-    #[instrument(skip(self, ctx))]
-    async fn run_metadata(&self, ctx: &Context<'_>, id: Uuid) -> Result<run::RunMetadataRoot> {
-        Ok(ctx.data::<TiledClient>()?.run_metadata(id).await?)
+
+    async fn instrument_session(&self, name: String) -> InstrumentSession {
+        InstrumentSession { name }
     }
-    #[instrument(skip(self, ctx))]
-    async fn event_stream_metadata(
-        &self,
-        ctx: &Context<'_>,
-        id: Uuid,
-        stream: String,
-    ) -> Result<event_stream::EventStreamMetadataRoot> {
-        Ok(ctx
+}
+
+struct InstrumentSession {
+    name: String,
+}
+
+#[Object]
+impl InstrumentSession {
+    async fn name(&self) -> &str {
+        &self.name
+    }
+    async fn runs(&self, ctx: &Context<'_>) -> Result<Vec<Run>> {
+        let root = ctx
             .data::<TiledClient>()?
-            .event_stream_metadata(id, stream)
-            .await?)
+            .search(
+                "",
+                &[
+                    (
+                        "filter[eq][condition][key]",
+                        "start.instrument_session".into(),
+                    ),
+                    (
+                        "filter[eq][condition][value]",
+                        format!(r#""{}""#, self.name).into(),
+                    ),
+                    ("include_data_sources", "true".into()),
+                ],
+            )
+            .await?;
+        Ok(root.data.into_iter().map(|d| Run { data: d }).collect())
     }
-    #[instrument(skip(self, ctx))]
-    async fn array_metadata(
+}
+
+#[derive(Union)]
+enum RunData<'run> {
+    Array(ArrayData<'run>),
+    Internal(TableData),
+}
+
+struct ArrayData<'run> {
+    run: &'run Run,
+    id: String,
+    stream: String,
+    attrs: node::Attributes<HashMap<String, Value>, array::ArrayStructure>,
+}
+
+#[Object]
+impl<'run> ArrayData<'run> {
+    async fn name(&self) -> &str {
+        &self.id
+    }
+    async fn files<'ad>(&'ad self) -> Vec<Asset<'ad>> {
+        self.attrs
+            .data_sources
+            .as_deref()
+            .unwrap_or_default()
+            .iter()
+            .flat_map(|source| source.assets.iter())
+            .map(|a| Asset {
+                data: self,
+                asset: a,
+            })
+            .collect()
+    }
+}
+
+struct Asset<'a> {
+    asset: &'a node::Asset,
+    data: &'a ArrayData<'a>,
+}
+
+#[Object]
+impl Asset<'_> {
+    async fn file(&self) -> &str {
+        &self.asset.data_uri
+    }
+    async fn download(&self, ctx: &Context<'_>) -> Option<String> {
+        let id = self.asset.id?;
+        let base = ctx.data::<SocketAddr>().ok()?;
+        Some(format!(
+            "{}/asset/{}/{}/{}/{}",
+            base, self.data.run.data.id, self.data.stream, self.data.id, id
+        ))
+    }
+}
+
+struct TableData {
+    id: String,
+    attrs: node::Attributes<HashMap<String, Value>, table::TableStructure>,
+}
+
+#[Object]
+impl TableData {
+    async fn name(&self) -> &str {
+        &self.id
+    }
+    async fn columns(&self) -> &[String] {
+        &self.attrs.structure.columns
+    }
+    async fn data(
         &self,
         ctx: &Context<'_>,
-        id: Uuid,
-        stream: String,
-        array: String,
-    ) -> Result<array::ArrayMetadataRoot> {
-        Ok(ctx
-            .data::<TiledClient>()?
-            .array_metadata(id, stream, array)
-            .await?)
+        columns: Option<Vec<String>>,
+    ) -> Result<HashMap<String, Vec<Value>>> {
+        let client = ctx.data::<TiledClient>()?;
+        let p = self
+            .attrs
+            .ancestors
+            .iter()
+            .chain(vec![&self.id])
+            .map(|s| s.as_str())
+            .collect::<Vec<_>>()
+            .join("/");
+        info!("path: {:?}", p);
+
+        let table_data = client.table_full(&p, columns).await?;
+        Ok(table_data)
     }
-    #[instrument(skip(self, ctx))]
-    async fn table_metadata(
-        &self,
-        ctx: &Context<'_>,
-        id: Uuid,
-        stream: String,
-        table: String,
-    ) -> Result<table::TableMetadataRoot> {
-        Ok(ctx
-            .data::<TiledClient>()?
-            .table_metadata(id, stream, table)
-            .await?)
+}
+
+struct Run {
+    data: node::Data,
+}
+
+#[Object]
+impl Run {
+    async fn scan_number(&self) -> Option<i64> {
+        if let NodeAttributes::Container(attr) = &self.data.attributes {
+            attr.metadata.start_doc().map(|sd| sd.scan_id)
+        } else {
+            None
+        }
     }
-    #[instrument(skip(self, ctx))]
-    async fn table_full(
-        &self,
-        ctx: &Context<'_>,
-        id: Uuid,
-        stream: String,
-        table: String,
-    ) -> Result<table::Table> {
-        Ok(ctx
-            .data::<TiledClient>()?
-            .table_full(id, stream, table)
-            .await?)
+    async fn id(&self) -> &str {
+        &self.data.id
     }
-    #[instrument(skip(self, ctx))]
-    async fn search_root(&self, ctx: &Context<'_>) -> Result<run::RunRoot> {
-        Ok(ctx.data::<TiledClient>()?.search_root().await?)
-    }
-    #[instrument(skip(self, ctx))]
-    async fn search_run_container(
-        &self,
-        ctx: &Context<'_>,
-        id: Uuid,
-    ) -> Result<event_stream::EventStreamRoot> {
-        Ok(ctx.data::<TiledClient>()?.search_run_container(id).await?)
-    }
-    #[instrument(skip(self, ctx))]
-    async fn container_full(
-        &self,
-        ctx: &Context<'_>,
-        id: Uuid,
-        stream: Option<String>,
-    ) -> Result<container::Container> {
-        Ok(ctx
-            .data::<TiledClient>()?
-            .container_full(id, stream)
-            .await?)
+    async fn data(&self, ctx: &Context<'_>) -> Result<Vec<RunData<'_>>> {
+        let client = ctx.data::<TiledClient>()?;
+        let run_data = client
+            .search(&self.data.id, &[("include_data_sources", "true".into())])
+            .await?;
+        let mut sources = Vec::new();
+        for stream in run_data.data {
+            let stream_data = client
+                .search(
+                    &format!("{}/{}", self.data.id, stream.id),
+                    &[("include_data_sources", "true".into())],
+                )
+                .await?;
+            for dataset in stream_data.data {
+                match dataset.attributes {
+                    NodeAttributes::Array(attrs) => sources.push(RunData::Array(ArrayData {
+                        run: self,
+                        stream: stream.id.clone(),
+                        id: dataset.id,
+                        attrs,
+                    })),
+                    NodeAttributes::Table(attrs) => sources.push(RunData::Internal(TableData {
+                        id: dataset.id,
+                        attrs,
+                    })),
+                    NodeAttributes::Container(_) => {}
+                }
+            }
+        }
+        Ok(sources)
     }
 }
 
@@ -105,7 +201,6 @@ impl TiledQuery {
 mod tests {
     use async_graphql::{EmptyMutation, EmptySubscription, Schema, value};
     use httpmock::MockServer;
-    use uuid::Uuid;
 
     use crate::TiledQuery;
     use crate::clients::TiledClient;
@@ -130,156 +225,6 @@ mod tests {
         let response = schema.execute("{appMetadata { apiVersion } }").await;
 
         assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
-        assert_eq!(response.errors, &[]);
-        mock.assert();
-    }
-    #[tokio::test]
-    async fn run_metadata() {
-        let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET").path(format!("/api/v1/metadata/{id}"));
-                then.status(200)
-                    .body_from_file("resources/metadata_run.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-        let query = r#"{ runMetadata(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
-        let response = schema.execute(query).await;
-        let exp = value! ({
-            "runMetadata": { "data": {"id": "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"}}
-        });
-
-        assert_eq!(response.data, exp);
-        assert_eq!(response.errors, &[]);
-        mock.assert();
-    }
-    #[tokio::test]
-    async fn array_metadata() {
-        let id = Uuid::parse_str("4866611f-e6d9-4517-bedf-fc5526df57ad").unwrap();
-        let stream = "primary";
-        let array = "det";
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET")
-                    .path(format!("/api/v1/metadata/{id}/{stream}/{array}"));
-                then.status(200)
-                    .body_from_file("resources/metadata_array.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-        let query = r#"{ arrayMetadata(id:"4866611f-e6d9-4517-bedf-fc5526df57ad", stream:"primary", array:"det") {data {id}}}"#;
-        let response = schema.execute(query).await;
-        let exp = value! ({
-            "arrayMetadata": { "data": {"id": "det"}}
-        });
-
-        assert_eq!(response.data, exp);
-        assert_eq!(response.errors, &[]);
-        mock.assert();
-    }
-    #[tokio::test]
-    async fn table_metadata() {
-        let id = Uuid::parse_str("4866611f-e6d9-4517-bedf-fc5526df57ad").unwrap();
-        let stream = "primary";
-        let table = "internal";
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET")
-                    .path(format!("/api/v1/metadata/{id}/{stream}/{table}"));
-                then.status(200)
-                    .body_from_file("resources/metadata_table.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-        let query = r#"{ tableMetadata(id:"4866611f-e6d9-4517-bedf-fc5526df57ad", stream:"primary", table:"internal") {data {id}}}"#;
-        let response = schema.execute(query).await;
-        let exp = value! ({
-            "tableMetadata": { "data": {"id": "internal"}}
-        });
-
-        assert_eq!(response.data, exp);
-        assert_eq!(response.errors, &[]);
-        mock.assert();
-    }
-    #[tokio::test]
-    async fn search_root() {
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET").path("/api/v1/search/");
-                then.status(200)
-                    .body_from_file("resources/search_root.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-        let query = r#"{ searchRoot {data{id}}}"#;
-        let response = schema.execute(query).await;
-        let exp = value! ({
-            "searchRoot": { "data": [
-                {"id": "4866611f-e6d9-4517-bedf-fc5526df57ad"},
-                {"id": "1e37c0ed-e87e-470d-be18-9d7f62f69127"},
-                ]
-            }
-        });
-
-        assert_eq!(response.data, exp);
-        assert_eq!(response.errors, &[]);
-        mock.assert();
-    }
-    #[tokio::test]
-    async fn search_run_container() {
-        let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET").path(format!("/api/v1/search/{id}"));
-                then.status(200)
-                    .body_from_file("resources/search_run_container.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-        let query =
-            r#"{searchRunContainer(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498") {data {id}}}"#;
-        let response = schema.execute(query).await;
-        let exp = value! ({
-            "searchRunContainer": { "data": [{"id": "primary"}]}
-        });
-
-        assert_eq!(response.data, exp);
-        assert_eq!(response.errors, &[]);
-        mock.assert();
-    }
-    #[tokio::test]
-    async fn container_full() {
-        let id = Uuid::parse_str("5d8f5c3e-0e00-4c5c-816d-70b4b0f41498").unwrap();
-        let server = MockServer::start();
-        let mock = server
-            .mock_async(|when, then| {
-                when.method("GET")
-                    .path(format!("/api/v1/container/full/{id}"))
-                    .header("accept", "application/json");
-                then.status(200)
-                    .body_from_file("resources/container_snippet.json");
-            })
-            .await;
-        let schema = build_schema(&server.base_url());
-        let query = r#"{containerFull(id: "5d8f5c3e-0e00-4c5c-816d-70b4b0f41498"){contents}}"#;
-        let response = schema.execute(query).await;
-        let exp = value! ({
-            "containerFull": {
-              "contents": {
-                "primary": {
-                  "contents": {},
-                  "metadata": {}
-                }
-              }
-            }
-        });
-        assert_eq!(response.data, exp);
         assert_eq!(response.errors, &[]);
         mock.assert();
     }

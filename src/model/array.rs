@@ -1,38 +1,6 @@
-use std::collections::HashMap;
-
 use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
-use crate::model::node;
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct ArrayMetadataRoot {
-    pub data: ArrayData,
-    pub error: Value,
-    pub links: Option<node::Links>,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct ArrayData {
-    pub id: String,
-    pub attributes: ArrayAttributes,
-    pub links: ArrayLinks,
-    pub meta: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct ArrayAttributes {
-    pub ancestors: Vec<Value>,
-    pub structure_family: String,
-    pub specs: Option<Vec<Value>>,
-    pub metadata: HashMap<String, Value>,
-    pub structure: ArrayStructure,
-    pub access_blob: Value,
-    pub sorting: Value,
-    pub data_sources: Option<Vec<node::DataSource>>,
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
 pub struct ArrayStructure {
@@ -49,23 +17,4 @@ pub struct DataType {
     kind: String,
     itemsize: i64,
     dt_units: Value,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
-pub struct ArrayLinks {
-    #[serde(rename = "self")]
-    #[graphql(name = "self")]
-    pub full: Option<String>,
-    pub block: Option<String>,
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::model::array;
-    use crate::test_utils::assert_readable_as;
-
-    #[test]
-    fn array_metadata() {
-        assert_readable_as::<array::ArrayMetadataRoot>("resources/metadata_array.json");
-    }
 }

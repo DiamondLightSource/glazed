@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt;
 
 use axum::http::HeaderMap;
@@ -5,13 +6,13 @@ use axum::http::HeaderMap;
 use httpmock::MockServer;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
-use tracing::{info, instrument};
-use uuid::Uuid;
+use tracing::{debug, info, instrument};
 
-use crate::model::{app, array, container, event_stream, run, table};
+use crate::model::{app, node, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
+#[derive(Clone)]
 pub struct TiledClient {
     client: Client,
     address: Url,
@@ -19,6 +20,11 @@ pub struct TiledClient {
 
 impl TiledClient {
     pub fn new(address: Url) -> Self {
+        if address.cannot_be_a_base() {
+            // Panicking is not great but if we've got this far, nothing else is going to work so
+            // bail out early.
+            panic!("Invalid tiled URL");
+        }
         Self {
             client: Client::new(),
             address,
@@ -29,9 +35,8 @@ impl TiledClient {
         &self,
         endpoint: &str,
         headers: Option<HeaderMap>,
-        query_params: Option<&[(&str, &str)]>,
+        query_params: Option<&[(&str, Cow<'_, str>)]>,
     ) -> ClientResult<T> {
-        info!("Requesting from tiled: {}", endpoint);
         let url = self.address.join(endpoint)?;
 
         let mut request = match headers {
@@ -39,7 +44,7 @@ impl TiledClient {
             None => self.client.get(url),
         };
         if let Some(params) = query_params {
-            request = request.query(params);
+            request = request.query(&params);
         }
         info!("Querying: {request:?}");
 
@@ -50,84 +55,59 @@ impl TiledClient {
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
         self.request("/api/v1/", None, None).await
     }
-    pub async fn run_metadata(&self, id: Uuid) -> ClientResult<run::RunMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}"), None, None)
+    pub async fn search(
+        &self,
+        path: &str,
+        query: &[(&str, Cow<'_, str>)],
+    ) -> ClientResult<node::Root> {
+        self.request(&format!("api/v1/search/{}", path), None, Some(query))
             .await
-    }
-    pub async fn event_stream_metadata(
-        &self,
-        id: Uuid,
-        stream: String,
-    ) -> ClientResult<event_stream::EventStreamMetadataRoot> {
-        self.request(&format!("/api/v1/metadata/{id}/{stream}"), None, None)
-            .await
-    }
-    pub async fn array_metadata(
-        &self,
-        id: Uuid,
-        stream: String,
-        array: String,
-    ) -> ClientResult<array::ArrayMetadataRoot> {
-        self.request(
-            &format!("/api/v1/metadata/{id}/{stream}/{array}"),
-            None,
-            Some(&[("include_data_sources", "true")]),
-        )
-        .await
-    }
-    pub async fn table_metadata(
-        &self,
-        id: Uuid,
-        stream: String,
-        table: String,
-    ) -> ClientResult<table::TableMetadataRoot> {
-        self.request(
-            &format!("/api/v1/metadata/{id}/{stream}/{table}"),
-            None,
-            Some(&[("include_data_sources", "true")]),
-        )
-        .await
     }
     pub async fn table_full(
         &self,
-        id: Uuid,
-        stream: String,
-        table: String,
+        path: &str,
+        columns: Option<Vec<String>>,
     ) -> ClientResult<table::Table> {
         let mut headers = HeaderMap::new();
         headers.insert("accept", "application/json".parse().unwrap());
+        let query = columns.map(|columns| {
+            columns
+                .into_iter()
+                .map(|col| ("column", col.into()))
+                .collect::<Vec<_>>()
+        });
 
         self.request(
-            &format!("/api/v1/table/full/{id}/{stream}/{table}"),
+            &format!("/api/v1/table/full/{}", path),
             Some(headers),
-            None,
+            query.as_deref(),
         )
         .await
     }
-    pub async fn search_root(&self) -> ClientResult<run::RunRoot> {
-        self.request("/api/v1/search/", None, None).await
-    }
-    pub async fn search_run_container(
+
+    pub(crate) async fn download(
         &self,
-        id: Uuid,
-    ) -> ClientResult<event_stream::EventStreamRoot> {
-        self.request(&format!("/api/v1/search/{id}"), None, None)
+        run: String,
+        stream: String,
+        det: String,
+        id: u32,
+    ) -> reqwest::Result<reqwest::Response> {
+        let mut url = self
+            .address
+            .join("/api/v1/asset/bytes")
+            .expect("Base address was cannot_be_a_base");
+        url.path_segments_mut()
+            .expect("Base address was cannot_be_a_base")
+            .push(&run)
+            .push(&stream)
+            .push(&det);
+
+        debug!("Downloading id={id} from {url}");
+        self.client
+            .get(url)
+            .query(&[("id", &id.to_string())])
+            .send()
             .await
-    }
-    pub async fn container_full(
-        &self,
-        id: Uuid,
-        stream: Option<String>,
-    ) -> ClientResult<container::Container> {
-        let mut headers = HeaderMap::new();
-        headers.insert("accept", "application/json".parse().unwrap());
-
-        let endpoint = match stream {
-            Some(stream) => &format!("/api/v1/container/full/{id}/{stream}"),
-            None => &format!("/api/v1/container/full/{id}"),
-        };
-
-        self.request(endpoint, Some(headers), None).await
     }
 
     /// Create a new client for the given mock server

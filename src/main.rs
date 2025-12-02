@@ -1,5 +1,3 @@
-use std::error;
-
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
@@ -9,6 +7,7 @@ use axum::{Extension, Router};
 mod cli;
 mod clients;
 mod config;
+mod download;
 mod handlers;
 mod model;
 #[cfg(test)]
@@ -25,7 +24,7 @@ use crate::handlers::{graphiql_handler, graphql_handler};
 use crate::model::TiledQuery;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn error::Error>> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let subscriber = tracing_subscriber::FmtSubscriber::new();
     tracing::subscriber::set_global_default(subscriber)?;
 
@@ -45,14 +44,18 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     }
 }
 
-async fn serve(config: GlazedConfig) -> Result<(), Box<dyn error::Error>> {
+async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
+    let client = TiledClient::new(config.tiled_client.address);
     let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
-        .data(TiledClient::new(config.tiled_client.address))
+        .data(config.bind_address)
+        .data(client.clone())
         .finish();
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
         .route("/graphiql", get(graphiql_handler))
+        .route("/asset/{run}/{stream}/{det}/{id}", get(download::download))
+        .with_state(client)
         .fallback((
             StatusCode::NOT_FOUND,
             Html(include_str!("../static/404.html")),
