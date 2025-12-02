@@ -93,6 +93,7 @@ impl TiledClient {
         stream: String,
         det: String,
         id: u32,
+        headers: Option<HeaderMap>,
     ) -> reqwest::Result<reqwest::Response> {
         let mut url = self
             .address
@@ -107,6 +108,7 @@ impl TiledClient {
         debug!("Downloading id={id} from {url}");
         self.client
             .get(url)
+            .headers(headers.unwrap_or_default())
             .query(&[("id", &id.to_string())])
             .send()
             .await

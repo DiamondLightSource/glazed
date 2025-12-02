@@ -28,11 +28,13 @@ pub async fn graphiql_handler() -> impl IntoResponse {
 }
 
 pub async fn download_handler(
+    auth: Option<AuthHeader>,
     State(client): State<TiledClient>,
     Path((run, stream, det, id)): Path<(String, String, String, u32)>,
 ) -> (StatusCode, HeaderMap, Body) {
     info!("Downloading {run}/{stream}/{det}/{id}");
-    let req = client.download(run, stream, det, id).await;
+    let headers = auth.as_ref().map(AuthHeader::as_header_map);
+    let req = client.download(run, stream, det, id, headers).await;
     crate::download::forward_download_response(req).await
 }
 
