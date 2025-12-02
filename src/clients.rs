@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 use std::fmt;
 
-use axum::http::HeaderMap;
 #[cfg(test)]
 use httpmock::MockServer;
+use reqwest::header::HeaderMap;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use tracing::{debug, info, instrument};
@@ -58,17 +58,19 @@ impl TiledClient {
     pub async fn search(
         &self,
         path: &str,
+        headers: Option<HeaderMap>,
         query: &[(&str, Cow<'_, str>)],
     ) -> ClientResult<node::Root> {
-        self.request(&format!("api/v1/search/{}", path), None, Some(query))
+        self.request(&format!("api/v1/search/{}", path), headers, Some(query))
             .await
     }
     pub async fn table_full(
         &self,
         path: &str,
         columns: Option<Vec<String>>,
+        headers: Option<HeaderMap>,
     ) -> ClientResult<table::Table> {
-        let mut headers = HeaderMap::new();
+        let mut headers = headers.unwrap_or_default();
         headers.insert("accept", "application/json".parse().unwrap());
         let query = columns.map(|columns| {
             columns

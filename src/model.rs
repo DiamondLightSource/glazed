@@ -14,6 +14,7 @@ use serde_json::Value;
 use tracing::{info, instrument};
 
 use crate::clients::TiledClient;
+use crate::handlers::AuthHeader;
 use crate::model::node::NodeAttributes;
 
 pub(crate) struct TiledQuery;
@@ -40,10 +41,13 @@ impl InstrumentSession {
         &self.name
     }
     async fn runs(&self, ctx: &Context<'_>) -> Result<Vec<Run>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
         let root = ctx
             .data::<TiledClient>()?
             .search(
                 "",
+                headers,
                 &[
                     (
                         "filter[eq][condition][key]",
@@ -132,6 +136,8 @@ impl TableData {
         ctx: &Context<'_>,
         columns: Option<Vec<String>>,
     ) -> Result<HashMap<String, Vec<Value>>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
         let client = ctx.data::<TiledClient>()?;
         let p = self
             .attrs
@@ -143,7 +149,7 @@ impl TableData {
             .join("/");
         info!("path: {:?}", p);
 
-        let table_data = client.table_full(&p, columns).await?;
+        let table_data = client.table_full(&p, columns, headers).await?;
         Ok(table_data)
     }
 }
@@ -165,15 +171,22 @@ impl Run {
         &self.data.id
     }
     async fn data(&self, ctx: &Context<'_>) -> Result<Vec<RunData<'_>>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
         let client = ctx.data::<TiledClient>()?;
         let run_data = client
-            .search(&self.data.id, &[("include_data_sources", "true".into())])
+            .search(
+                &self.data.id,
+                headers.clone(),
+                &[("include_data_sources", "true".into())],
+            )
             .await?;
         let mut sources = Vec::new();
         for stream in run_data.data {
             let stream_data = client
                 .search(
                     &format!("{}/{}", self.data.id, stream.id),
+                    headers.clone(),
                     &[("include_data_sources", "true".into())],
                 )
                 .await?;
