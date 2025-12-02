@@ -225,8 +225,4 @@ mod tests {
         assert_eq!(response.errors, &[]);
         mock.assert();
     }
-    #[tokio::test]
-    async fn instrument_session() {
-        todo!();
-    }
 }
