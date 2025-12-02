@@ -72,3 +72,56 @@ where
             .map(|value| Self(value.clone())))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use axum::Router;
+    use axum::body::Body;
+    use axum::http::Request;
+    use axum::response::IntoResponse;
+    use axum::routing::get;
+    use http_body_util::BodyExt as _;
+    use tower::ServiceExt;
+
+    use super::AuthHeader;
+
+    async fn auth_echo(auth: Option<AuthHeader>) -> impl IntoResponse {
+        match auth {
+            Some(header) => header.0.to_str().unwrap().to_owned(),
+            None => "No auth".to_owned(),
+        }
+    }
+    fn app() -> Router {
+        Router::new().route("/", get(auth_echo))
+    }
+    #[tokio::test]
+    async fn auth_extract() {
+        let app = app();
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/")
+                    .header("Authorization", "auth_value")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.into_body().collect().await.unwrap().to_bytes(),
+            "auth_value"
+        );
+    }
+    #[tokio::test]
+    async fn no_auth_extract() {
+        let app = app();
+        let response = app
+            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(
+            response.into_body().collect().await.unwrap().to_bytes(),
+            "No auth"
+        );
+    }
+}
