@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt;
 
 use axum::http::HeaderMap;
@@ -34,7 +35,7 @@ impl TiledClient {
         &self,
         endpoint: &str,
         headers: Option<HeaderMap>,
-        query_params: Option<&[(&str, &str)]>,
+        query_params: Option<&[(&str, Cow<'_, str>)]>,
     ) -> ClientResult<T> {
         let url = self.address.join(endpoint)?;
 
@@ -43,7 +44,7 @@ impl TiledClient {
             None => self.client.get(url),
         };
         if let Some(params) = query_params {
-            request = request.query(params);
+            request = request.query(&params);
         }
         info!("Querying: {request:?}");
 
@@ -57,23 +58,29 @@ impl TiledClient {
     pub async fn search<T: DeserializeOwned>(
         &self,
         path: &str,
-        query: &[(&str, &str)],
+        query: &[(&str, Cow<'_, str>)],
     ) -> ClientResult<T> {
         self.request(&format!("api/v1/search/{}", path), None, Some(query))
             .await
     }
-    pub async fn table_full(&self, path: &str, columns: Vec<String>) -> ClientResult<table::Table> {
+    pub async fn table_full(
+        &self,
+        path: &str,
+        columns: Option<Vec<String>>,
+    ) -> ClientResult<table::Table> {
         let mut headers = HeaderMap::new();
         headers.insert("accept", "application/json".parse().unwrap());
-        let query = columns
-            .iter()
-            .map(|col| ("column", col.as_str()))
-            .collect::<Vec<_>>();
+        let query = columns.map(|columns| {
+            columns
+                .into_iter()
+                .map(|col| ("column", col.into()))
+                .collect::<Vec<_>>()
+        });
 
         self.request(
             &format!("/api/v1/table/full/{}", path),
             Some(headers),
-            Some(&query),
+            query.as_deref(),
         )
         .await
     }

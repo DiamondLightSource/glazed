@@ -45,12 +45,15 @@ impl InstrumentSession {
             .search::<node::Root>(
                 "",
                 &[
-                    ("filter[eq][condition][key]", "start.instrument_session"),
+                    (
+                        "filter[eq][condition][key]",
+                        "start.instrument_session".into(),
+                    ),
                     (
                         "filter[eq][condition][value]",
-                        &format!(r#""{}""#, self.name),
+                        format!(r#""{}""#, self.name).into(),
                     ),
-                    ("include_data_sources", "true"),
+                    ("include_data_sources", "true".into()),
                 ],
             )
             .await?;
@@ -127,7 +130,7 @@ impl TableData {
     async fn data(
         &self,
         ctx: &Context<'_>,
-        columns: Vec<String>,
+        columns: Option<Vec<String>>,
     ) -> Result<HashMap<String, Vec<Value>>> {
         let client = ctx.data::<TiledClient>()?;
         let p = self
@@ -171,7 +174,7 @@ impl Run {
             let stream_data = client
                 .search::<node::Root>(
                     &format!("{}/{}", self.data.id, stream.id),
-                    &[("include_data_sources", "true")],
+                    &[("include_data_sources", "true".into())],
                 )
                 .await?;
             for dataset in stream_data.data {
