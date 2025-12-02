@@ -49,6 +49,13 @@ impl AuthHeader {
     }
 }
 
+#[cfg(test)]
+impl From<HeaderValue> for AuthHeader {
+    fn from(value: HeaderValue) -> Self {
+        Self(value)
+    }
+}
+
 impl<S> OptionalFromRequestParts<S> for AuthHeader
 where
     S: Send + Sync,
