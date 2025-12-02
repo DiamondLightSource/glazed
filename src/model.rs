@@ -42,7 +42,7 @@ impl InstrumentSession {
     async fn runs(&self, ctx: &Context<'_>) -> Result<Vec<Run>> {
         let root = ctx
             .data::<TiledClient>()?
-            .search::<node::Root>(
+            .search(
                 "",
                 &[
                     (
@@ -167,12 +167,12 @@ impl Run {
     async fn data(&self, ctx: &Context<'_>) -> Result<Vec<RunData<'_>>> {
         let client = ctx.data::<TiledClient>()?;
         let run_data = client
-            .search::<node::Root>(&self.data.id, &[("include_data_sources", "true")])
+            .search(&self.data.id, &[("include_data_sources", "true".into())])
             .await?;
         let mut sources = Vec::new();
         for stream in run_data.data {
             let stream_data = client
-                .search::<node::Root>(
+                .search(
                     &format!("{}/{}", self.data.id, stream.id),
                     &[("include_data_sources", "true".into())],
                 )

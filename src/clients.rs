@@ -8,7 +8,7 @@ use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use tracing::{debug, info, instrument};
 
-use crate::model::{app, table};
+use crate::model::{app, node, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
@@ -55,11 +55,11 @@ impl TiledClient {
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
         self.request("/api/v1/", None, None).await
     }
-    pub async fn search<T: DeserializeOwned>(
+    pub async fn search(
         &self,
         path: &str,
         query: &[(&str, Cow<'_, str>)],
-    ) -> ClientResult<T> {
+    ) -> ClientResult<node::Root> {
         self.request(&format!("api/v1/search/{}", path), None, Some(query))
             .await
     }
