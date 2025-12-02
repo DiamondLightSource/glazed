@@ -1,10 +1,7 @@
 use axum::body::Body;
-use axum::extract::{Path, State};
 use axum::http::{HeaderMap, StatusCode};
 use serde_json::{Value, json};
-use tracing::{error, info};
-
-use crate::clients::TiledClient;
+use tracing::error;
 
 const FORWARDED_HEADERS: [&str; 4] = [
     "content-disposition",
@@ -13,16 +10,7 @@ const FORWARDED_HEADERS: [&str; 4] = [
     "last-modified",
 ];
 
-pub async fn download(
-    State(client): State<TiledClient>,
-    Path((run, stream, det, id)): Path<(String, String, String, u32)>,
-) -> (StatusCode, HeaderMap, Body) {
-    info!("Downloading {run}/{stream}/{det}/{id}");
-    let req = client.download(run, stream, det, id).await;
-    forward_download_response(req).await
-}
-
-async fn forward_download_response(
+pub async fn forward_download_response(
     response: Result<reqwest::Response, reqwest::Error>,
 ) -> (StatusCode, HeaderMap, Body) {
     match response {

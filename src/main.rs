@@ -20,7 +20,7 @@ use tracing::info;
 
 use crate::clients::TiledClient;
 use crate::config::GlazedConfig;
-use crate::handlers::{graphiql_handler, graphql_handler};
+use crate::handlers::{download_handler, graphiql_handler, graphql_handler};
 use crate::model::TiledQuery;
 
 #[tokio::main]
@@ -54,7 +54,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
         .route("/graphiql", get(graphiql_handler))
-        .route("/asset/{run}/{stream}/{det}/{id}", get(download::download))
+        .route("/asset/{run}/{stream}/{det}/{id}", get(download_handler))
         .with_state(client)
         .fallback((
             StatusCode::NOT_FOUND,
