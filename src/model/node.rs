@@ -6,9 +6,12 @@ use serde_json::Value;
 
 use crate::model::{array, container, table};
 
+pub type Root = Response<Vec<Data>>;
+pub type Metadata = Response<Data>;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Root {
-    pub data: Vec<Data>,
+pub struct Response<D> {
+    pub data: D,
     pub error: Value,
     pub links: Option<Links>,
     pub meta: Value,
