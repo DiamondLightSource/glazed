@@ -13,7 +13,7 @@ use serde_json::Value;
 use tracing::{info, instrument};
 
 use crate::RootAddress;
-use crate::clients::TiledClient;
+use crate::clients::{ClientError, TiledClient};
 use crate::handlers::AuthHeader;
 use crate::model::node::NodeAttributes;
 
@@ -29,6 +29,18 @@ impl TiledQuery {
     async fn instrument_session(&self, name: String) -> InstrumentSession {
         InstrumentSession { name }
     }
+
+    async fn run(&self, ctx: &Context<'_>, id: String) -> Result<Option<Run>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
+        match ctx.data::<TiledClient>()?.metadata(id, headers).await {
+            Ok(run) => Ok(Some(Run {
+                data: run.into_data(),
+            })),
+            Err(ClientError::ServerError(e)) if e.status().is_some_and(|sc| sc == 404) => Ok(None),
+            Err(other) => Err(other.into()),
+        }
+    }
 }
 
 struct InstrumentSession {
@@ -40,6 +52,36 @@ impl InstrumentSession {
     async fn name(&self) -> &str {
         &self.name
     }
+
+    async fn run(&self, ctx: &Context<'_>, scan_number: u32) -> Result<Option<Run>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
+        let run_root = ctx
+            .data::<TiledClient>()?
+            .search(
+                "",
+                headers,
+                &[
+                    (
+                        "filter[eq][condition][key]",
+                        "start.instrument_session".into(),
+                    ),
+                    (
+                        "filter[eq][condition][value]",
+                        format!(r#""{}""#, self.name).into(),
+                    ),
+                    ("filter[eq][condition][key]", "start.scan_id".into()),
+                    (
+                        "filter[eq][condition][value]",
+                        scan_number.to_string().into(),
+                    ),
+                    ("include_data_sources", "true".into()),
+                ],
+            )
+            .await?;
+        Ok(run_root.into_data().next().map(|data| Run { data }))
+    }
+
     async fn runs(&self, ctx: &Context<'_>) -> Result<Vec<Run>> {
         let auth = ctx.data::<Option<AuthHeader>>()?;
         let headers = auth.as_ref().map(AuthHeader::as_header_map);
