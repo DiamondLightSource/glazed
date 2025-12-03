@@ -48,9 +48,14 @@ impl TiledClient {
         }
         info!("Querying: {request:?}");
 
-        let response = request.send().await?.error_for_status()?;
+        let response = request.send().await?;
+        let status = response.status().as_u16();
         let body = response.text().await?;
-        serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body))
+        match status {
+            400..500 => Err(ClientError::TiledRequest(status, body)),
+            500..600 => Err(ClientError::TiledInternal(status, body)),
+            _ => serde_json::from_str(&body).map_err(|e| ClientError::InvalidResponse(e, body)),
+        }
     }
     pub async fn app_metadata(&self) -> ClientResult<app::AppMetadata> {
         self.request("/api/v1/", None, None).await
@@ -130,6 +135,8 @@ pub enum ClientError {
     InvalidPath(url::ParseError),
     ServerError(reqwest::Error),
     InvalidResponse(serde_json::Error, String),
+    TiledInternal(u16, String),
+    TiledRequest(u16, String),
 }
 impl From<url::ParseError> for ClientError {
     fn from(err: url::ParseError) -> ClientError {
@@ -147,6 +154,12 @@ impl std::fmt::Display for ClientError {
         match self {
             ClientError::InvalidPath(err) => write!(f, "Invalid URL path: {}", err),
             ClientError::ServerError(err) => write!(f, "Tiled server error: {}", err),
+            ClientError::TiledInternal(sc, message) => {
+                write!(f, "Internal tiled error: {sc} - {message}")
+            }
+            ClientError::TiledRequest(sc, message) => {
+                write!(f, "Request Error: {sc} - {message}")
+            }
             ClientError::InvalidResponse(err, actual) => {
                 write!(f, "Invalid response: {err}, response: {actual}")
             }
