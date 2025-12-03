@@ -61,7 +61,7 @@ impl InstrumentSession {
                 ],
             )
             .await?;
-        Ok(root.data.into_iter().map(|d| Run { data: d }).collect())
+        Ok(root.into_data().map(|d| Run { data: d }).collect())
     }
 }
 
@@ -182,7 +182,7 @@ impl Run {
             )
             .await?;
         let mut sources = Vec::new();
-        for stream in run_data.data {
+        for stream in run_data.data() {
             let stream_data = client
                 .search(
                     &format!("{}/{}", self.data.id, stream.id),
@@ -190,7 +190,7 @@ impl Run {
                     &[("include_data_sources", "true".into())],
                 )
                 .await?;
-            for dataset in stream_data.data {
+            for dataset in stream_data.into_data() {
                 match dataset.attributes {
                     NodeAttributes::Array(attrs) => sources.push(RunData::Array(ArrayData {
                         run: self,
