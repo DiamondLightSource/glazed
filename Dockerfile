@@ -19,7 +19,7 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 COPY ./static ./static
 COPY ./src ./src
 
-RUN cargo build --release --target x86_64-unknown-linux-musl
+RUN touch src/main.rs && cargo build --release --target x86_64-unknown-linux-musl
 
 ENTRYPOINT ["/build/target/x86_64-unknown-linux-musl/release/glazed"]
 CMD ["serve"]
