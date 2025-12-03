@@ -48,8 +48,8 @@ impl DataOption {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Data {
     pub id: String,
-    pub attributes: NodeAttributes,
-    pub links: Links,
+    pub attributes: Box<NodeAttributes>,
+    pub links: Box<Links>,
     pub meta: Value,
 }
 

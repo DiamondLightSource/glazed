@@ -161,7 +161,7 @@ struct Run {
 #[Object]
 impl Run {
     async fn scan_number(&self) -> Option<i64> {
-        if let NodeAttributes::Container(attr) = &self.data.attributes {
+        if let NodeAttributes::Container(attr) = &*self.data.attributes {
             attr.metadata.start_doc().map(|sd| sd.scan_id)
         } else {
             None
@@ -191,7 +191,7 @@ impl Run {
                 )
                 .await?;
             for dataset in stream_data.into_data() {
-                match dataset.attributes {
+                match *dataset.attributes {
                     NodeAttributes::Array(attrs) => sources.push(RunData::Array(ArrayData {
                         run: self,
                         stream: stream.id.clone(),
