@@ -23,8 +23,12 @@ pub async fn graphql_handler(
         .into()
 }
 
-pub async fn graphiql_handler() -> impl IntoResponse {
-    Html(GraphiQLSource::build().endpoint("/graphql").finish())
+pub async fn graphiql_handler(graphql_endpoint: Option<String>) -> impl IntoResponse {
+    Html(
+        GraphiQLSource::build()
+            .endpoint(graphql_endpoint.as_deref().unwrap_or("/graphql"))
+            .finish(),
+    )
 }
 
 pub async fn download_handler(

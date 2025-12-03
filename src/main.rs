@@ -51,9 +51,11 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
         .data(client.clone())
         .finish();
 
+    let graphql_endpoint = config.public_address.map(|u| u.to_string());
+
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
-        .route("/graphiql", get(graphiql_handler))
+        .route("/graphiql", get(|| graphiql_handler(graphql_endpoint)))
         .route("/asset/{run}/{stream}/{det}/{id}", get(download_handler))
         .with_state(client)
         .fallback((
