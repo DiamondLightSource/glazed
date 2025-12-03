@@ -135,6 +135,16 @@ impl TableData {
         &self,
         ctx: &Context<'_>,
         columns: Option<Vec<String>>,
+    ) -> Option<Result<HashMap<String, Vec<Value>>>> {
+        Some(self.inner_data(ctx, columns).await)
+    }
+}
+
+impl TableData {
+    async fn inner_data(
+        &self,
+        ctx: &Context<'_>,
+        columns: Option<Vec<String>>,
     ) -> Result<HashMap<String, Vec<Value>>> {
         let auth = ctx.data::<Option<AuthHeader>>()?;
         let headers = auth.as_ref().map(AuthHeader::as_header_map);
