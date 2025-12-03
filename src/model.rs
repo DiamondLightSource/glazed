@@ -14,6 +14,7 @@ use serde_json::Value;
 use tracing::{info, instrument};
 
 use crate::clients::TiledClient;
+use crate::handlers::AuthHeader;
 use crate::model::node::NodeAttributes;
 
 pub(crate) struct TiledQuery;
@@ -40,10 +41,13 @@ impl InstrumentSession {
         &self.name
     }
     async fn runs(&self, ctx: &Context<'_>) -> Result<Vec<Run>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
         let root = ctx
             .data::<TiledClient>()?
             .search(
                 "",
+                headers,
                 &[
                     (
                         "filter[eq][condition][key]",
@@ -132,6 +136,8 @@ impl TableData {
         ctx: &Context<'_>,
         columns: Option<Vec<String>>,
     ) -> Result<HashMap<String, Vec<Value>>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
         let client = ctx.data::<TiledClient>()?;
         let p = self
             .attrs
@@ -143,7 +149,7 @@ impl TableData {
             .join("/");
         info!("path: {:?}", p);
 
-        let table_data = client.table_full(&p, columns).await?;
+        let table_data = client.table_full(&p, columns, headers).await?;
         Ok(table_data)
     }
 }
@@ -165,15 +171,22 @@ impl Run {
         &self.data.id
     }
     async fn data(&self, ctx: &Context<'_>) -> Result<Vec<RunData<'_>>> {
+        let auth = ctx.data::<Option<AuthHeader>>()?;
+        let headers = auth.as_ref().map(AuthHeader::as_header_map);
         let client = ctx.data::<TiledClient>()?;
         let run_data = client
-            .search(&self.data.id, &[("include_data_sources", "true".into())])
+            .search(
+                &self.data.id,
+                headers.clone(),
+                &[("include_data_sources", "true".into())],
+            )
             .await?;
         let mut sources = Vec::new();
         for stream in run_data.data {
             let stream_data = client
                 .search(
                     &format!("{}/{}", self.data.id, stream.id),
+                    headers.clone(),
                     &[("include_data_sources", "true".into())],
                 )
                 .await?;
@@ -200,10 +213,13 @@ impl Run {
 #[cfg(test)]
 mod tests {
     use async_graphql::{EmptyMutation, EmptySubscription, Schema, value};
+    use axum::http::HeaderValue;
     use httpmock::MockServer;
+    use serde_json::json;
 
     use crate::TiledQuery;
     use crate::clients::TiledClient;
+    use crate::handlers::AuthHeader;
 
     fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
         Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
@@ -227,5 +243,37 @@ mod tests {
         assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
         assert_eq!(response.errors, &[]);
         mock.assert();
+    }
+
+    #[tokio::test]
+    async fn auth_forwarding() {
+        let server = MockServer::start();
+        let mock_instrument_session = server
+            .mock_async(|when, then| {
+                when.method("GET")
+                    .path("/api/v1/search/")
+                    .query_param("filter[eq][condition][key]", "start.instrument_session")
+                    .query_param("filter[eq][condition][value]", r#""cm12345-6""#)
+                    .header("Authorization", "auth_value");
+                then.status(200).json_body(json!({
+                    "data": [],
+                    "error": null,
+                    "links": {"self":""},
+                    "meta": {}
+                }));
+            })
+            .await;
+        let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+            .data(TiledClient::new(server.base_url().parse().unwrap()))
+            .data(Some(AuthHeader::from(HeaderValue::from_static(
+                "auth_value",
+            ))))
+            .finish();
+        let response = schema
+            .execute(r#"{ instrumentSession(name: "cm12345-6"){ runs { id }}}"#)
+            .await;
+        assert_eq!(response.errors, &[]);
+        assert_eq!(response.data, value!({"instrumentSession": {"runs": []}}));
+        mock_instrument_session.assert();
     }
 }
