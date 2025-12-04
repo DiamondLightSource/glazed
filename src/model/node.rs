@@ -10,7 +10,6 @@ use crate::model::{array, container, table};
 pub struct Root {
     data: Vec<DataOption>,
     pub error: Value,
-    pub links: Option<Links>,
     pub meta: Value,
 }
 
@@ -49,7 +48,6 @@ impl DataOption {
 pub struct Data {
     pub id: String,
     pub attributes: Box<NodeAttributes>,
-    pub links: Box<Links>,
     pub meta: Value,
 }
 
@@ -110,19 +108,4 @@ pub struct Asset {
     parameter: Option<String>,
     num: Option<i64>,
     pub id: Option<i64>,
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Links {
-    #[serde(rename = "self")]
-    pub self_field: String,
-    pub documentation: Option<String>,
-    pub first: Option<String>,
-    pub last: Option<String>,
-    pub next: Option<String>,
-    pub prev: Option<String>,
-    pub search: Option<String>,
-    pub full: Option<String>,
-    pub block: Option<String>,
-    pub partition: Option<String>,
 }
