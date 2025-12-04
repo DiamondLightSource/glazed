@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 
-use async_graphql::SimpleObject;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::Value;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct RunMetadata {
     pub start: Start,
     pub stop: Option<Stop>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Start {
     pub uid: Uuid,
     pub time: f64,
@@ -32,19 +31,19 @@ pub struct Start {
     pub shape: Vec<i64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Versions {
     pub ophyd: String,
     pub ophyd_async: String,
     pub bluesky: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Hints {
     pub dimensions: Vec<HintDimension>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct HintDimension {
     pub axes: Vec<String>,
     pub stream: String,
@@ -60,7 +59,7 @@ impl<'de> Deserialize<'de> for HintDimension {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Stop {
     pub uid: Uuid,
     pub time: f64,

@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use async_graphql::{Enum, SimpleObject};
-use serde::{Deserialize, Serialize};
+use async_graphql::Enum;
+use serde::Deserialize;
 use serde_json::Value;
 
 use crate::model::{array, container, table};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize)]
 pub struct Root {
     data: Vec<DataOption>,
     pub error: Value,
@@ -23,7 +23,7 @@ impl Root {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum DataOption {
     Data(Data),
@@ -45,7 +45,7 @@ impl DataOption {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Data {
     pub id: String,
     pub attributes: Box<NodeAttributes>,
@@ -53,7 +53,7 @@ pub struct Data {
     pub meta: Value,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(tag = "structure_family", rename_all = "lowercase")]
 pub enum NodeAttributes {
     Container(Attributes<container::ContainerMetadata, container::ContainerStructure>),
@@ -61,7 +61,7 @@ pub enum NodeAttributes {
     Table(Attributes<HashMap<String, Value>, table::TableStructure>),
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Attributes<Meta, S> {
     pub ancestors: Vec<String>,
     pub specs: Vec<Spec>,
@@ -72,19 +72,19 @@ pub struct Attributes<Meta, S> {
     pub data_sources: Option<Vec<DataSource<S>>>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Spec {
     pub name: String,
     pub version: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Sorting {
     pub key: String,
     pub direction: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct DataSource<S> {
     pub structure: S,
     pub id: Option<u64>,
@@ -94,7 +94,7 @@ pub struct DataSource<S> {
     management: Management,
 }
 
-#[derive(Enum, Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Enum, Debug, Copy, Clone, Eq, PartialEq, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Management {
     External,
@@ -103,7 +103,7 @@ pub enum Management {
     Writable,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Asset {
     pub data_uri: String,
     is_directory: bool,
@@ -112,10 +112,9 @@ pub struct Asset {
     pub id: Option<i64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Links {
     #[serde(rename = "self")]
-    #[graphql(name = "self")]
     pub self_field: String,
     pub documentation: Option<String>,
     pub first: Option<String>,
