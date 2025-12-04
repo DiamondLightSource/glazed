@@ -6,19 +6,50 @@ use serde_json::Value;
 
 use crate::model::{array, container, table};
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Root {
-    pub data: Vec<Data>,
+    data: Vec<DataOption>,
     pub error: Value,
     pub links: Option<Links>,
     pub meta: Value,
 }
 
+impl Root {
+    pub fn data(&self) -> impl Iterator<Item = &Data> {
+        self.data.iter().flat_map(DataOption::as_data)
+    }
+    pub fn into_data(self) -> impl Iterator<Item = Data> {
+        self.data.into_iter().flat_map(DataOption::into_data)
+    }
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum DataOption {
+    Data(Data),
+    Error(Value),
+}
+
+impl DataOption {
+    pub fn as_data(&self) -> Option<&Data> {
+        match self {
+            Self::Data(data) => Some(data),
+            Self::Error(_) => None,
+        }
+    }
+    pub fn into_data(self) -> Option<Data> {
+        match self {
+            Self::Data(data) => Some(data),
+            Self::Error(_) => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Data {
     pub id: String,
-    pub attributes: NodeAttributes,
-    pub links: Links,
+    pub attributes: Box<NodeAttributes>,
+    pub links: Box<Links>,
     pub meta: Value,
 }
 

@@ -61,7 +61,7 @@ impl InstrumentSession {
                 ],
             )
             .await?;
-        Ok(root.data.into_iter().map(|d| Run { data: d }).collect())
+        Ok(root.into_data().map(|d| Run { data: d }).collect())
     }
 }
 
@@ -161,7 +161,7 @@ struct Run {
 #[Object]
 impl Run {
     async fn scan_number(&self) -> Option<i64> {
-        if let NodeAttributes::Container(attr) = &self.data.attributes {
+        if let NodeAttributes::Container(attr) = &*self.data.attributes {
             attr.metadata.start_doc().map(|sd| sd.scan_id)
         } else {
             None
@@ -182,7 +182,7 @@ impl Run {
             )
             .await?;
         let mut sources = Vec::new();
-        for stream in run_data.data {
+        for stream in run_data.data() {
             let stream_data = client
                 .search(
                     &format!("{}/{}", self.data.id, stream.id),
@@ -190,8 +190,8 @@ impl Run {
                     &[("include_data_sources", "true".into())],
                 )
                 .await?;
-            for dataset in stream_data.data {
-                match dataset.attributes {
+            for dataset in stream_data.into_data() {
+                match *dataset.attributes {
                     NodeAttributes::Array(attrs) => sources.push(RunData::Array(ArrayData {
                         run: self,
                         stream: stream.id.clone(),
@@ -223,6 +223,7 @@ mod tests {
 
     fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
         Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+            .data(Option::<AuthHeader>::None)
             .data(TiledClient::new(url.parse().unwrap()))
             .finish()
     }
@@ -243,6 +244,35 @@ mod tests {
         assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
         assert_eq!(response.errors, &[]);
         mock.assert();
+    }
+
+    #[tokio::test]
+    async fn invalid_runs() {
+        let server = MockServer::start();
+        let mock_root = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/search/");
+                then.status(200)
+                    // File has two run entries where one is not deserializable
+                    .body_from_file("resources/search_root_errors.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let response = schema
+            .execute(
+                r#"{instrumentSession(name: "cm12345-2") {
+                    runs {
+                        id
+                    }
+                }}"#,
+            )
+            .await;
+        assert_eq!(response.errors, &[]);
+        assert_eq!(
+            response.data,
+            value!({"instrumentSession": {"runs": [{"id": "1e37c0ed-e87e-470d-be18-9d7f62f69127"}]}})
+        );
+        mock_root.assert_async().await;
     }
 
     #[tokio::test]
