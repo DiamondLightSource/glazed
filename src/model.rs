@@ -223,6 +223,7 @@ mod tests {
 
     fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
         Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+            .data(Option::<AuthHeader>::None)
             .data(TiledClient::new(url.parse().unwrap()))
             .finish()
     }
@@ -243,6 +244,35 @@ mod tests {
         assert_eq!(response.data, value! {{"appMetadata": {"apiVersion": 0}}});
         assert_eq!(response.errors, &[]);
         mock.assert();
+    }
+
+    #[tokio::test]
+    async fn invalid_runs() {
+        let server = MockServer::start();
+        let mock_root = server
+            .mock_async(|when, then| {
+                when.method("GET").path("/api/v1/search/");
+                then.status(200)
+                    // File has two run entries where one is not deserializable
+                    .body_from_file("resources/search_root_errors.json");
+            })
+            .await;
+        let schema = build_schema(&server.base_url());
+        let response = schema
+            .execute(
+                r#"{instrumentSession(name: "cm12345-2") {
+                    runs {
+                        id
+                    }
+                }}"#,
+            )
+            .await;
+        assert_eq!(response.errors, &[]);
+        assert_eq!(
+            response.data,
+            value!({"instrumentSession": {"runs": [{"id": "1e37c0ed-e87e-470d-be18-9d7f62f69127"}]}})
+        );
+        mock_root.assert_async().await;
     }
 
     #[tokio::test]
