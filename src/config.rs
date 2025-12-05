@@ -8,6 +8,7 @@ use url::Url;
 #[derive(Deserialize, Debug, Clone)]
 pub struct GlazedConfig {
     pub bind_address: SocketAddr,
+    pub public_address: Option<Url>,
     pub tiled_client: TiledClientConfig,
 }
 impl GlazedConfig {
@@ -19,6 +20,7 @@ impl GlazedConfig {
     pub fn default() -> Self {
         GlazedConfig {
             bind_address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3000),
+            public_address: None,
             tiled_client: TiledClientConfig {
                 address: Url::parse("http://localhost:8000").expect("Static URL is valid"),
             },
