@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
@@ -47,14 +45,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct RootAddress(Url);
-
-impl Display for RootAddress {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
 
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
     let client = TiledClient::new(config.tiled_client.address);
