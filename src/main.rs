@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
@@ -17,6 +19,7 @@ use cli::{Cli, Commands};
 use tokio::select;
 use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
+use url::Url;
 
 use crate::clients::TiledClient;
 use crate::config::GlazedConfig;
@@ -44,14 +47,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct RootAddress(Url);
+
+impl Display for RootAddress {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
     let client = TiledClient::new(config.tiled_client.address);
+    let root_address = config
+        .public_address
+        .clone()
+        .map(RootAddress)
+        .unwrap_or_else(|| {
+            RootAddress(Url::parse(&format!("http://{}", config.bind_address)).unwrap())
+        });
     let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
-        .data(config.bind_address)
+        .data(root_address.clone())
         .data(client.clone())
         .finish();
 
-    let graphql_endpoint = config.public_address.map(|u| u.to_string());
+    let graphql_endpoint = config
+        .public_address
+        .map(|u| u.join("graphql").unwrap().to_string());
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
