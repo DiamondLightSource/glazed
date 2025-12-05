@@ -110,11 +110,16 @@ impl Asset<'_> {
     }
     async fn download(&self, ctx: &Context<'_>) -> Option<String> {
         let id = self.asset.id?;
-        let base = ctx.data::<RootAddress>().ok()?;
-        Some(format!(
-            "{}/asset/{}/{}/{}/{}",
-            base, self.data.run.data.id, self.data.stream, self.data.id, id
-        ))
+        let mut download = ctx.data::<RootAddress>().ok()?.0.clone();
+        download
+            .path_segments_mut()
+            .ok()?
+            .push("asset")
+            .push(&self.data.run.data.id)
+            .push(&self.data.stream)
+            .push(&self.data.id)
+            .push(&id.to_string());
+        Some(download.to_string())
     }
 }
 

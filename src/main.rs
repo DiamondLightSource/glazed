@@ -58,15 +58,12 @@ impl Display for RootAddress {
 
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
     let client = TiledClient::new(config.tiled_client.address);
-    let root_address = config
+    let public_address = config
         .public_address
         .clone()
-        .map(RootAddress)
-        .unwrap_or_else(|| {
-            RootAddress(Url::parse(&format!("http://{}", config.bind_address)).unwrap())
-        });
+        .unwrap_or_else(|| Url::parse(&format!("http://{}", config.bind_address)).unwrap());
     let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
-        .data(root_address.clone())
+        .data(RootAddress(public_address))
         .data(client.clone())
         .finish();
 
