@@ -7,46 +7,46 @@ use uuid::Uuid;
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct RunMetadata {
     pub start: Start,
-    pub stop: Option<Stop>,
+    stop: Option<Stop>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Start {
-    pub uid: Uuid,
-    pub time: f64,
-    pub versions: Versions,
-    pub instrument: String,
-    pub instrument_session: String,
-    pub data_session_directory: Option<String>,
-    pub scan_file: Option<String>,
+    uid: Uuid,
+    time: f64,
+    versions: Versions,
+    instrument: String,
+    instrument_session: String,
+    data_session_directory: Option<String>,
+    scan_file: Option<String>,
     pub scan_id: i64,
-    pub plan_type: String,
-    pub plan_name: String,
-    pub detectors: Vec<String>,
-    pub motors: Option<Vec<String>>,
-    pub num_points: i64,
-    pub num_intervals: i64,
-    pub plan_args: HashMap<String, Value>,
-    pub hints: Hints,
-    pub shape: Vec<i64>,
+    plan_type: String,
+    plan_name: String,
+    detectors: Vec<String>,
+    motors: Option<Vec<String>>,
+    num_points: i64,
+    num_intervals: i64,
+    plan_args: HashMap<String, Value>,
+    hints: Hints,
+    shape: Vec<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Versions {
-    pub ophyd: String,
-    pub ophyd_async: String,
-    pub bluesky: String,
+struct Versions {
+    ophyd: String,
+    ophyd_async: String,
+    bluesky: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Hints {
-    pub dimensions: Vec<HintDimension>,
+struct Hints {
+    dimensions: Vec<HintDimension>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HintDimension {
-    pub axes: Vec<String>,
-    pub stream: String,
+    axes: Vec<String>,
+    stream: String,
 }
 
 impl<'de> Deserialize<'de> for HintDimension {
@@ -60,13 +60,13 @@ impl<'de> Deserialize<'de> for HintDimension {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Stop {
-    pub uid: Uuid,
-    pub time: f64,
-    pub run_start: Uuid,
-    pub exit_status: String,
-    pub reason: String,
-    pub num_events: HashMap<String, Value>,
+struct Stop {
+    uid: Uuid,
+    time: f64,
+    run_start: Uuid,
+    exit_status: String,
+    reason: String,
+    num_events: HashMap<String, Value>,
 }
 
 #[cfg(test)]

@@ -23,6 +23,6 @@ impl ContainerMetadata {
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct ContainerStructure {
-    pub contents: Value,
-    pub count: i64,
+    contents: Value,
+    count: i64,
 }

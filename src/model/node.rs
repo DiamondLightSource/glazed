@@ -9,8 +9,8 @@ use crate::model::{array, container, table};
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct Root {
     data: Vec<DataOption>,
-    pub error: Value,
-    pub meta: Value,
+    error: Value,
+    meta: Value,
 }
 
 impl Root {
@@ -24,19 +24,19 @@ impl Root {
 
 #[derive(Debug, PartialEq, Deserialize)]
 #[serde(untagged)]
-pub enum DataOption {
+enum DataOption {
     Data(Data),
     Error(Value),
 }
 
 impl DataOption {
-    pub fn as_data(&self) -> Option<&Data> {
+    fn as_data(&self) -> Option<&Data> {
         match self {
             Self::Data(data) => Some(data),
             Self::Error(_) => None,
         }
     }
-    pub fn into_data(self) -> Option<Data> {
+    fn into_data(self) -> Option<Data> {
         match self {
             Self::Data(data) => Some(data),
             Self::Error(_) => None,
@@ -48,7 +48,7 @@ impl DataOption {
 pub struct Data {
     pub id: String,
     pub attributes: Box<NodeAttributes>,
-    pub meta: Value,
+    meta: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -62,39 +62,39 @@ pub enum NodeAttributes {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Attributes<Meta, S> {
     pub ancestors: Vec<String>,
-    pub specs: Vec<Spec>,
+    specs: Vec<Spec>,
     pub metadata: Meta,
     pub structure: S,
-    pub access_blob: Value,
-    pub sorting: Option<Vec<Sorting>>,
+    access_blob: Value,
+    sorting: Option<Vec<Sorting>>,
     pub data_sources: Option<Vec<DataSource<S>>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Spec {
-    pub name: String,
-    pub version: Option<String>,
+struct Spec {
+    name: String,
+    version: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Sorting {
-    pub key: String,
-    pub direction: i64,
+struct Sorting {
+    key: String,
+    direction: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct DataSource<S> {
-    pub structure: S,
-    pub id: Option<u64>,
-    pub mimetype: Option<String>,
-    pub parameters: HashMap<String, Value>,
+    structure: S,
+    id: Option<u64>,
+    mimetype: Option<String>,
+    parameters: HashMap<String, Value>,
     pub assets: Vec<Asset>,
     management: Management,
 }
 
 #[derive(Enum, Debug, Copy, Clone, Eq, PartialEq, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum Management {
+enum Management {
     External,
     Immutable,
     Locked,
