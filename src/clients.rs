@@ -254,23 +254,19 @@ mod tests {
         let mock = server
             .mock_async(|when, then| {
                 when.method("GET").path("/api/v1/");
-                then.status(503);
+                then.status(503).body("Tiled is broken inside");
             })
             .await;
 
         let client = TiledClient::for_mock_server(&server);
         let response = client.app_metadata().await;
 
-        let Err(ClientError::ServerError(err)) = response else {
+        let Err(ClientError::TiledInternal(503, err)) = response else {
             panic!("Expected ServerError but got {response:?}");
         };
 
-        assert!(err.is_status());
-        assert!(
-            err.status().is_some_and(|x| x == 503),
-            "Expected 503 but was {:?}",
-            err.status()
-        );
+        assert_eq!(err, "Tiled is broken inside");
+
         mock.assert();
     }
 
