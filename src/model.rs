@@ -37,7 +37,7 @@ impl TiledQuery {
             Ok(run) => Ok(Some(Run {
                 data: run.into_data(),
             })),
-            Err(ClientError::ServerError(e)) if e.status().is_some_and(|sc| sc == 404) => Ok(None),
+            Err(ClientError::TiledRequest(404, _)) => Ok(None),
             Err(other) => Err(other.into()),
         }
     }
