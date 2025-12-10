@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use async_graphql::{Context, Object, Result, Union};
 use serde_json::Value;
-use tracing::{info, instrument};
+use tracing::instrument;
 
 use crate::RootAddress;
 use crate::clients::{ClientError, TiledClient};
@@ -174,7 +174,6 @@ impl TableData {
             .map(|s| s.as_str())
             .collect::<Vec<_>>()
             .join("/");
-        info!("path: {:?}", p);
 
         let table_data = client.table_full(&p, columns, headers).await?;
         Ok(table_data)
