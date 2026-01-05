@@ -1,6 +1,8 @@
 FROM rust:1.91-slim AS build
 WORKDIR /build
 
+RUN useradd -u 65532 nonroot
+
 RUN rustup target add x86_64-unknown-linux-musl && \
     apt-get update && \
     apt-get install -y musl-tools musl-dev && \
@@ -12,14 +14,27 @@ RUN rustup target add x86_64-unknown-linux-musl && \
 # This downloads and builds the dependencies early allowing built dependencies
 # to be cached.
 RUN mkdir src && echo 'fn main() {}' > src/main.rs
-COPY ./Cargo.toml ./Cargo.toml
-COPY ./Cargo.lock ./Cargo.lock
-RUN cargo build --release --target x86_64-unknown-linux-musl
+COPY Cargo.toml Cargo.lock ./  
 
-COPY ./static ./static
-COPY ./src ./src
+RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --release --target x86_64-unknown-linux-musl 
 
-RUN touch src/main.rs && cargo build --release --target x86_64-unknown-linux-musl
+COPY static ./static
+COPY src ./src
 
-ENTRYPOINT ["/build/target/x86_64-unknown-linux-musl/release/glazed"]
+RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
+    set -e 
+    # update timestamps to force a new build
+    touch src/main.rs
+    cargo build --release --locked --target x86_64-unknown-linux-musl
+EOF
+
+FROM scratch
+
+COPY --from=build /etc/passwd /etc/passwd
+COPY --from=build /build/target/x86_64-unknown-linux-musl/release/glazed glazed
+
+USER nonroot
+
+ENTRYPOINT ["/glazed"]
+
 CMD ["serve"]
