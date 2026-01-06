@@ -1,8 +1,6 @@
 FROM rust:1.91-slim AS build
 WORKDIR /build
 
-RUN useradd -u 65532 nonroot
-
 RUN rustup target add x86_64-unknown-linux-musl && \
     apt-get update && \
     apt-get install -y musl-tools musl-dev && \
@@ -28,10 +26,11 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
     cargo build --release --locked --target x86_64-unknown-linux-musl
 EOF
 
-FROM scratch
+FROM alpine:3.23
 
-COPY --from=build /etc/passwd /etc/passwd
 COPY --from=build /build/target/x86_64-unknown-linux-musl/release/glazed glazed
+
+RUN adduser -u 65532 -D -H nonroot
 
 USER nonroot
 
