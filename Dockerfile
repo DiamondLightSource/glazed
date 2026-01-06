@@ -35,5 +35,4 @@ RUN adduser -u 65532 -D -H nonroot
 USER nonroot
 
 ENTRYPOINT ["/glazed"]
-
 CMD ["serve"]
