@@ -2,17 +2,23 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::Path;
 
 use config::{Config, ConfigError, File};
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use url::Url;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct GlazedConfig {
+    #[serde(default = "default_bind_address")]
     pub bind_address: SocketAddr,
-    pub public_address: Option<Url>,
+    #[serde(
+        default = "default_public_address",
+        deserialize_with = "valid_public_address"
+    )]
+    pub public_address: Url,
     pub tiled_client: TiledClientConfig,
     #[serde(default)]
     pub log_level: LogLevel,
 }
+
 impl GlazedConfig {
     pub fn from_file(path: &Path) -> Result<Self, ConfigError> {
         let config = Config::builder().add_source(File::from(path)).build()?;
@@ -21,13 +27,21 @@ impl GlazedConfig {
 
     pub fn default() -> Self {
         GlazedConfig {
-            bind_address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3000),
-            public_address: None,
+            bind_address: default_bind_address(),
+            public_address: default_public_address(),
             tiled_client: TiledClientConfig {
                 address: Url::parse("http://localhost:8000").expect("Static URL is valid"),
             },
             log_level: LogLevel::Info,
         }
+    }
+    pub fn endpoint(&self, endpoint: &str) -> String {
+        let mut addr = self.public_address.clone();
+        addr.path_segments_mut()
+            .expect("base address can be a base")
+            .pop_if_empty()
+            .push(endpoint);
+        addr.to_string()
     }
 }
 
@@ -54,6 +68,25 @@ impl From<LogLevel> for tracing::level_filters::LevelFilter {
             LogLevel::Debug => Self::DEBUG,
             LogLevel::Trace => Self::TRACE,
         }
+    }
+}
+
+fn default_bind_address() -> SocketAddr {
+    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3000)
+}
+
+fn default_public_address() -> Url {
+    "http://localhost:3000"
+        .parse()
+        .expect("Static str is valid URL")
+}
+
+fn valid_public_address<'de, D: Deserializer<'de>>(des: D) -> Result<Url, D::Error> {
+    let url = Url::deserialize(des)?;
+    if url.cannot_be_a_base() {
+        Err(serde::de::Error::custom("URL cannot be a base"))
+    } else {
+        Ok(url)
     }
 }
 

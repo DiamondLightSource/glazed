@@ -52,13 +52,13 @@ pub async fn graphql_ws_handler(
 }
 
 pub async fn graphiql_handler(
-    graphql_endpoint: Option<String>,
-    subscription_endpoint: Option<String>,
+    graphql_endpoint: String,
+    subscription_endpoint: String,
 ) -> impl IntoResponse {
     Html(
         GraphiQLSource::build()
-            .endpoint(graphql_endpoint.as_deref().unwrap_or("/graphql"))
-            .subscription_endpoint(subscription_endpoint.as_deref().unwrap_or("/ws"))
+            .endpoint(&graphql_endpoint)
+            .subscription_endpoint(&subscription_endpoint)
             .finish(),
     )
 }
