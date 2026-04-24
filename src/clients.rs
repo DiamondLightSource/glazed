@@ -30,6 +30,9 @@ impl TiledClient {
             address,
         }
     }
+    pub fn address(&self) -> &Url {
+        &self.address
+    }
     #[instrument(skip(self, headers))]
     async fn request<T: DeserializeOwned>(
         &self,

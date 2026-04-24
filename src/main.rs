@@ -1,4 +1,4 @@
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptyMutation, Schema};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
@@ -22,8 +22,9 @@ use url::Url;
 
 use crate::clients::TiledClient;
 use crate::config::GlazedConfig;
-use crate::handlers::{download_handler, graphiql_handler, graphql_handler};
+use crate::handlers::{download_handler, graphiql_handler, graphql_handler, graphql_ws_handler};
 use crate::model::TiledQuery;
+use crate::model::subscription::TiledSubscription;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -55,7 +56,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
         .public_address
         .clone()
         .unwrap_or_else(|| Url::parse(&format!("http://{}", config.bind_address)).unwrap());
-    let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
         .data(RootAddress(public_address))
         .data(client.clone())
         .finish();
@@ -66,6 +67,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
+        .route("/ws", get(graphql_ws_handler))
         .route("/graphiql", get(|| graphiql_handler(graphql_endpoint)))
         .route(
             "/status",
