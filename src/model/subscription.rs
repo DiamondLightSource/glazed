@@ -13,20 +13,19 @@ pub struct TiledSubscription;
 impl TiledSubscription {
     async fn events(&self, ctx: &Context<'_>) -> impl Stream<Item = TiledEvent> {
         let client = ctx.data::<TiledClient>().unwrap();
-        let auth = ctx
+        let headers = ctx
             .data_opt::<Option<AuthHeader>>()
-            .and_then(|a| a.as_ref());
-        let headers = auth.map(|a| a.as_header_map());
-
+            .and_then(|a| a.as_ref())
+            .map(|a| a.as_header_map());
         client.stream_events(None, headers)
     }
 
     async fn node_events(&self, ctx: &Context<'_>, node: String) -> impl Stream<Item = TiledEvent> {
         let client = ctx.data::<TiledClient>().unwrap();
-        let auth = ctx
+        let headers = ctx
             .data_opt::<Option<AuthHeader>>()
-            .and_then(|a| a.as_ref());
-        let headers = auth.map(|a| a.as_header_map());
+            .and_then(|a| a.as_ref())
+            .map(|a| a.as_header_map());
         client.stream_events(Some(node), headers)
     }
 }
@@ -127,24 +126,30 @@ pub enum TiledEvent {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
+    use async_graphql::{EmptyMutation, Schema};
     use axum::Router;
     use axum::extract::WebSocketUpgrade;
     use axum::extract::ws::Message;
-    use axum::http::HeaderMap;
+    use axum::http::{HeaderMap, Uri};
     use axum::routing::any;
     use futures_util::StreamExt;
+    use rstest::rstest;
     use tokio::net::TcpListener;
+    use tokio::sync::mpsc;
+    use tokio::time;
     use url::Url;
 
     use super::*;
     use crate::clients::TiledClient;
 
-    #[rstest::rstest]
+    #[rstest]
     #[case::with_auth(Some("Bearer test-token"))]
     #[case::no_auth(None)]
     #[tokio::test]
     async fn test_stream_events_headers_parameterized(#[case] auth_token: Option<&str>) {
-        let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+        let (tx, mut rx) = mpsc::channel(1);
 
         let app = Router::new().fallback(any(
             move |headers: HeaderMap, ws: WebSocketUpgrade| async move {
@@ -167,19 +172,12 @@ mod tests {
             headers.insert("Authorization", token.parse().unwrap());
         }
 
-        let stream = client.stream_events(
-            None,
-            if headers.is_empty() {
-                None
-            } else {
-                Some(headers)
-            },
-        );
+        let stream = client.stream_events(None, Some(headers));
         tokio::pin!(stream);
 
-        let _ = tokio::time::timeout(std::time::Duration::from_secs(5), stream.next()).await;
+        let _ = time::timeout(Duration::from_secs(5), stream.next()).await;
 
-        let captured_headers = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+        let captured_headers = time::timeout(Duration::from_secs(5), rx.recv())
             .await
             .expect("Timeout waiting for headers")
             .expect("Channel closed");
@@ -211,10 +209,7 @@ mod tests {
         #[case] expected_version: u32,
         #[case] result_key: &str,
     ) {
-        use async_graphql::{EmptyMutation, Schema};
-        use axum::http::Uri;
-
-        let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+        let (tx, mut rx) = mpsc::channel(1);
 
         let app = Router::new().fallback(any(move |uri: Uri, ws: WebSocketUpgrade| async move {
             let path = uri.path().to_string();
@@ -246,7 +241,7 @@ mod tests {
 
         let stream = schema.execute_stream(query);
         let mut stream = Box::pin(stream);
-        let res = tokio::time::timeout(std::time::Duration::from_secs(5), stream.next())
+        let res = time::timeout(Duration::from_secs(5), stream.next())
             .await
             .expect("Timeout waiting for events")
             .unwrap();
@@ -256,7 +251,7 @@ mod tests {
             async_graphql::value!({ result_key: { "version": expected_version } })
         );
 
-        let path = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+        let path = time::timeout(Duration::from_secs(5), rx.recv())
             .await
             .expect("Timeout waiting for path")
             .unwrap();
