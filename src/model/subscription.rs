@@ -1,11 +1,7 @@
 use async_graphql::{Context, SimpleObject, Subscription, Union};
-use axum::http::HeaderMap;
-use futures_util::{Stream, StreamExt};
+use futures_util::Stream;
 use serde::Deserialize;
 use serde_json::Value;
-use tokio_tungstenite::connect_async;
-use tokio_tungstenite::tungstenite::client::IntoClientRequest;
-use tracing::{error, info};
 
 use crate::clients::TiledClient;
 use crate::handlers::AuthHeader;
@@ -24,7 +20,7 @@ impl TiledSubscription {
             .and_then(|a| a.as_ref());
         let headers = auth.map(|a| a.as_header_map());
 
-        stream_events(client, None, headers)
+        client.stream_events(None, headers)
     }
 
     async fn node_events(&self, ctx: &Context<'_>, node: String) -> impl Stream<Item = TiledEvent> {
@@ -35,7 +31,7 @@ impl TiledSubscription {
             .data_opt::<Option<AuthHeader>>()
             .and_then(|a| a.as_ref());
         let headers = auth.map(|a| a.as_header_map());
-        stream_events(client, Some(node), headers)
+        client.stream_events(Some(node), headers)
     }
 }
 
@@ -133,65 +129,6 @@ pub enum TiledEvent {
     TableData(StreamTableData),
 }
 
-fn stream_events(
-    client: &TiledClient,
-    node: Option<String>,
-    headers: Option<HeaderMap>,
-) -> impl Stream<Item = TiledEvent> {
-    let mut url = client.address().clone();
-
-    let scheme = match url.scheme() {
-        "http" => "ws",
-        "https" => "wss",
-        _ => "ws",
-    };
-    url.set_scheme(scheme).ok();
-
-    let path = if let Some(node_id) = node {
-        format!("api/v1/stream/single/{}", node_id)
-    } else {
-        "api/v1/stream/single/".to_string()
-    };
-
-    let mut url = url.join(&path).expect("Invalid stream path");
-    url.set_query(Some("envelope_format=msgpack"));
-
-    let mut request = url.as_str().into_client_request().unwrap();
-    if let Some(headers) = headers {
-        request.headers_mut().extend(headers);
-    }
-    async_stream::stream! {
-        info!("Connecting to WebSocket: {}", url);
-        let (ws_stream, _) = match connect_async(request).await {
-            Ok(ws) => ws,
-            Err(e) => {
-                error!("Failed to connect to WebSocket: {}", e);
-                return;
-            }
-        };
-
-        let (_, mut read) = ws_stream.split();
-
-        while let Some(msg) = read.next().await {
-            match msg {
-                Ok(tokio_tungstenite::tungstenite::Message::Binary(bin)) => {
-                    match rmp_serde::from_slice::<TiledEvent>(&bin) {
-                        Ok(event) => yield event,
-                        Err(e) => {
-                            error!("Failed to deserialize msgpack: {}, binary: {:?}", e, bin);
-                        }
-                    }
-                }
-                Ok(_) => {},
-                Err(e) => {
-                    error!("WebSocket error: {}", e);
-                    break;
-                }
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use axum::Router;
@@ -228,7 +165,7 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.insert("Authorization", "Bearer test-token".parse().unwrap());
 
-        let stream = stream_events(&client, None, Some(headers));
+        let stream = client.stream_events(None, Some(headers));
         tokio::pin!(stream);
 
         let _ = tokio::time::timeout(std::time::Duration::from_secs(5), stream.next()).await;

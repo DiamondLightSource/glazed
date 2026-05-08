@@ -1,16 +1,21 @@
 use std::borrow::Cow;
 use std::fmt;
 
+use futures_util::{Stream, StreamExt};
 #[cfg(test)]
 use httpmock::MockServer;
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
+use tokio_tungstenite::connect_async;
+use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tracing::{debug, info, instrument};
 
+use crate::model::subscription::TiledEvent;
 use crate::model::{app, node, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
+use tracing::error;
 
 #[derive(Clone)]
 pub struct TiledClient {
@@ -30,9 +35,7 @@ impl TiledClient {
             address,
         }
     }
-    pub fn address(&self) -> &Url {
-        &self.address
-    }
+
     #[instrument(skip(self, headers))]
     async fn request<T: DeserializeOwned>(
         &self,
@@ -131,6 +134,62 @@ impl TiledClient {
             .query(&[("id", &id.to_string())])
             .send()
             .await
+    }
+
+    pub(crate) fn stream_events(
+        &self,
+        node: Option<String>,
+        headers: Option<HeaderMap>,
+    ) -> impl Stream<Item = TiledEvent> {
+        let scheme = match self.address.scheme() {
+            "http" => "ws",
+            "https" => "wss",
+            _ => "ws",
+        };
+
+        let path = if let Some(node_id) = node {
+            format!("api/v1/stream/single/{}", node_id)
+        } else {
+            "api/v1/stream/single/".to_string()
+        };
+
+        let mut url = self.address.join(&path).expect("Invalid stream path");
+        url.set_scheme(scheme).ok();
+        url.set_query(Some("envelope_format=msgpack"));
+
+        let mut request = url.as_str().into_client_request().unwrap();
+        if let Some(headers) = headers {
+            request.headers_mut().extend(headers);
+        }
+        async_stream::stream! {
+            info!("Connecting to WebSocket: {}", url);
+            let (ws_stream, _) = match connect_async(request).await {
+                Ok(ws) => ws,
+                Err(e) => {
+                    return error!("Failed to connect to WebSocket: {}", e);
+                }
+            };
+
+            let (_, mut read) = ws_stream.split();
+
+            while let Some(msg) = read.next().await {
+                match msg {
+                    Ok(tokio_tungstenite::tungstenite::Message::Binary(bin)) => {
+                        match rmp_serde::from_slice::<TiledEvent>(&bin) {
+                            Ok(event) => yield event,
+                            Err(e) => {
+                                error!("Failed to deserialize msgpack: {}, binary: {:?}", e, bin);
+                            }
+                        }
+                    }
+                    Ok(_) => {},
+                    Err(e) => {
+                        error!("WebSocket error: {}", e);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /// Create a new client for the given mock server
