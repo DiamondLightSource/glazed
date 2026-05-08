@@ -1,5 +1,5 @@
 use async_graphql::http::{ALL_WEBSOCKET_PROTOCOLS, GraphiQLSource};
-use async_graphql::{EmptyMutation, Schema};
+use async_graphql::{Data, EmptyMutation, Schema};
 use async_graphql_axum::{GraphQLProtocol, GraphQLRequest, GraphQLResponse, GraphQLWebSocket};
 use axum::Extension;
 use axum::body::Body;
@@ -28,7 +28,7 @@ pub async fn graphql_handler(
 pub async fn graphql_ws_handler(
     schema: Extension<Schema<TiledQuery, EmptyMutation, TiledSubscription>>,
     protocol: GraphQLProtocol,
-    auth_token: Option<AuthHeader>,
+    mut auth_token: Option<AuthHeader>,
     websocket: WebSocketUpgrade,
 ) -> impl IntoResponse {
     websocket
@@ -36,8 +36,7 @@ pub async fn graphql_ws_handler(
         .on_upgrade(move |socket| {
             GraphQLWebSocket::new(socket, schema.0, protocol)
                 .on_connection_init(|value| async move {
-                    let mut data = async_graphql::Data::default();
-                    let mut auth_token = auth_token;
+                    let mut data = Data::default();
 
                     if let Ok(value) = serde_json::from_value::<Value>(value)
                         && let Some(auth) = value.get("Authorization").and_then(|v| v.as_str())
@@ -190,6 +189,7 @@ mod tests {
         use serde_json::json;
         use tokio_tungstenite::connect_async;
         use tokio_tungstenite::tungstenite::Message;
+        use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
         use crate::clients::TiledClient;
 
@@ -205,9 +205,7 @@ mod tests {
         });
 
         let ws_url = format!("ws://{addr}/ws");
-        let mut request =
-            tokio_tungstenite::tungstenite::client::IntoClientRequest::into_client_request(ws_url)
-                .unwrap();
+        let mut request = IntoClientRequest::into_client_request(ws_url).unwrap();
         request.headers_mut().insert(
             axum::http::header::SEC_WEBSOCKET_PROTOCOL,
             "graphql-transport-ws".parse().unwrap(),

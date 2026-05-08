@@ -178,14 +178,13 @@ impl TiledClient {
                         match rmp_serde::from_slice::<TiledEvent>(&bin) {
                             Ok(event) => yield event,
                             Err(e) => {
-                                error!("Failed to deserialize msgpack: {}, binary: {:?}", e, bin);
+                                return error!("Failed to deserialize msgpack: {}, binary: {:?}", e, bin);
                             }
                         }
                     }
                     Ok(_) => {},
                     Err(e) => {
-                        error!("WebSocket error: {}", e);
-                        break;
+                        return error!("WebSocket error: {}", e);
                     }
                 }
             }

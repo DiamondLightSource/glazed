@@ -133,6 +133,7 @@ pub enum TiledEvent {
 mod tests {
     use axum::Router;
     use axum::extract::WebSocketUpgrade;
+    use axum::extract::ws::Message;
     use axum::http::HeaderMap;
     use axum::routing::any;
     use futures_util::StreamExt;
@@ -190,19 +191,15 @@ mod tests {
 
         let app = Router::new().fallback(any(move |uri: Uri, ws: WebSocketUpgrade| async move {
             let path = uri.path().to_string();
-            let is_first = path.ends_with("/api/v1/stream/single/");
-            let tx = tx.clone();
+            let root = path.ends_with("/api/v1/stream/single/");
             ws.on_upgrade(move |mut socket| async move {
-                let version = if is_first { 42 } else { 43 };
+                let version = if root { 42 } else { 43 };
                 let event = serde_json::json!({
                     "type": "container-schema",
                     "version": version
                 });
                 let bin = rmp_serde::to_vec(&event).unwrap();
-                socket
-                    .send(axum::extract::ws::Message::Binary(bin.into()))
-                    .await
-                    .unwrap();
+                socket.send(Message::Binary(bin.into())).await.unwrap();
                 let _ = tx.send(path).await;
             })
         }));
@@ -256,8 +253,8 @@ mod tests {
             .expect("Timeout waiting for path2")
             .unwrap();
 
-        let paths = [path1, path2];
-        assert!(paths.contains(&"/api/v1/stream/single/".to_string()));
-        assert!(paths.contains(&"/api/v1/stream/single/foo".to_string()));
+        // let paths = [path1, path2];
+        assert_eq!(path1, String::from("/api/v1/stream/single/"));
+        assert_eq!(path2, String::from("/api/v1/stream/single/foo"));
     }
 }
