@@ -38,11 +38,12 @@ pub async fn graphql_ws_handler(
                 .on_connection_init(|value| async move {
                     let mut data = Data::default();
 
-                    if let Some(auth) = value.get("Authorization").and_then(|v| v.as_str())
-                        && let Ok(header_value) = HeaderValue::from_str(auth)
-                    {
-                        auth_token = Some(AuthHeader(header_value));
-                    }
+                    auth_token = value
+                        .get("Authorization")
+                        .and_then(|v| v.as_str())
+                        .and_then(|auth| HeaderValue::from_str(auth).ok())
+                        .map(AuthHeader)
+                        .or(auth_token);
 
                     data.insert(auth_token);
                     Ok(data)
