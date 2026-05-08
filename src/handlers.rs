@@ -262,5 +262,4 @@ mod tests {
 
         mock.assert_async().await;
     }
-
 }

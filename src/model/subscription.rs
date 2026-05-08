@@ -167,7 +167,14 @@ mod tests {
             headers.insert("Authorization", token.parse().unwrap());
         }
 
-        let stream = client.stream_events(None, if headers.is_empty() { None } else { Some(headers) });
+        let stream = client.stream_events(
+            None,
+            if headers.is_empty() {
+                None
+            } else {
+                Some(headers)
+            },
+        );
         tokio::pin!(stream);
 
         let _ = tokio::time::timeout(std::time::Duration::from_secs(5), stream.next()).await;
