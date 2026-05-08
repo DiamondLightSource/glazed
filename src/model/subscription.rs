@@ -12,9 +12,7 @@ pub struct TiledSubscription;
 #[Subscription]
 impl TiledSubscription {
     async fn events(&self, ctx: &Context<'_>) -> impl Stream<Item = TiledEvent> {
-        let client = ctx
-            .data::<TiledClient>()
-            .expect("TiledClient not found in context");
+        let client = ctx.data::<TiledClient>().unwrap();
         let auth = ctx
             .data_opt::<Option<AuthHeader>>()
             .and_then(|a| a.as_ref());
@@ -24,9 +22,7 @@ impl TiledSubscription {
     }
 
     async fn node_events(&self, ctx: &Context<'_>, node: String) -> impl Stream<Item = TiledEvent> {
-        let client = ctx
-            .data::<TiledClient>()
-            .expect("TiledClient not found in context");
+        let client = ctx.data::<TiledClient>().unwrap();
         let auth = ctx
             .data_opt::<Option<AuthHeader>>()
             .and_then(|a| a.as_ref());
@@ -143,8 +139,11 @@ mod tests {
     use super::*;
     use crate::clients::TiledClient;
 
+    #[rstest::rstest]
+    #[case::with_auth(Some("Bearer test-token"))]
+    #[case::no_auth(None)]
     #[tokio::test]
-    async fn test_stream_events_headers() {
+    async fn test_stream_events_headers_parameterized(#[case] auth_token: Option<&str>) {
         let (tx, mut rx) = tokio::sync::mpsc::channel(1);
 
         let app = Router::new().fallback(any(
@@ -164,9 +163,11 @@ mod tests {
         let client = TiledClient::new(url);
 
         let mut headers = HeaderMap::new();
-        headers.insert("Authorization", "Bearer test-token".parse().unwrap());
+        if let Some(token) = auth_token {
+            headers.insert("Authorization", token.parse().unwrap());
+        }
 
-        let stream = client.stream_events(None, Some(headers));
+        let stream = client.stream_events(None, if headers.is_empty() { None } else { Some(headers) });
         tokio::pin!(stream);
 
         let _ = tokio::time::timeout(std::time::Duration::from_secs(5), stream.next()).await;
@@ -176,18 +177,37 @@ mod tests {
             .expect("Timeout waiting for headers")
             .expect("Channel closed");
 
-        assert_eq!(
-            captured_headers.get("Authorization").unwrap(),
-            "Bearer test-token"
-        );
+        if let Some(token) = auth_token {
+            assert_eq!(captured_headers.get("Authorization").unwrap(), token);
+        } else {
+            assert!(captured_headers.get("Authorization").is_none());
+        }
     }
 
+    #[rstest::rstest]
+    #[case::root(
+        "subscription { events { ... on ContainerSchema { version } } }",
+        "/api/v1/stream/single/",
+        42,
+        "events"
+    )]
+    #[case::node(
+        "subscription { nodeEvents(node: \"foo\") { ... on ContainerSchema { version } } }",
+        "/api/v1/stream/single/foo",
+        43,
+        "nodeEvents"
+    )]
     #[tokio::test]
-    async fn test_subscription_events_and_node_events() {
+    async fn test_subscription_events_parameterized(
+        #[case] query: &str,
+        #[case] expected_path: &str,
+        #[case] expected_version: u32,
+        #[case] result_key: &str,
+    ) {
         use async_graphql::{EmptyMutation, Schema};
         use axum::http::Uri;
 
-        let (tx, mut rx) = tokio::sync::mpsc::channel(2);
+        let (tx, mut rx) = tokio::sync::mpsc::channel(1);
 
         let app = Router::new().fallback(any(move |uri: Uri, ws: WebSocketUpgrade| async move {
             let path = uri.path().to_string();
@@ -217,43 +237,23 @@ mod tests {
             .data(client)
             .finish();
 
-        // Test events()
-        let stream =
-            schema.execute_stream("subscription { events { ... on ContainerSchema { version } } }");
+        let stream = schema.execute_stream(query);
         let mut stream = Box::pin(stream);
         let res = tokio::time::timeout(std::time::Duration::from_secs(5), stream.next())
             .await
             .expect("Timeout waiting for events")
             .unwrap();
+
         assert_eq!(
             res.data,
-            async_graphql::value!({ "events": { "version": 42 } })
+            async_graphql::value!({ result_key: { "version": expected_version } })
         );
 
-        // Test node_events(node: "foo")
-        let stream = schema.execute_stream(
-            "subscription { nodeEvents(node: \"foo\") { ... on ContainerSchema { version } } }",
-        );
-        let mut stream = Box::pin(stream);
-        let res = tokio::time::timeout(std::time::Duration::from_secs(5), stream.next())
+        let path = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
             .await
-            .expect("Timeout waiting for nodeEvents")
-            .unwrap();
-        assert_eq!(
-            res.data,
-            async_graphql::value!({ "nodeEvents": { "version": 43 } })
-        );
-
-        let path1 = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
-            .await
-            .expect("Timeout waiting for path1")
-            .unwrap();
-        let path2 = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
-            .await
-            .expect("Timeout waiting for path2")
+            .expect("Timeout waiting for path")
             .unwrap();
 
-        assert_eq!(path1, String::from("/api/v1/stream/single/"));
-        assert_eq!(path2, String::from("/api/v1/stream/single/foo"));
+        assert_eq!(path, expected_path);
     }
 }
