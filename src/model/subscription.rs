@@ -253,7 +253,6 @@ mod tests {
             .expect("Timeout waiting for path2")
             .unwrap();
 
-        // let paths = [path1, path2];
         assert_eq!(path1, String::from("/api/v1/stream/single/"));
         assert_eq!(path2, String::from("/api/v1/stream/single/foo"));
     }
