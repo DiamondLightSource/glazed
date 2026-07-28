@@ -79,6 +79,7 @@ impl InstrumentSession {
 }
 
 #[derive(Union)]
+#[allow(clippy::large_enum_variant)]
 enum RunData<'run> {
     Array(ArrayData<'run>),
     Internal(TableData),
