@@ -8,7 +8,6 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode};
 use axum::response::{Html, IntoResponse};
 use reqwest::header::AUTHORIZATION;
 use tracing::info;
-use url::Url;
 
 use crate::clients::TiledClient;
 use crate::model::TiledQuery;
@@ -52,15 +51,14 @@ pub async fn graphql_ws_handler(
         })
 }
 
-pub async fn graphiql_handler(public_address: Url) -> impl IntoResponse {
-    let (endpoint, subscription_endpoint) = (
-        public_address.join("graphql").unwrap().to_string(),
-        public_address.join("ws").unwrap().to_string(),
-    );
+pub async fn graphiql_handler(
+    graphql_endpoint: Option<String>,
+    subscription_endpoint: Option<String>,
+) -> impl IntoResponse {
     Html(
         GraphiQLSource::build()
-            .endpoint(&endpoint)
-            .subscription_endpoint(&subscription_endpoint)
+            .endpoint(graphql_endpoint.as_deref().unwrap_or("/graphql"))
+            .subscription_endpoint(subscription_endpoint.as_deref().unwrap_or("/ws"))
             .finish(),
     )
 }

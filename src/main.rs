@@ -26,7 +26,7 @@ use tracing_subscriber::{Registry, fmt, reload};
 use url::Url;
 
 use crate::clients::TiledClient;
-use crate::config::{GlazedConfig,LogLevel};
+use crate::config::{GlazedConfig, LogLevel};
 use crate::handlers::{download_handler, graphiql_handler, graphql_handler, graphql_ws_handler};
 use crate::model::TiledQuery;
 use crate::model::subscription::TiledSubscription;
@@ -76,10 +76,22 @@ async fn serve(
             .data(client.clone())
             .finish();
 
+    let graphql_endpoint = config
+        .public_address
+        .clone()
+        .map(|u| u.join("graphql").unwrap().to_string());
+
+    let subscription_endpoint = config
+        .public_address
+        .clone()
+        .map(|u| u.join("ws").unwrap().to_string());
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
         .route("/ws", get(graphql_ws_handler))
-        .route("/graphiql", get(|| graphiql_handler(public_address)))
+        .route(
+            "/graphiql",
+            get(|| graphiql_handler(graphql_endpoint, subscription_endpoint)),
+        )
         .route(
             "/status",
             get(Json(json!({"version": env!("CARGO_PKG_VERSION")}))),

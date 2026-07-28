@@ -11,7 +11,10 @@ pub struct TiledSubscription;
 
 #[Subscription]
 impl TiledSubscription {
-    async fn events(&self, ctx: &Context<'_>) -> impl Stream<Item = TiledEvent> {
+    async fn events(
+        &self,
+        ctx: &Context<'_>,
+    ) -> Result<impl Stream<Item = Result<TiledEvent, String>>, String> {
         let client = ctx.data::<TiledClient>().unwrap();
         let headers = ctx
             .data_opt::<Option<AuthHeader>>()
@@ -20,7 +23,11 @@ impl TiledSubscription {
         client.stream_events(None, headers)
     }
 
-    async fn node_events(&self, ctx: &Context<'_>, node: String) -> impl Stream<Item = TiledEvent> {
+    async fn node_events(
+        &self,
+        ctx: &Context<'_>,
+        node: String,
+    ) -> Result<impl Stream<Item = Result<TiledEvent, String>>, String> {
         let client = ctx.data::<TiledClient>().unwrap();
         let headers = ctx
             .data_opt::<Option<AuthHeader>>()
@@ -179,8 +186,8 @@ mod tests {
 
         let captured_headers = time::timeout(Duration::from_secs(5), rx.recv())
             .await
-            .expect("Timeout waiting for headers")
-            .expect("Channel closed");
+            .expect("Headers should have be sent after stream is read above")
+            .expect("The header channel should remain open until headers are received");
 
         if let Some(token) = auth_token {
             assert_eq!(captured_headers.get("Authorization").unwrap(), token);

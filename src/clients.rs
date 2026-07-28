@@ -15,7 +15,6 @@ use crate::model::subscription::TiledEvent;
 use crate::model::{app, node, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
-use tracing::error;
 
 #[derive(Clone)]
 pub struct TiledClient {
@@ -140,7 +139,7 @@ impl TiledClient {
         &self,
         node: Option<String>,
         headers: Option<HeaderMap>,
-    ) -> impl Stream<Item = TiledEvent> {
+    ) -> Result<impl Stream<Item = Result<TiledEvent, String>>, String> {
         let scheme = match self.address.scheme() {
             "http" => "ws",
             "https" => "wss",
@@ -161,34 +160,17 @@ impl TiledClient {
         if let Some(headers) = headers {
             request.headers_mut().extend(headers);
         }
-        async_stream::stream! {
+        Ok(async_stream::try_stream! {
             info!("Connecting to WebSocket: {}", url);
-            let (ws_stream, _) = match connect_async(request).await {
-                Ok(ws) => ws,
-                Err(e) => {
-                    return error!("Failed to connect to WebSocket: {}", e);
-                }
-            };
-
-            let (_, mut read) = ws_stream.split();
-
+            let (ws,_) = connect_async(request).await.map_err(|e| e.to_string())?;
+            let (_, mut read) = ws.split();
             while let Some(msg) = read.next().await {
-                match msg {
-                    Ok(tokio_tungstenite::tungstenite::Message::Binary(bin)) => {
-                        match rmp_serde::from_slice::<TiledEvent>(&bin) {
-                            Ok(event) => yield event,
-                            Err(e) => {
-                                return error!("Failed to deserialize msgpack: {}, binary: {:?}", e, bin);
-                            }
-                        }
-                    }
-                    Ok(_) => {},
-                    Err(e) => {
-                        return error!("WebSocket error: {}", e);
-                    }
+
+                if let tokio_tungstenite::tungstenite::Message::Binary(bin) = msg.map_err(|e| e.to_string())?{
+                    yield rmp_serde::from_slice::<TiledEvent>(&bin).map_err(|e| e.to_string())?
                 }
             }
-        }
+        })
     }
 
     /// Create a new client for the given mock server
