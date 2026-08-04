@@ -95,13 +95,25 @@ fn valid_public_address<'de, D: Deserializer<'de>>(des: D) -> Result<Url, D::Err
 #[cfg(test)]
 mod tests {
     use tracing::level_filters::LevelFilter;
+    use url::Url;
 
-    use crate::config::LogLevel;
+    use crate::config::{GlazedConfig, LogLevel};
 
     #[test]
     fn level_conversion() {
         assert_eq!(LevelFilter::from(LogLevel::Info), LevelFilter::INFO);
         assert_eq!(LevelFilter::from(LogLevel::Debug), LevelFilter::DEBUG);
         assert_eq!(LevelFilter::from(LogLevel::Trace), LevelFilter::TRACE);
+    }
+
+    #[rstest::rstest]
+    #[case::no_trailing_slash("http://example.com", "http://example.com/graphql")]
+    #[case::trailing_slash("http://example.com/", "http://example.com/graphql")]
+    #[case::non_empty_path("http://example.com/extra", "http://example.com/extra/graphql")]
+    #[case::path_and_trailing("http://example.com/extra/", "http://example.com/extra/graphql")]
+    fn graphql_endpoint(#[case] base: &str, #[case] complete: &str) {
+        let mut config = GlazedConfig::default();
+        config.public_address = Url::parse(base).unwrap();
+        assert_eq!(config.endpoint("graphql"), complete)
     }
 }
