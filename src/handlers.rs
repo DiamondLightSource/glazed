@@ -34,10 +34,10 @@ pub async fn graphql_ws_handler(
         .protocols(ALL_WEBSOCKET_PROTOCOLS)
         .on_upgrade(move |socket| {
             GraphQLWebSocket::new(socket, schema.0, protocol)
-                .on_connection_init(|value| async move {
+                .on_connection_init(|headers| async move {
                     let mut data = Data::default();
 
-                    auth_token = value
+                    auth_token = headers
                         .get("Authorization")
                         .and_then(|v| v.as_str())
                         .and_then(|auth| HeaderValue::from_str(auth).ok())

@@ -3,7 +3,7 @@ use futures_util::Stream;
 use serde::Deserialize;
 use serde_json::Value;
 
-use crate::clients::TiledClient;
+use crate::clients::{SubscriptionError, TiledClient};
 use crate::handlers::AuthHeader;
 use crate::model::array::{ArrayStructure, DataType};
 
@@ -14,7 +14,7 @@ impl TiledSubscription {
     async fn events(
         &self,
         ctx: &Context<'_>,
-    ) -> Result<impl Stream<Item = Result<TiledEvent, String>>, String> {
+    ) -> Result<impl Stream<Item = Result<TiledEvent, SubscriptionError>>, SubscriptionError> {
         let client = ctx.data::<TiledClient>().unwrap();
         let headers = ctx
             .data_opt::<Option<AuthHeader>>()
@@ -27,7 +27,7 @@ impl TiledSubscription {
         &self,
         ctx: &Context<'_>,
         node: String,
-    ) -> Result<impl Stream<Item = Result<TiledEvent, String>>, String> {
+    ) -> Result<impl Stream<Item = Result<TiledEvent, SubscriptionError>>, SubscriptionError> {
         let client = ctx.data::<TiledClient>().unwrap();
         let headers = ctx
             .data_opt::<Option<AuthHeader>>()
@@ -179,7 +179,7 @@ mod tests {
             headers.insert("Authorization", token.parse().unwrap());
         }
 
-        let stream = client.stream_events(None, Some(headers));
+        let stream = client.stream_events(None, Some(headers)).unwrap();
         tokio::pin!(stream);
 
         let _ = time::timeout(Duration::from_secs(5), stream.next()).await;

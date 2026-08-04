@@ -139,7 +139,7 @@ impl TiledClient {
         &self,
         node: Option<String>,
         headers: Option<HeaderMap>,
-    ) -> Result<impl Stream<Item = Result<TiledEvent, String>>, String> {
+    ) -> Result<impl Stream<Item = Result<TiledEvent, SubscriptionError>>, SubscriptionError> {
         let scheme = match self.address.scheme() {
             "http" => "ws",
             "https" => "wss",
@@ -162,12 +162,12 @@ impl TiledClient {
         }
         Ok(async_stream::try_stream! {
             info!("Connecting to WebSocket: {}", url);
-            let (ws,_) = connect_async(request).await.map_err(|e| e.to_string())?;
+            let (ws,_) = connect_async(request).await.map_err(|e| SubscriptionError::WebSocketConnect(e.to_string()))?;
             let (_, mut read) = ws.split();
             while let Some(msg) = read.next().await {
 
-                if let tokio_tungstenite::tungstenite::Message::Binary(bin) = msg.map_err(|e| e.to_string())?{
-                    yield rmp_serde::from_slice::<TiledEvent>(&bin).map_err(|e| e.to_string())?
+                if let tokio_tungstenite::tungstenite::Message::Binary(bin) = msg.map_err(|e| SubscriptionError::MessageDeserialize(e.to_string()))?{
+                    yield rmp_serde::from_slice::<TiledEvent>(&bin).map_err(|e| SubscriptionError::TiledEventDeserialize(e.to_string()))?
                 }
             }
         })
@@ -184,6 +184,27 @@ impl TiledClient {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum SubscriptionError {
+    WebSocketConnect(String),
+    MessageDeserialize(String),
+    TiledEventDeserialize(String),
+}
+impl std::fmt::Display for SubscriptionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            SubscriptionError::WebSocketConnect(err) => {
+                write!(f, "Failed to connect to tiled websocket {}", err)
+            }
+            SubscriptionError::MessageDeserialize(err) => {
+                write!(f, "Failed to deserialize tiled websocket event {}", err)
+            }
+            SubscriptionError::TiledEventDeserialize(err) => {
+                write!(f, "Failed to convert tiled event into  {}", err)
+            }
+        }
+    }
+}
 #[derive(Debug)]
 pub enum ClientError {
     InvalidPath(url::ParseError),
