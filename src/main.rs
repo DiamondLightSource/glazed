@@ -84,10 +84,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
         )
         .route("/asset/{run}/{stream}/{det}/{id}", get(download_handler))
         .with_state(client)
-        .fallback((
-            StatusCode::NOT_FOUND,
-            Html(include_str!("../static/404.html")),
-        ))
+        .fallback((StatusCode::NOT_FOUND, not_found_page(&public_address)))
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
@@ -96,6 +93,16 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
     Ok(axum::serve(listener, app)
         .with_graceful_shutdown(signal_handler())
         .await?)
+}
+
+fn not_found_page(public_address: &Url) -> Html<String> {
+    let graphql = public_address.join("graphql").unwrap();
+    let graphiql = public_address.join("graphiql").unwrap();
+    Html(format!(
+        include_str!("../templates/404.html"),
+        graphql_address = graphql,
+        graphiql_address = graphiql
+    ))
 }
 
 async fn graphql_get_warning() -> impl IntoResponse {
@@ -116,4 +123,38 @@ async fn signal_handler() {
         _ = quit.recv() => "SIGQUIT",
     };
     info!("Server interrupted by {sig}");
+}
+
+#[cfg(test)]
+mod tests {
+    use url::Url;
+
+    use super::not_found_page;
+
+    #[test]
+    fn test_404() {
+        let public_address = Url::parse("http://example.com/glazed/").unwrap();
+
+        let response = not_found_page(&public_address);
+
+        assert_eq!(
+            response.0,
+            r#"<!doctype html>
+<html>
+    <head>
+        <title>Glazed</title>
+    </head>
+    <body>
+        <h1>GraphQL interface to Tiled</h1>
+        <p>
+            Service is available at
+            <a href="http://example.com/glazed/graphql">/graphql</a>.
+            Playground is available for testing at
+            <a href="http://example.com/glazed/graphiql">/graphiql</a>
+        </p>
+    </body>
+</html>
+"#
+        )
+    }
 }
