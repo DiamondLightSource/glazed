@@ -1,5 +1,4 @@
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
@@ -20,24 +19,18 @@ use tokio::select;
 use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
 use tracing::level_filters::LevelFilter;
+use tracing_subscriber::fmt;
 use tracing_subscriber::layer::SubscriberExt as _;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::{Registry, fmt, reload};
 use url::Url;
 
 use crate::clients::TiledClient;
-use crate::config::{GlazedConfig, LogLevel};
+use crate::config::GlazedConfig;
 use crate::handlers::{download_handler, graphiql_handler, graphql_handler};
 use crate::model::TiledQuery;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (filter, filter_reload) = reload::Layer::new(LevelFilter::INFO);
-    tracing_subscriber::registry()
-        .with(filter)
-        .with(fmt::Layer::default())
-        .init();
-
     let cli = Cli::init();
     let config;
 
@@ -49,21 +42,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         info!("Using default config");
         config = GlazedConfig::default();
     }
-    filter_reload
-        .modify(|f| *f = config.log_level.into())
-        .unwrap();
+    tracing_subscriber::registry()
+        .with(LevelFilter::from(config.log_level))
+        .with(fmt::Layer::default())
+        .init();
+
     match cli.command {
-        Commands::Serve => serve(config, filter_reload).await,
+        Commands::Serve => serve(config).await,
     }
 }
 
 #[derive(Clone)]
 pub struct RootAddress(Url);
 
-async fn serve(
-    config: GlazedConfig,
-    reload: reload::Handle<LevelFilter, Registry>,
-) -> Result<(), Box<dyn std::error::Error>> {
+async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
     let client = TiledClient::new(config.tiled_client.address);
     let public_address = config
         .public_address
@@ -86,12 +78,6 @@ async fn serve(
             get(Json(json!({"version": env!("CARGO_PKG_VERSION")}))),
         )
         .route("/asset/{run}/{stream}/{det}/{id}", get(download_handler))
-        .route(
-            "/loglevel/{level}",
-            post(|level: Path<LogLevel>| async move {
-                reload.clone().modify(|f| *f = level.0.into()).unwrap();
-            }),
-        )
         .with_state(client)
         .fallback((StatusCode::NOT_FOUND, not_found_page(&public_address)))
         .layer(Extension(schema));
