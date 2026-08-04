@@ -113,3 +113,37 @@ async fn signal_handler() {
     };
     info!("Server interrupted by {sig}");
 }
+
+#[cfg(test)]
+mod tests {
+    use url::Url;
+
+    use super::not_found_page;
+
+    #[test]
+    fn test_404() {
+        let public_address = Url::parse("http://example.com/glazed/").unwrap();
+
+        let response = not_found_page(&public_address);
+
+        assert_eq!(
+            response.0,
+            r#"<!doctype html>
+<html>
+    <head>
+        <title>Glazed</title>
+    </head>
+    <body>
+        <h1>GraphQL interface to Tiled</h1>
+        <p>
+            Service is available at
+            <a href="http://example.com/glazed/graphql">/graphql</a>.
+            Playground is available for testing at
+            <a href="http://example.com/glazed/graphiql">/graphiql</a>
+        </p>
+    </body>
+</html>
+"#
+        )
+    }
+}
