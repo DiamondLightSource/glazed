@@ -17,8 +17,8 @@ COPY Cargo.toml Cargo.lock ./
 RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --release --target x86_64-unknown-linux-musl
 
 COPY ./static ./static
-COPY ./src ./src
 COPY ./templates ./templates
+COPY ./src ./src
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
     set -e
