@@ -194,13 +194,13 @@ impl std::fmt::Display for SubscriptionError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             SubscriptionError::WebSocketConnect(err) => {
-                write!(f, "Failed to connect to tiled websocket {}", err)
+                write!(f, "Failed to connect to tiled websocket: {}", err)
             }
             SubscriptionError::MessageDeserialize(err) => {
-                write!(f, "Failed to deserialize tiled websocket event {}", err)
+                write!(f, "Failed to deserialize tiled websocket event: {}", err)
             }
             SubscriptionError::TiledEventDeserialize(err) => {
-                write!(f, "Failed to convert tiled event into  {}", err)
+                write!(f, "Failed to convert tiled event into:  {}", err)
             }
         }
     }
