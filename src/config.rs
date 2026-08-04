@@ -5,6 +5,8 @@ use config::{Config, ConfigError, File};
 use serde::{Deserialize, Deserializer};
 use url::Url;
 
+const DEFAULT_PORT: u16 = 3000;
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct GlazedConfig {
     #[serde(default = "default_bind_address")]
@@ -72,13 +74,13 @@ impl From<LogLevel> for tracing::level_filters::LevelFilter {
 }
 
 fn default_bind_address() -> SocketAddr {
-    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3000)
+    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), DEFAULT_PORT)
 }
 
 fn default_public_address() -> Url {
-    "http://localhost:3000"
-        .parse()
-        .expect("Static str is valid URL")
+    let mut addr = Url::parse("http://localhost").expect("Static URL is valid");
+    addr.set_port(Some(DEFAULT_PORT)).unwrap();
+    addr
 }
 
 fn valid_public_address<'de, D: Deserializer<'de>>(des: D) -> Result<Url, D::Error> {
