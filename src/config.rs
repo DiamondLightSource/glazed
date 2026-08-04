@@ -10,8 +10,6 @@ pub struct GlazedConfig {
     pub bind_address: SocketAddr,
     pub public_address: Option<Url>,
     pub tiled_client: TiledClientConfig,
-    #[serde(default)]
-    pub log_level: LogLevel,
 }
 impl GlazedConfig {
     pub fn from_file(path: &Path) -> Result<Self, ConfigError> {
@@ -26,7 +24,6 @@ impl GlazedConfig {
             tiled_client: TiledClientConfig {
                 address: Url::parse("http://localhost:8000").expect("Static URL is valid"),
             },
-            log_level: LogLevel::Info,
         }
     }
 }
@@ -34,25 +31,4 @@ impl GlazedConfig {
 #[derive(Deserialize, Debug, Clone)]
 pub struct TiledClientConfig {
     pub address: Url,
-}
-
-#[derive(Debug, Default, Deserialize, Clone, Copy)]
-pub enum LogLevel {
-    #[default]
-    #[serde(alias = "info")]
-    Info,
-    #[serde(alias = "debug")]
-    Debug,
-    #[serde(alias = "trace")]
-    Trace,
-}
-
-impl From<LogLevel> for tracing::level_filters::LevelFilter {
-    fn from(value: LogLevel) -> Self {
-        match value {
-            LogLevel::Info => Self::INFO,
-            LogLevel::Debug => Self::DEBUG,
-            LogLevel::Trace => Self::TRACE,
-        }
-    }
 }
