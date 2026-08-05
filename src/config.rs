@@ -56,3 +56,17 @@ impl From<LogLevel> for tracing::level_filters::LevelFilter {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use tracing::level_filters::LevelFilter;
+
+    use crate::config::LogLevel;
+
+    #[test]
+    fn level_conversion() {
+        assert_eq!(LevelFilter::from(LogLevel::Info), LevelFilter::INFO);
+        assert_eq!(LevelFilter::from(LogLevel::Debug), LevelFilter::DEBUG);
+        assert_eq!(LevelFilter::from(LogLevel::Trace), LevelFilter::TRACE);
+    }
+}
