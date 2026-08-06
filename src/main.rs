@@ -18,6 +18,10 @@ use serde_json::json;
 use tokio::select;
 use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::fmt;
+use tracing_subscriber::layer::SubscriberExt as _;
+use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
 use crate::clients::TiledClient;
@@ -28,9 +32,6 @@ use crate::model::subscription::TiledSubscription;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    tracing::subscriber::set_global_default(subscriber)?;
-
     let cli = Cli::init();
     let config;
 
@@ -42,6 +43,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         info!("Using default config");
         config = GlazedConfig::default();
     }
+    tracing_subscriber::registry()
+        .with(LevelFilter::from(config.log_level))
+        .with(fmt::Layer::default())
+        .init();
+
     match cli.command {
         Commands::Serve => serve(config).await,
     }
