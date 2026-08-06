@@ -13,7 +13,7 @@ pub struct GlazedConfig {
     pub bind_address: SocketAddr,
     #[serde(
         default = "default_public_address",
-        deserialize_with = "valid_public_address"
+        deserialize_with = "validate_public_address"
     )]
     pub public_address: Url,
     pub tiled_client: TiledClientConfig,
@@ -83,7 +83,7 @@ fn default_public_address() -> Url {
     addr
 }
 
-fn valid_public_address<'de, D: Deserializer<'de>>(des: D) -> Result<Url, D::Error> {
+fn validate_public_address<'de, D: Deserializer<'de>>(des: D) -> Result<Url, D::Error> {
     let url = Url::deserialize(des)?;
     if url.cannot_be_a_base() {
         Err(serde::de::Error::custom("URL cannot be a base"))
@@ -97,7 +97,7 @@ mod tests {
     use tracing::level_filters::LevelFilter;
     use url::Url;
 
-    use crate::config::{GlazedConfig, LogLevel};
+    use crate::config::{GlazedConfig, LogLevel, default_bind_address, default_public_address};
 
     #[test]
     fn level_conversion() {
@@ -115,5 +115,15 @@ mod tests {
         let mut config = GlazedConfig::default();
         config.public_address = Url::parse(base).unwrap();
         assert_eq!(config.endpoint("graphql"), complete)
+    }
+
+    #[test]
+    fn default_addresses() {
+        assert_eq!(default_bind_address().to_string(), "127.0.0.1:3000");
+        assert!(!default_public_address().cannot_be_a_base());
+        assert_eq!(
+            default_public_address().to_string(),
+            "http://localhost:3000/"
+        );
     }
 }
