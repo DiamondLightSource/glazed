@@ -166,7 +166,7 @@ impl TiledClient {
             let (_, mut read) = ws.split();
             while let Some(msg) = read.next().await {
 
-                if let Message::Binary(bin) = msg.map_err(|e| SubscriptionError::MessageDeserialize(e.to_string()))?{
+                if let Message::Binary(bin) = msg.map_err(|e| SubscriptionError::FailedToRecieveMessage(e.to_string()))?{
                     yield rmp_serde::from_slice(&bin).map_err(|e| SubscriptionError::TiledEventDeserialize(e.to_string()))?
                 }
             }
@@ -187,7 +187,7 @@ impl TiledClient {
 #[derive(Debug, Clone)]
 pub enum SubscriptionError {
     WebSocketConnect(String),
-    MessageDeserialize(String),
+    FailedToRecieveMessage(String),
     TiledEventDeserialize(String),
 }
 impl std::fmt::Display for SubscriptionError {
@@ -196,8 +196,8 @@ impl std::fmt::Display for SubscriptionError {
             SubscriptionError::WebSocketConnect(err) => {
                 write!(f, "Failed to connect to tiled websocket: {}", err)
             }
-            SubscriptionError::MessageDeserialize(err) => {
-                write!(f, "Failed to deserialize tiled websocket event: {}", err)
+            SubscriptionError::FailedToRecieveMessage(err) => {
+                write!(f, "Failed to recieve message from tiled websocket: {}", err)
             }
             SubscriptionError::TiledEventDeserialize(err) => {
                 write!(f, "Failed to convert tiled event into:  {}", err)
