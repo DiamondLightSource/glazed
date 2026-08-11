@@ -20,8 +20,13 @@ clap = { version = "4.5.48", features = ["derive"] }
 uuid = { version = "1.18.1", features = ["serde"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
+tokio-tungstenite = { version = "0.28.0", features = ["rustls-tls-native-roots"] }
+rmp-serde = "1.3.1"
+futures-util = "0.3.32"
+async-stream = "0.3.6"
 
 [dev-dependencies]
 http-body-util = "0.1.3"
 httpmock = "0.8.2"
+rstest = "0.26.1"
 tower =  "0.5.2"

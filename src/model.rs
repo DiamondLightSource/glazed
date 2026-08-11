@@ -4,6 +4,7 @@ pub(crate) mod container;
 pub(crate) mod event_stream;
 pub(crate) mod node;
 pub(crate) mod run;
+pub(crate) mod subscription;
 pub(crate) mod table;
 
 use std::collections::HashMap;
@@ -239,7 +240,7 @@ impl Run {
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::{EmptyMutation, EmptySubscription, Schema, value};
+    use async_graphql::{EmptyMutation, Schema, value};
     use axum::http::HeaderValue;
     use httpmock::MockServer;
     use serde_json::json;
@@ -247,9 +248,10 @@ mod tests {
     use crate::TiledQuery;
     use crate::clients::TiledClient;
     use crate::handlers::AuthHeader;
+    use crate::model::subscription::TiledSubscription;
 
-    fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, EmptySubscription> {
-        Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+    fn build_schema(url: &str) -> Schema<TiledQuery, EmptyMutation, TiledSubscription> {
+        Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
             .data(Option::<AuthHeader>::None)
             .data(TiledClient::new(url.parse().unwrap()))
             .finish()
@@ -320,7 +322,7 @@ mod tests {
                 }));
             })
             .await;
-        let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
+        let schema = Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
             .data(TiledClient::new(server.base_url().parse().unwrap()))
             .data(Some(AuthHeader::from(HeaderValue::from_static(
                 "auth_value",
