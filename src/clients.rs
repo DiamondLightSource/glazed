@@ -156,7 +156,7 @@ impl TiledClient {
         let mut request = url
             .as_str()
             .into_client_request()
-            .expect("it's going to work");
+            .expect("valid URLs can be converted to URIs needed for Request");
         if let Some(headers) = headers {
             request.headers_mut().extend(headers);
         }
