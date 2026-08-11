@@ -211,7 +211,7 @@ mod tests {
         "nodeEvents"
     )]
     #[tokio::test]
-    async fn test_subscription_events_parameterized(
+    async fn test_subscription_events(
         #[case] query: &str,
         #[case] expected_path: &str,
         #[case] expected_version: u32,
