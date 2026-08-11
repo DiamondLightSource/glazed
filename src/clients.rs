@@ -8,6 +8,7 @@ use reqwest::header::HeaderMap;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use tokio_tungstenite::connect_async;
+use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tracing::{debug, info, instrument};
 
@@ -139,38 +140,37 @@ impl TiledClient {
         &self,
         node: Option<String>,
         headers: Option<HeaderMap>,
-    ) -> Result<impl Stream<Item = Result<TiledEvent, SubscriptionError>>, SubscriptionError> {
+    ) -> impl Stream<Item = Result<TiledEvent, SubscriptionError>> {
         let scheme = match self.address.scheme() {
-            "http" => "ws",
             "https" => "wss",
             _ => "ws",
         };
 
-        let path = if let Some(node_id) = node {
-            format!("api/v1/stream/single/{}", node_id)
-        } else {
-            "api/v1/stream/single/".to_string()
-        };
+        let path = format!("api/v1/stream/single/{}", node.as_deref().unwrap_or(""));
 
         let mut url = self.address.join(&path).expect("Invalid stream path");
-        url.set_scheme(scheme).ok();
+        url.set_scheme(scheme)
+            .expect("ws and wss are valid schemes");
         url.set_query(Some("envelope_format=msgpack"));
 
-        let mut request = url.as_str().into_client_request().unwrap();
+        let mut request = url
+            .as_str()
+            .into_client_request()
+            .expect("it's going to work");
         if let Some(headers) = headers {
             request.headers_mut().extend(headers);
         }
-        Ok(async_stream::try_stream! {
+        async_stream::try_stream! {
             info!("Connecting to WebSocket: {}", url);
             let (ws,_) = connect_async(request).await.map_err(|e| SubscriptionError::WebSocketConnect(e.to_string()))?;
             let (_, mut read) = ws.split();
             while let Some(msg) = read.next().await {
 
-                if let tokio_tungstenite::tungstenite::Message::Binary(bin) = msg.map_err(|e| SubscriptionError::MessageDeserialize(e.to_string()))?{
-                    yield rmp_serde::from_slice::<TiledEvent>(&bin).map_err(|e| SubscriptionError::TiledEventDeserialize(e.to_string()))?
+                if let Message::Binary(bin) = msg.map_err(|e| SubscriptionError::MessageDeserialize(e.to_string()))?{
+                    yield rmp_serde::from_slice(&bin).map_err(|e| SubscriptionError::TiledEventDeserialize(e.to_string()))?
                 }
             }
-        })
+        }
     }
 
     /// Create a new client for the given mock server

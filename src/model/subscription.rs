@@ -14,7 +14,7 @@ impl TiledSubscription {
     async fn events(
         &self,
         ctx: &Context<'_>,
-    ) -> Result<impl Stream<Item = Result<TiledEvent, SubscriptionError>>, SubscriptionError> {
+    ) -> impl Stream<Item = Result<TiledEvent, SubscriptionError>> {
         let client = ctx.data::<TiledClient>().unwrap();
         let headers = ctx
             .data_opt::<Option<AuthHeader>>()
@@ -27,7 +27,7 @@ impl TiledSubscription {
         &self,
         ctx: &Context<'_>,
         node: String,
-    ) -> Result<impl Stream<Item = Result<TiledEvent, SubscriptionError>>, SubscriptionError> {
+    ) -> impl Stream<Item = Result<TiledEvent, SubscriptionError>> {
         let client = ctx.data::<TiledClient>().unwrap();
         let headers = ctx
             .data_opt::<Option<AuthHeader>>()
@@ -150,12 +150,13 @@ mod tests {
 
     use super::*;
     use crate::clients::TiledClient;
+    use crate::model::TiledQuery;
 
     #[rstest]
     #[case::with_auth(Some("Bearer test-token"))]
     #[case::no_auth(None)]
     #[tokio::test]
-    async fn test_stream_events_headers_parameterized(#[case] auth_token: Option<&str>) {
+    async fn test_stream_events_headers(#[case] auth_token: Option<&str>) {
         let (tx, mut rx) = mpsc::channel(1);
 
         let app = Router::new().fallback(any(
@@ -179,14 +180,14 @@ mod tests {
             headers.insert("Authorization", token.parse().unwrap());
         }
 
-        let stream = client.stream_events(None, Some(headers)).unwrap();
+        let stream = client.stream_events(None, Some(headers));
         tokio::pin!(stream);
 
         let _ = time::timeout(Duration::from_secs(5), stream.next()).await;
 
         let captured_headers = time::timeout(Duration::from_secs(5), rx.recv())
             .await
-            .expect("Headers should have be sent after stream is read above")
+            .expect("Headers should have been sent after stream is read above")
             .expect("The header channel should remain open until headers are received");
 
         if let Some(token) = auth_token {
@@ -242,7 +243,7 @@ mod tests {
         let url = Url::parse(&format!("http://{addr}")).unwrap();
         let client = TiledClient::new(url);
 
-        let schema = Schema::build(crate::model::TiledQuery, EmptyMutation, TiledSubscription)
+        let schema = Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
             .data(client)
             .finish();
 

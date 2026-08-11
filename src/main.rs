@@ -62,24 +62,23 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
         .public_address
         .clone()
         .unwrap_or_else(|| Url::parse(&format!("http://{}", config.bind_address)).unwrap());
-    let schema: Schema<TiledQuery, EmptyMutation, TiledSubscription> =
-        Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
-            .data(RootAddress(public_address.clone()))
-            .data(client.clone())
-            .finish();
+    let schema = Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
+        .data(RootAddress(public_address.clone()))
+        .data(client.clone())
+        .finish();
 
     let graphql_endpoint = config
         .public_address
-        .clone()
+        .as_ref()
         .map(|u| u.join("graphql").unwrap().to_string());
 
     let subscription_endpoint = config
         .public_address
-        .clone()
-        .map(|u| u.join("ws").unwrap().to_string());
+        .as_ref()
+        .map(|u| u.join("subscribe").unwrap().to_string());
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
-        .route("/ws", get(graphql_ws_handler))
+        .route("/subscribe", get(graphql_ws_handler))
         .route(
             "/graphiql",
             get(|| graphiql_handler(graphql_endpoint, subscription_endpoint)),
