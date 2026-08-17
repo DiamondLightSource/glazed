@@ -57,25 +57,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 pub struct RootAddress(Url);
 
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
-    let client = TiledClient::new(config.tiled_client.address);
-    let public_address = config
-        .public_address
-        .clone()
-        .unwrap_or_else(|| Url::parse(&format!("http://{}", config.bind_address)).unwrap());
+    let client = TiledClient::new(config.tiled_client.address.clone());
     let schema = Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
-        .data(RootAddress(public_address.clone()))
+        .data(RootAddress(config.public_address.clone()))
         .data(client.clone())
         .finish();
 
-    let graphql_endpoint = config
-        .public_address
-        .as_ref()
-        .map(|u| u.join("graphql").unwrap().to_string());
+    let graphql_endpoint = config.endpoint("graphql");
+    let graphiql_endpoint = config.endpoint("graphiql");
+    let subscription_endpoint = config.endpoint("subscribe");
+    info!(
+        "Redirecting traffic to public address: {}",
+        config.public_address
+    );
+    info!("Public graphql endpoint available at {}", graphql_endpoint);
 
-    let subscription_endpoint = config
-        .public_address
-        .as_ref()
-        .map(|u| u.join("subscribe").unwrap().to_string());
+    let page_not_found = (
+        StatusCode::NOT_FOUND,
+        not_found_page(&graphql_endpoint, &graphiql_endpoint),
+    );
+
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
         .route("/subscribe", get(graphql_ws_handler))
@@ -89,7 +90,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
         )
         .route("/asset/{run}/{stream}/{det}/{id}", get(download_handler))
         .with_state(client)
-        .fallback((StatusCode::NOT_FOUND, not_found_page(&public_address)))
+        .fallback(page_not_found)
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
@@ -100,9 +101,7 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
         .await?)
 }
 
-fn not_found_page(public_address: &Url) -> Html<String> {
-    let graphql = public_address.join("graphql").unwrap();
-    let graphiql = public_address.join("graphiql").unwrap();
+fn not_found_page(graphql: &str, graphiql: &str) -> Html<String> {
     Html(format!(
         include_str!("../templates/404.html"),
         graphql_address = graphql,
@@ -132,15 +131,14 @@ async fn signal_handler() {
 
 #[cfg(test)]
 mod tests {
-    use url::Url;
-
     use super::not_found_page;
 
     #[test]
     fn test_404() {
-        let public_address = Url::parse("http://example.com/glazed/").unwrap();
-
-        let response = not_found_page(&public_address);
+        let response = not_found_page(
+            "http://example.com/glazed/graphql",
+            "http://example.com/glazed/graphiql",
+        );
 
         assert_eq!(
             response.0,
