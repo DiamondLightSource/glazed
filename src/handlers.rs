@@ -1,9 +1,9 @@
-use async_graphql::http::GraphiQLSource;
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
+use async_graphql::http::{ALL_WEBSOCKET_PROTOCOLS, GraphiQLSource};
+use async_graphql::{Data, EmptyMutation, Schema};
+use async_graphql_axum::{GraphQLProtocol, GraphQLRequest, GraphQLResponse, GraphQLWebSocket};
 use axum::Extension;
 use axum::body::Body;
-use axum::extract::{OptionalFromRequestParts, Path, State};
+use axum::extract::{OptionalFromRequestParts, Path, State, WebSocketUpgrade};
 use axum::http::{HeaderMap, HeaderValue, StatusCode};
 use axum::response::{Html, IntoResponse};
 use reqwest::header::AUTHORIZATION;
@@ -11,10 +11,11 @@ use tracing::info;
 
 use crate::clients::TiledClient;
 use crate::model::TiledQuery;
+use crate::model::subscription::TiledSubscription;
 
 pub async fn graphql_handler(
     auth_token: Option<AuthHeader>,
-    schema: Extension<Schema<TiledQuery, EmptyMutation, EmptySubscription>>,
+    schema: Extension<Schema<TiledQuery, EmptyMutation, TiledSubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     schema
@@ -23,10 +24,41 @@ pub async fn graphql_handler(
         .into()
 }
 
-pub async fn graphiql_handler(graphql_endpoint: Option<String>) -> impl IntoResponse {
+pub async fn graphql_ws_handler(
+    schema: Extension<Schema<TiledQuery, EmptyMutation, TiledSubscription>>,
+    protocol: GraphQLProtocol,
+    mut auth_token: Option<AuthHeader>,
+    websocket: WebSocketUpgrade,
+) -> impl IntoResponse {
+    websocket
+        .protocols(ALL_WEBSOCKET_PROTOCOLS)
+        .on_upgrade(move |socket| {
+            GraphQLWebSocket::new(socket, schema.0, protocol)
+                .on_connection_init(|headers| async move {
+                    let mut data = Data::default();
+
+                    auth_token = headers
+                        .get("Authorization")
+                        .and_then(|v| v.as_str())
+                        .and_then(|auth| HeaderValue::from_str(auth).ok())
+                        .map(AuthHeader)
+                        .or(auth_token);
+
+                    data.insert(auth_token);
+                    Ok(data)
+                })
+                .serve()
+        })
+}
+
+pub async fn graphiql_handler(
+    graphql_endpoint: String,
+    subscription_endpoint: String,
+) -> impl IntoResponse {
     Html(
         GraphiQLSource::build()
-            .endpoint(graphql_endpoint.as_deref().unwrap_or("/graphql"))
+            .endpoint(&graphql_endpoint)
+            .subscription_endpoint(&subscription_endpoint)
             .finish(),
     )
 }
@@ -98,6 +130,7 @@ mod tests {
     fn app() -> Router {
         Router::new().route("/", get(auth_echo))
     }
+
     #[tokio::test]
     async fn auth_extract() {
         let app = app();

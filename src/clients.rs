@@ -1,13 +1,18 @@
 use std::borrow::Cow;
 use std::fmt;
 
+use futures_util::{Stream, StreamExt};
 #[cfg(test)]
 use httpmock::MockServer;
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
+use tokio_tungstenite::connect_async;
+use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tracing::{debug, info, instrument};
 
+use crate::model::subscription::TiledEvent;
 use crate::model::{app, node, table};
 
 pub type ClientResult<T> = Result<T, ClientError>;
@@ -30,6 +35,7 @@ impl TiledClient {
             address,
         }
     }
+
     #[instrument(skip(self, headers))]
     async fn request<T: DeserializeOwned>(
         &self,
@@ -130,6 +136,43 @@ impl TiledClient {
             .await
     }
 
+    pub(crate) fn stream_events(
+        &self,
+        node: Option<String>,
+        headers: Option<HeaderMap>,
+    ) -> impl Stream<Item = Result<TiledEvent, SubscriptionError>> {
+        let scheme = match self.address.scheme() {
+            "https" => "wss",
+            _ => "ws",
+        };
+
+        let path = format!("api/v1/stream/single/{}", node.as_deref().unwrap_or(""));
+
+        let mut url = self.address.join(&path).expect("Invalid stream path");
+        url.set_scheme(scheme)
+            .expect("ws and wss are valid schemes");
+        url.set_query(Some("envelope_format=msgpack"));
+
+        let mut request = url
+            .as_str()
+            .into_client_request()
+            .expect("valid URLs can be converted to URIs needed for Request");
+        if let Some(headers) = headers {
+            request.headers_mut().extend(headers);
+        }
+        async_stream::try_stream! {
+            info!("Connecting to WebSocket: {}", url);
+            let (ws,_) = connect_async(request).await.map_err(|e| SubscriptionError::WebSocketConnect(e.to_string()))?;
+            let (_, mut read) = ws.split();
+            while let Some(msg) = read.next().await {
+
+                if let Message::Binary(bin) = msg.map_err(|e| SubscriptionError::FailedToRecieveMessage(e.to_string()))?{
+                    yield rmp_serde::from_slice(&bin).map_err(|e| SubscriptionError::TiledEventDeserialize(e.to_string()))?
+                }
+            }
+        }
+    }
+
     /// Create a new client for the given mock server
     #[cfg(test)]
     pub fn for_mock_server(server: &MockServer) -> Self {
@@ -141,6 +184,27 @@ impl TiledClient {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum SubscriptionError {
+    WebSocketConnect(String),
+    FailedToRecieveMessage(String),
+    TiledEventDeserialize(String),
+}
+impl std::fmt::Display for SubscriptionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            SubscriptionError::WebSocketConnect(err) => {
+                write!(f, "Failed to connect to tiled websocket: {}", err)
+            }
+            SubscriptionError::FailedToRecieveMessage(err) => {
+                write!(f, "Failed to recieve message from tiled websocket: {}", err)
+            }
+            SubscriptionError::TiledEventDeserialize(err) => {
+                write!(f, "Failed to convert tiled event into:  {}", err)
+            }
+        }
+    }
+}
 #[derive(Debug)]
 pub enum ClientError {
     InvalidPath(url::ParseError),

@@ -1,4 +1,4 @@
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptyMutation, Schema};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
@@ -18,18 +18,20 @@ use serde_json::json;
 use tokio::select;
 use tokio::signal::unix::{SignalKind, signal};
 use tracing::info;
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::fmt;
+use tracing_subscriber::layer::SubscriberExt as _;
+use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
 use crate::clients::TiledClient;
 use crate::config::GlazedConfig;
-use crate::handlers::{download_handler, graphiql_handler, graphql_handler};
+use crate::handlers::{download_handler, graphiql_handler, graphql_handler, graphql_ws_handler};
 use crate::model::TiledQuery;
+use crate::model::subscription::TiledSubscription;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    tracing::subscriber::set_global_default(subscriber)?;
-
     let cli = Cli::init();
     let config;
 
@@ -41,6 +43,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         info!("Using default config");
         config = GlazedConfig::default();
     }
+    tracing_subscriber::registry()
+        .with(LevelFilter::from(config.log_level))
+        .with(fmt::Layer::default())
+        .init();
+
     match cli.command {
         Commands::Serve => serve(config).await,
     }
@@ -50,33 +57,40 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 pub struct RootAddress(Url);
 
 async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
-    let client = TiledClient::new(config.tiled_client.address);
-    let public_address = config
-        .public_address
-        .clone()
-        .unwrap_or_else(|| Url::parse(&format!("http://{}", config.bind_address)).unwrap());
-    let schema = Schema::build(TiledQuery, EmptyMutation, EmptySubscription)
-        .data(RootAddress(public_address))
+    let client = TiledClient::new(config.tiled_client.address.clone());
+    let schema = Schema::build(TiledQuery, EmptyMutation, TiledSubscription)
+        .data(RootAddress(config.public_address.clone()))
         .data(client.clone())
         .finish();
 
-    let graphql_endpoint = config
-        .public_address
-        .map(|u| u.join("graphql").unwrap().to_string());
+    let graphql_endpoint = config.endpoint("graphql");
+    let graphiql_endpoint = config.endpoint("graphiql");
+    let subscription_endpoint = config.endpoint("subscribe");
+    info!(
+        "Redirecting traffic to public address: {}",
+        config.public_address
+    );
+    info!("Public graphql endpoint available at {}", graphql_endpoint);
+
+    let page_not_found = (
+        StatusCode::NOT_FOUND,
+        not_found_page(&graphql_endpoint, &graphiql_endpoint),
+    );
 
     let app = Router::new()
         .route("/graphql", post(graphql_handler).get(graphql_get_warning))
-        .route("/graphiql", get(|| graphiql_handler(graphql_endpoint)))
+        .route("/subscribe", get(graphql_ws_handler))
+        .route(
+            "/graphiql",
+            get(|| graphiql_handler(graphql_endpoint, subscription_endpoint)),
+        )
         .route(
             "/status",
             get(Json(json!({"version": env!("CARGO_PKG_VERSION")}))),
         )
         .route("/asset/{run}/{stream}/{det}/{id}", get(download_handler))
         .with_state(client)
-        .fallback((
-            StatusCode::NOT_FOUND,
-            Html(include_str!("../static/404.html")),
-        ))
+        .fallback(page_not_found)
         .layer(Extension(schema));
 
     let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
@@ -85,6 +99,14 @@ async fn serve(config: GlazedConfig) -> Result<(), Box<dyn std::error::Error>> {
     Ok(axum::serve(listener, app)
         .with_graceful_shutdown(signal_handler())
         .await?)
+}
+
+fn not_found_page(graphql: &str, graphiql: &str) -> Html<String> {
+    Html(format!(
+        include_str!("../templates/404.html"),
+        graphql_address = graphql,
+        graphiql_address = graphiql
+    ))
 }
 
 async fn graphql_get_warning() -> impl IntoResponse {
@@ -105,4 +127,37 @@ async fn signal_handler() {
         _ = quit.recv() => "SIGQUIT",
     };
     info!("Server interrupted by {sig}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::not_found_page;
+
+    #[test]
+    fn test_404() {
+        let response = not_found_page(
+            "http://example.com/glazed/graphql",
+            "http://example.com/glazed/graphiql",
+        );
+
+        assert_eq!(
+            response.0,
+            r#"<!doctype html>
+<html>
+    <head>
+        <title>Glazed</title>
+    </head>
+    <body>
+        <h1>GraphQL interface to Tiled</h1>
+        <p>
+            Service is available at
+            <a href="http://example.com/glazed/graphql">/graphql</a>.
+            Playground is available for testing at
+            <a href="http://example.com/glazed/graphiql">/graphiql</a>
+        </p>
+    </body>
+</html>
+"#
+        )
+    }
 }
