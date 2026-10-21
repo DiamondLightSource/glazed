@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "lockFileMaintenance": {
+    "description": "Keep Cargo.lock up to date, merging if tests pass",
+    "enabled": true,
+    "automerge": true
+  },
+  "packageRules": [
+        {
+          "groupName": "patches",
+          "matchUpdateTypes": ["patch"],
+          "description": ["Limit patch updates to once per month"],
+          "schedule": ["* * 1 * *"]
+        }
+  ]
+}
