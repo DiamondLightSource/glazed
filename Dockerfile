@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
     cargo build --release --locked --target x86_64-unknown-linux-musl
 EOF
 
-FROM alpine:3.23
+FROM alpine:3.24
 
 COPY --from=build /build/target/x86_64-unknown-linux-musl/release/glazed glazed
 
