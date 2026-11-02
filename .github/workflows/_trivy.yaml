@@ -27,7 +27,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'tag_for_scanning'
-          version: 'v0.74.0'
+          version: 'v0.76.1'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
