@@ -22,7 +22,7 @@ jobs:
             type=semver,pattern={{version}}
 
       - name: Install helm
-        uses: Azure/setup-helm@v4
+        uses: Azure/setup-helm@v5
         with:
           version: "v4.0.4"
 
