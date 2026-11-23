@@ -32,6 +32,8 @@ jobs:
           toolchain: stable
           components: clippy
     - uses: Swatinem/rust-cache@v2
+      with:
+        save-if: ${{ github.event_name != 'merge_group' }}
     - name: Clippy
       run: |
         cargo --version
@@ -48,6 +50,8 @@ jobs:
       with:
           toolchain: stable
     - uses: Swatinem/rust-cache@v2
+      with:
+        save-if: ${{ github.event_name != 'merge_group' }}
     - name: Install cargo-llvm-cov
       uses: taiki-e/install-action@cargo-llvm-cov
     - name: Run tests and generate code coverage
