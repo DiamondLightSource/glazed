@@ -9,7 +9,7 @@ on:
 jobs:
 
   trivy:
-    uses: ./.github/workflows/_trivy.yml
+    uses: ./.github/workflows/_trivy.yaml
 
   cargo_audit:
     uses: ./.github/workflows/cargo_audit.yml
